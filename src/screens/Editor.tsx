@@ -68,7 +68,7 @@ export function Editor({ id }: { id: string }) {
   }
 
   return (
-    <div>
+    <div className="editor">
       <button className="link" onClick={() => go('/')}>← Sessions</button>
       <input className="name-input" value={session.name} maxLength={80} aria-label="Session name"
         onChange={(e) => patch((s) => ({ ...s, name: e.target.value }))} />
