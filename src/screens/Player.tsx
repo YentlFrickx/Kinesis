@@ -6,6 +6,7 @@ import { go } from '../lib/router'
 import { beep, isMuted, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
 import { advance, buildSteps, goTo, initState, next, prev, type RunState, type Step } from '../player/engine'
 import { youllNeed } from '../store/equipment'
+import { recordCompletion } from '../store/history'
 import { getSession } from '../store/sessions'
 
 const sideLabel = (s: 'left' | 'right' | null) => (s ? `${s[0].toUpperCase()}${s.slice(1)} side` : '')
@@ -41,6 +42,8 @@ export function Player({ id }: { id: string }) {
   const [paused, setPaused] = useState(false)
   const [muted, setMutedState] = useState(isMuted)
   const lastSec = useRef<number | null>(null)
+  const activeMs = useRef(0)
+  const recorded = useRef(false)
 
   useWakeLock(!state.finished)
 
@@ -52,6 +55,7 @@ export function Player({ id }: { id: string }) {
       const now = performance.now()
       const dt = now - last
       last = now
+      activeMs.current += dt
       setState((s) => advance(steps, s, dt))
     }, 100)
     return () => clearInterval(t)
@@ -63,6 +67,10 @@ export function Player({ id }: { id: string }) {
   useEffect(() => {
     lastSec.current = null
     if (state.finished) {
+      if (!recorded.current && session) {
+        recorded.current = true
+        recordCompletion(session.id, session.name, activeMs.current / 1000)
+      }
       beep(660, 200); setTimeout(() => beep(880, 300), 250)
       speak('Session complete. Well done!')
       vibrate([200, 100, 200, 100, 400])
@@ -106,7 +114,7 @@ export function Player({ id }: { id: string }) {
         <h1>Session complete 🎉</h1>
         <p className="meta">{session.name}</p>
         <button className="btn primary wide" onClick={() => go('/')}>Done</button>
-        <button className="btn wide" onClick={() => { setState(goTo(steps, 0)); setPaused(false) }}>Do it again</button>
+        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setState(goTo(steps, 0)); setPaused(false) }}>Do it again</button>
       </div>
     )
   }

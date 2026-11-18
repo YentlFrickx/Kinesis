@@ -1,0 +1,63 @@
+import { useSyncExternalStore } from 'react'
+
+export interface HistoryEntry {
+  id: string
+  sessionId: string
+  /** Name at the time of completion (the session may later be renamed or deleted). */
+  sessionName: string
+  /** Epoch ms when the session was completed. */
+  completedAt: number
+  /** Time actually spent exercising (excluding pauses), in seconds. */
+  durationSec: number
+}
+
+const KEY = 'rw.history.v1'
+const VERSION = 1
+const MAX_ENTRIES = 500
+
+function read(): HistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(KEY)
+    if (!raw) return []
+    const data = JSON.parse(raw)
+    return data?.version === VERSION && Array.isArray(data.entries) ? data.entries : []
+  } catch {
+    return []
+  }
+}
+
+let entries: HistoryEntry[] = read()
+const listeners = new Set<() => void>()
+
+function commit(next: HistoryEntry[]) {
+  entries = next
+  try {
+    localStorage.setItem(KEY, JSON.stringify({ version: VERSION, entries }))
+  } catch {
+    /* storage unavailable: keep in-memory state */
+  }
+  listeners.forEach((l) => l())
+}
+
+const subscribe = (l: () => void) => {
+  listeners.add(l)
+  return () => listeners.delete(l)
+}
+
+/** Completed sessions, newest first. */
+export const useHistory = () => useSyncExternalStore(subscribe, () => entries)
+
+export function recordCompletion(sessionId: string, sessionName: string, durationSec: number): HistoryEntry {
+  const entry: HistoryEntry = {
+    id: crypto.randomUUID(),
+    sessionId,
+    sessionName,
+    completedAt: Date.now(),
+    durationSec: Math.max(0, Math.round(durationSec)),
+  }
+  commit([entry, ...entries].slice(0, MAX_ENTRIES))
+  return entry
+}
+
+export const deleteEntry = (id: string) => commit(entries.filter((e) => e.id !== id))
+export const clearHistory = () => commit([])

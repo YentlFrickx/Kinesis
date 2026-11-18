@@ -1,6 +1,7 @@
 import { useRoute, go } from './lib/router'
 import { ExerciseBrowser } from './screens/ExerciseBrowser'
 import { Editor } from './screens/Editor'
+import { History } from './screens/History'
 import { Player } from './screens/Player'
 import { Sessions } from './screens/Sessions'
 import './App.css'
@@ -13,6 +14,7 @@ export default function App() {
 
   let body
   if (section === 'session' && id) body = <Editor key={id} id={id} />
+  else if (section === 'history') body = <History />
   else if (section === 'library') body = (<><h1>Exercises</h1><ExerciseBrowser /></>)
   else body = <Sessions />
 
@@ -20,8 +22,9 @@ export default function App() {
     <>
       <main>{body}</main>
       <nav className="tabs" aria-label="Main">
-        <button className={section === 'library' ? '' : 'on'} onClick={() => go('/')}>Sessions</button>
+        <button className={section === 'library' || section === 'history' ? '' : 'on'} onClick={() => go('/')}>Sessions</button>
         <button className={section === 'library' ? 'on' : ''} onClick={() => go('/library')}>Exercises</button>
+        <button className={section === 'history' ? 'on' : ''} onClick={() => go('/history')}>History</button>
       </nav>
     </>
   )

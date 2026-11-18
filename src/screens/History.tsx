@@ -1,0 +1,63 @@
+import { formatDuration } from '../lib/format'
+import { clearHistory, deleteEntry, useHistory } from '../store/history'
+
+const dayKey = (t: number) => new Date(t).toDateString()
+const dayLabel = (t: number) => {
+  const d = new Date(t)
+  const today = new Date()
+  const yesterday = new Date(today.getTime() - 86_400_000)
+  if (d.toDateString() === today.toDateString()) return 'Today'
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
+  return d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+export function History() {
+  const entries = useHistory()
+  const totalSec = entries.reduce((n, e) => n + e.durationSec, 0)
+
+  const groups: { key: string; label: string; items: typeof entries }[] = []
+  for (const e of entries) {
+    const key = dayKey(e.completedAt)
+    const last = groups[groups.length - 1]
+    if (last?.key === key) last.items.push(e)
+    else groups.push({ key, label: dayLabel(e.completedAt), items: [e] })
+  }
+
+  return (
+    <div>
+      <h1>History</h1>
+      {entries.length === 0 ? (
+        <p className="empty">No completed sessions yet. Finish a session and it will show up here.</p>
+      ) : (
+        <>
+          <p className="meta">
+            {entries.length} session{entries.length === 1 ? '' : 's'} completed · {formatDuration(totalSec)} total
+          </p>
+          {groups.map((g) => (
+            <section key={g.key}>
+              <h2 className="meta">{g.label}</h2>
+              <ul className="session-list">
+                {g.items.map((e) => (
+                  <li key={e.id} className="card">
+                    <div className="session-top">
+                      <div>
+                        <strong>{e.sessionName}</strong>
+                        <div className="meta">
+                          {new Date(e.completedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} · {formatDuration(e.durationSec)}
+                        </div>
+                      </div>
+                      <button className="btn small danger" onClick={() => deleteEntry(e.id)} aria-label={`Remove ${e.sessionName} from history`}>Remove</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+          <div className="actions footer-actions">
+            <button className="btn small danger" onClick={() => confirm('Clear all history?') && clearHistory()}>Clear history</button>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
