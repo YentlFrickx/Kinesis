@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { EXERCISE_MAP } from '../data/exercises'
-import { EQUIPMENT, EQUIPMENT_LABEL, type BodyArea, type Category, type Equipment, type SessionItem } from '../data/types'
+import { EQUIPMENT, type BodyArea, type Category, type Equipment, type SessionItem } from '../data/types'
 import { INTENSITIES, estimateItems, generateSession, neglectedCategories, replacementFor, SET_REST_SEC, TRANSITION_SEC, type Intensity } from '../lib/generator'
 import { describe, formatDuration } from '../lib/format'
-import { CATEGORIES, CATEGORY_LABEL, weeklyBalance } from '../lib/progress'
+import { CATEGORIES, weeklyBalance } from '../lib/progress'
+import { useLocalize, useT } from '../i18n'
 import { go } from '../lib/router'
 import { toggleEquipment, useOwnedEquipment } from '../store/equipment'
 import { useHistory } from '../store/history'
@@ -16,6 +17,8 @@ const newSeed = () => Math.floor(Math.random() * 2 ** 31)
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 
 export function Generator() {
+  const t = useT()
+  const lx = useLocalize()
   const owned = useOwnedEquipment()
   const history = useHistory()
   const [now] = useState(Date.now)
@@ -43,89 +46,90 @@ export function Generator() {
   }
 
   const save = () => {
-    const names = focus.length ? focus.join(' + ') : categories.map((c) => CATEGORY_LABEL[c].toLowerCase()).join(' + ')
-    const s = createSession(`${minutes} min ${names}`.slice(0, 80))
+    const names = (focus.length ? focus.map((a) => t(`area.${a}`)) : categories.map((c) => t(`category.${c}`).toLowerCase())).join(' + ')
+    const s = createSession(t('gen.sessionName', { minutes, names }).slice(0, 80))
     updateSession(s.id, (x) => ({ ...x, items: items.map((i) => ({ ...i })), defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC }))
     go(`/session/${s.id}`)
   }
 
   return (
     <div className="editor">
-      <button className="link" onClick={() => go('/')}>← Sessions</button>
-      <h1>Generate session</h1>
+      <button className="link" onClick={() => go('/')}>{t('common.backToSessions')}</button>
+      <h1>{t('gen.title')}</h1>
       {neglected.length > 0 && (
-        <p className="meta">You haven't done {neglected.map((c) => CATEGORY_LABEL[c].toLowerCase()).join(' or ')} this week, so it's pre-selected.</p>
+        <p className="meta">{t('gen.neglected', { list: neglected.map((c) => t(`category.${c}`).toLowerCase()).join(t('gen.or')) })}</p>
       )}
 
       <div className="card">
-        <span className="meta">Duration</span>
-        <div className="stepper" role="group" aria-label="Duration">
-          <button className="btn small" disabled={minutes <= 5} aria-label="Decrease duration" onClick={() => change(setMinutes)(minutes - 5)}><Icon name="minus" size={16} /></button>
-          <span className="stepper-val">{minutes} min</span>
-          <button className="btn small" disabled={minutes >= 90} aria-label="Increase duration" onClick={() => change(setMinutes)(minutes + 5)}><Icon name="plus" size={16} /></button>
+        <span className="meta">{t('gen.duration')}</span>
+        <div className="stepper" role="group" aria-label={t('gen.durationAria')}>
+          <button className="btn small" disabled={minutes <= 5} aria-label={t('gen.decreaseDuration')} onClick={() => change(setMinutes)(minutes - 5)}><Icon name="minus" size={16} /></button>
+          <span className="stepper-val">{t('unit.minutes', { n: minutes })}</span>
+          <button className="btn small" disabled={minutes >= 90} aria-label={t('gen.increaseDuration')} onClick={() => change(setMinutes)(minutes + 5)}><Icon name="plus" size={16} /></button>
         </div>
 
-        <span className="meta">Categories</span>
+        <span className="meta">{t('gen.categories')}</span>
         <div className="chips">
           {CATEGORIES.map((c) => (
             <button key={c} className={`chip${categories.includes(c) ? ' on' : ''}`} aria-pressed={categories.includes(c)}
-              onClick={() => { const next = toggle(categories, c); if (next.length) change(setCategories)(next) }}>{CATEGORY_LABEL[c]}</button>
+              onClick={() => { const next = toggle(categories, c); if (next.length) change(setCategories)(next) }}>{t(`category.${c}`)}</button>
           ))}
         </div>
 
-        <span className="meta">Focus areas (optional)</span>
+        <span className="meta">{t('gen.focus')}</span>
         <div className="chips">
           {AREAS.map((a) => (
-            <button key={a} className={`chip${focus.includes(a) ? ' on' : ''}`} aria-pressed={focus.includes(a)} onClick={() => change(setFocus)(toggle(focus, a))}>{a}</button>
+            <button key={a} className={`chip${focus.includes(a) ? ' on' : ''}`} aria-pressed={focus.includes(a)} onClick={() => change(setFocus)(toggle(focus, a))}>{t(`area.${a}`)}</button>
           ))}
         </div>
 
-        <span className="meta">Equipment you have</span>
+        <span className="meta">{t('gen.equipment')}</span>
         <div className="chips">
           {EQUIPMENT.map((q: Equipment) => (
-            <button key={q} className={`chip${owned.includes(q) ? ' on' : ''}`} aria-pressed={owned.includes(q)} onClick={() => { toggleEquipment(q); setEdited(null) }}>{EQUIPMENT_LABEL[q]}</button>
+            <button key={q} className={`chip${owned.includes(q) ? ' on' : ''}`} aria-pressed={owned.includes(q)} onClick={() => { toggleEquipment(q); setEdited(null) }}>{t(`equipment.${q}`)}</button>
           ))}
-          <span className="meta">{owned.length === 0 ? 'Bodyweight only' : ''}</span>
+          <span className="meta">{owned.length === 0 ? t('gen.bodyweightOnly') : ''}</span>
         </div>
 
-        <span className="meta">Intensity</span>
+        <span className="meta">{t('gen.intensity')}</span>
         <div className="chips">
           {INTENSITIES.map((i) => (
-            <button key={i} className={`chip${intensity === i ? ' on' : ''}`} aria-pressed={intensity === i} onClick={() => change(setIntensity)(i)}>{i}</button>
+            <button key={i} className={`chip${intensity === i ? ' on' : ''}`} aria-pressed={intensity === i} onClick={() => change(setIntensity)(i)}>{t(`intensity.${i}`)}</button>
           ))}
         </div>
 
         <label className="meta">
-          <input type="checkbox" checked={warmCool} onChange={(e) => change(setWarmCool)(e.target.checked)} /> Include warm-up and cool-down
+          <input type="checkbox" checked={warmCool} onChange={(e) => change(setWarmCool)(e.target.checked)} /> {t('gen.warmCool')}
         </label>
       </div>
 
-      <h2 className="meta">Preview · ~{formatDuration(seconds)}</h2>
-      {result.notes.map((n) => <p key={n} className="meta" role="status">{n}</p>)}
-      {items.length === 0 && <p className="empty">Nothing to show. Try other categories or equipment.</p>}
+      <h2 className="meta">{t('gen.preview', { duration: formatDuration(seconds) })}</h2>
+      {result.notes.map((n) => <p key={n.key} className="meta" role="status">{t(n.key, n.params && 'category' in n.params ? { category: t(`category.${n.params.category as Category}`).toLowerCase() } : n.params)}</p>)}
+      {items.length === 0 && <p className="empty">{t('gen.nothing')}</p>}
       <ol className="items">
         {items.map((item, idx) => {
-          const ex = EXERCISE_MAP.get(item.exerciseId)
-          if (!ex) return null
+          const raw = EXERCISE_MAP.get(item.exerciseId)
+          if (!raw) return null
+          const ex = lx(raw)
           return (
             <li key={`${item.exerciseId}-${idx}`} className="card item">
               <div className="item-head">
-                <Figure frames={ex.animation} props={ex.props} gear={ex.gear} label={`${ex.name} illustration`} className="thumb" />
+                <Figure frames={ex.animation} props={ex.props} gear={ex.gear} label={t('sessions.illustration', { name: ex.name })} className="thumb" />
                 <div className="ex-text">
                   <strong>{ex.name}</strong>
-                  <span className="meta">{CATEGORY_LABEL[ex.category]} · {describe(ex.mode, item.value, item.sets, ex.perSide)}</span>
+                  <span className="meta">{t(`category.${ex.category}`)} · {describe(ex.mode, item.value, item.sets, ex.perSide)}</span>
                 </div>
               </div>
-              <button className="link tiny" onClick={() => swap(idx)}>Swap</button>{' '}
-              <button className="link danger tiny" onClick={() => remove(idx)}>Remove</button>
+              <button className="link tiny" onClick={() => swap(idx)}>{t('gen.swap')}</button>{' '}
+              <button className="link danger tiny" onClick={() => remove(idx)}>{t('common.remove')}</button>
             </li>
           )
         })}
       </ol>
 
       <div className="bar">
-        <button className="btn" onClick={regenerate}><Icon name="refresh" size={16} />Regenerate</button>
-        <button className="btn primary" disabled={items.length === 0} onClick={save}>Save session</button>
+        <button className="btn" onClick={regenerate}><Icon name="refresh" size={16} />{t('gen.regenerate')}</button>
+        <button className="btn primary" disabled={items.length === 0} onClick={save}>{t('gen.save')}</button>
       </div>
     </div>
   )

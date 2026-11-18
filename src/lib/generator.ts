@@ -1,7 +1,8 @@
 import { EXERCISES } from '../data/exercises'
 import type { BodyArea, Category, Equipment, Exercise, Session, SessionItem } from '../data/types'
 import { buildSteps, estimateSeconds } from '../player/engine'
-import { CATEGORIES, CATEGORY_LABEL } from './progress'
+import type { MessageKey } from '../i18n/en'
+import { CATEGORIES } from './progress'
 
 export type Intensity = 'light' | 'moderate' | 'hard'
 export const INTENSITIES: readonly Intensity[] = ['light', 'moderate', 'hard']
@@ -34,7 +35,13 @@ export interface GenResult {
   targetSeconds: number
   /** True when `seconds` is within ±10% of the target. */
   withinTolerance: boolean
-  notes: string[]
+  notes: GenNote[]
+}
+
+/** A message for the UI to translate: catalog key plus its parameters. */
+export interface GenNote {
+  key: MessageKey
+  params?: Record<string, string | number>
 }
 
 export const SET_REST_SEC = 30
@@ -92,7 +99,7 @@ export function generateSession(opts: GenOptions): GenResult {
   const all = opts.pool ?? EXERCISES
   const rand = rng(opts.seed)
   const target = Math.round(opts.minutes * 60)
-  const notes: string[] = []
+  const notes: GenNote[] = []
   const usable = all.filter((e) => canDo(e, opts.equipment))
 
   // Selected categories get equal weight; warm-up/cool-down categories get a smaller share.
@@ -119,7 +126,7 @@ export function generateSession(opts: GenOptions): GenResult {
       const matching = left.filter((e) => focusScore(e, opts.focus) > 0)
       if (matching.length) cands = matching
       else if (opts.categories.includes(c) && taken(c).length === 0) {
-        notes.push(`No ${CATEGORY_LABEL[c].toLowerCase()} exercises match your focus; added general ones.`)
+        notes.push({ key: 'gen.note.noFocus', params: { category: c } })
       }
     }
     const covered = new Set(have.flatMap((e) => e.bodyAreas))
@@ -162,7 +169,7 @@ export function generateSession(opts: GenOptions): GenResult {
 
   const exercises = cats.flatMap(taken)
   if (exercises.length === 0) {
-    notes.push('No exercises match your equipment and category choices.')
+    notes.push({ key: 'gen.note.noMatch' })
     return { items: [], defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC, seconds: 0, targetSeconds: target, withinTolerance: false, notes }
   }
 
@@ -180,9 +187,7 @@ export function generateSession(opts: GenOptions): GenResult {
   const seconds = estimateItems(items, all)
   const withinTolerance = Math.abs(seconds - target) <= target * TOLERANCE
   if (!withinTolerance) {
-    notes.push(seconds < target
-      ? `Only enough matching exercises for about ${Math.round(seconds / 60)} min. Loosen the focus or equipment to fill more time.`
-      : `The shortest version of these exercises is about ${Math.round(seconds / 60)} min.`)
+    notes.push({ key: seconds < target ? 'gen.note.tooShort' : 'gen.note.tooLong', params: { minutes: Math.round(seconds / 60) } })
   }
   return { items, defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC, seconds, targetSeconds: target, withinTolerance, notes }
 }

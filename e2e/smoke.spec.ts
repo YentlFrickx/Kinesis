@@ -50,7 +50,7 @@ test('first launch → create → play → history → export/import', async ({ 
   await page.getByRole('button', { name: 'Delete session' }).click()
   await expect(cards).toHaveCount(starters)
   await page.locator('input[type=file]').setInputFiles({ name: 'kinesis-sessions.json', mimeType: 'application/json', buffer: Buffer.from(exported) })
-  await expect(page.getByRole('status')).toContainText(`Imported ${starters + 1} session(s)`)
+  await expect(page.getByRole('status')).toContainText(`Imported ${starters + 1} sessions.`)
   await expect(cards).toHaveCount(starters * 2 + 1)
 })
 

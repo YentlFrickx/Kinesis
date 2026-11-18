@@ -1,27 +1,35 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { EXERCISE_MAP } from '../data/exercises'
+import type { Exercise } from '../data/types'
 import { formatClock } from '../lib/format'
 import { go } from '../lib/router'
-import { beep, getAutoReps, isMuted, setAutoReps, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
+import { beep, canSpeak, getAutoReps, isMuted, setAutoReps, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
+import { getSpeechSettings } from '../player/speechSettings'
+import { useVoices } from '../player/useVoices'
+import { speaksCountdown, speaksReps } from '../player/voice'
+import { LOCALE_INFO, sessionLabel, useLocale, useLocalize, useT } from '../i18n'
 import { advance, buildSteps, goTo, initState, next, prev, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
 import { Icon } from '../components/Icon'
 import { Sheet } from '../components/Sheet'
 import { youllNeed } from '../store/equipment'
-import { MILESTONES, comebackDays, sessionCategories } from '../lib/progress'
+import { comebackDays, sessionCategories, type MilestoneId } from '../lib/progress'
 import { getHistory, recordCompletion } from '../store/history'
 import { syncMilestones } from '../store/milestones'
 import { getSession } from '../store/sessions'
 
-const sideLabel = (s: 'left' | 'right' | null) => (s ? `${s[0].toUpperCase()}${s.slice(1)} side` : '')
+type T = ReturnType<typeof useT>
 
-function announce(step: Step): string {
+const sideLabel = (s: 'left' | 'right' | null, t: T) => (s ? t(`side.${s}`) : '')
+
+function announce(step: Step, t: T, lx: (e: Exercise) => Exercise): string {
   if (step.kind === 'work') {
-    return `${step.exercise.name}${step.side ? `, ${step.side} side` : ''}`
+    const name = lx(step.exercise).name
+    return step.side ? t('player.say.workSide', { name, side: t(`side.${step.side}Short`) }) : t('player.say.work', { name })
   }
-  if (step.reason === 'switch') return 'Switch sides'
-  if (step.reason === 'set') return 'Rest'
-  return `Get ready. ${step.next.name}`
+  if (step.reason === 'switch') return t('player.say.switch')
+  if (step.reason === 'set') return t('player.say.rest')
+  return t('player.say.getReady', { name: lx(step.next).name })
 }
 
 function useWakeLock(active: boolean) {
@@ -40,6 +48,11 @@ function useWakeLock(active: boolean) {
 }
 
 export function Player({ id }: { id: string }) {
+  const t = useT()
+  const lx = useLocalize()
+  const locale = useLocale()
+  const { status: voiceStatus } = useVoices(locale)
+  const interrupt = useRef(false) // set when the user navigates, so the new cue cuts off a stale one
   const session = getSession(id)
   const steps = useMemo(() => (session ? buildSteps(session, (i) => EXERCISE_MAP.get(i)) : []), [session])
   const [autoReps, setAutoRepsState] = useState(getAutoReps)
@@ -51,6 +64,7 @@ export function Player({ id }: { id: string }) {
   const activeMs = useRef(0)
   const recorded = useRef(false)
   const [reward, setReward] = useState<{ milestones: string[]; comeback: number } | null>(null)
+  const nav = (fn: () => void) => { interrupt.current = true; fn() }
 
   useWakeLock(!state.finished)
 
@@ -85,7 +99,7 @@ export function Player({ id }: { id: string }) {
       if (!recorded.current && session) {
         recorded.current = true
         const entry = recordCompletion(
-          session.id, session.name, activeMs.current / 1000,
+          session.id, sessionLabel(session.id, session.name), activeMs.current / 1000,
           sessionCategories(session, (i) => EXERCISE_MAP.get(i)?.category),
         )
         setReward({
@@ -94,13 +108,14 @@ export function Player({ id }: { id: string }) {
         })
       }
       beep(660, 200); setTimeout(() => beep(880, 300), 250)
-      speak('Session complete. Well done!')
+      speak(t('player.completeSpoken'), { interrupt: true })
       vibrate([200, 100, 200, 100, 400])
       return
     }
     if (!step) return
     beep(step.kind === 'work' ? 1040 : 520, 200)
-    speak(announce(step))
+    speak(announce(step, t, lx), { priority: 'step', interrupt: interrupt.current })
+    interrupt.current = false
     vibrate(step.kind === 'work' ? 200 : 80)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.index, state.finished])
@@ -111,7 +126,12 @@ export function Player({ id }: { id: string }) {
     const sec = Math.ceil(state.remainingMs / 1000)
     if (sec !== lastSec.current) {
       lastSec.current = sec
-      if (sec >= 1 && sec <= 3) { beep(760, 90); vibrate(40) }
+      if (sec >= 1 && sec <= 3) {
+        // A spoken number replaces the beep when it can be heard; otherwise fall back to the beep.
+        const spoken = speaksCountdown(getSpeechSettings().verbosity) && canSpeak() && speak(String(sec), { priority: 'count' })
+        if (!spoken) beep(760, 90)
+        vibrate(40)
+      }
     }
   }, [state.remainingMs, state.finished, paused])
 
@@ -119,11 +139,11 @@ export function Player({ id }: { id: string }) {
   const lastRep = useRef(0)
   useEffect(() => { lastRep.current = 0 }, [state.index])
   useEffect(() => {
-    if (!autoReps || paused || state.finished || !step || step.kind !== 'work' || step.mode !== 'reps') return
+    if (!speaksReps(getSpeechSettings().verbosity) || !autoReps || paused || state.finished || !step || step.kind !== 'work' || step.mode !== 'reps') return
     const done = step.value - Math.ceil(state.remainingMs / (SECONDS_PER_REP * 1000))
     if (done > lastRep.current) {
       lastRep.current = done
-      if (done < step.value) speak(String(done))
+      if (done < step.value) speak(String(done), { priority: 'count' })
     }
   }, [state.remainingMs, state.index, state.finished, autoReps, paused, step])
 
@@ -144,8 +164,8 @@ export function Player({ id }: { id: string }) {
   if (!session || steps.length === 0) {
     return (
       <div>
-        <p className="empty">Nothing to play. Add exercises to this session first.</p>
-        <button className="btn" onClick={() => go('/')}>Back</button>
+        <p className="empty">{t('player.nothing')}</p>
+        <button className="btn" onClick={() => go('/')}>{t('common.back')}</button>
       </div>
     )
   }
@@ -154,50 +174,54 @@ export function Player({ id }: { id: string }) {
     return (
       <div className="player done">
         <div className="done-mark" aria-hidden="true"><Icon name="check" size={44} /></div>
-        <h1>Session complete</h1>
-        <p className="meta">{session.name}</p>
+        <h1>{t('player.complete')}</h1>
+        <p className="meta">{sessionLabel(session.id, session.name)}</p>
         {reward && (reward.comeback > 0 || reward.milestones.length > 0) && (
           <div className="reward" role="status">
-            {reward.comeback > 0 && <p>Welcome back! Great to see you again.</p>}
-            {reward.milestones.map((id) => {
-              const m = MILESTONES.find((x) => x.id === id)
-              return m && <p key={id}><Icon name="award" size={18} /><span><strong>{m.title}</strong> unlocked</span></p>
-            })}
+            {reward.comeback > 0 && <p>{t('player.welcomeBack')}</p>}
+            {(reward.milestones as MilestoneId[]).map((id) => (
+              <p key={id}><Icon name="award" size={18} /><span>{t('player.unlocked', { title: t(`milestone.${id}.title`) })}</span></p>
+            ))}
           </div>
         )}
-        <button className="btn primary wide" onClick={() => go('/')}>Done</button>
-        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0, autoReps)); setPaused(false) }}>Do it again</button>
+        <button className="btn primary wide" onClick={() => go('/')}>{t('common.done')}</button>
+        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0, autoReps)); setPaused(false) }}>{t('player.again')}</button>
       </div>
     )
   }
 
-  const exercise = step.kind === 'work' ? step.exercise : step.next
+  const exercise = lx(step.kind === 'work' ? step.exercise : step.next)
   const isRepWork = step.kind === 'work' && step.mode === 'reps'
   const total = steps.length
   const heading =
     step.kind === 'work'
-      ? step.exercise.name
+      ? exercise.name
       : step.reason === 'switch'
-        ? 'Switch sides'
+        ? t('player.heading.switch')
         : step.reason === 'set'
-          ? 'Rest'
-          : step.reason === 'start' ? 'Get ready' : 'Next up'
+          ? t('player.heading.set')
+          : step.reason === 'start' ? t('player.heading.start') : t('player.heading.next')
 
   const segments = session.items.map((_, i) => {
     const idx = steps.map((x, n) => (x.itemIndex === i ? n : -1)).filter((n) => n >= 0)
     if (idx.length === 0) return 0
     return Math.min(1, Math.max(0, (state.index - idx[0]) / idx.length))
   })
-  const eyebrow = step.kind === 'work' ? 'Exercise' : step.reason === 'switch' ? 'Change side' : step.reason === 'start' ? 'Starting soon' : 'Recover'
+  const eyebrow = step.kind === 'work' ? t('player.eyebrow.work') : step.reason === 'switch' ? t('player.eyebrow.switch') : step.reason === 'start' ? t('player.eyebrow.start') : t('player.eyebrow.rest')
 
   return (
     <div className="player">
       <div className="player-top">
-        <button className="icon-btn" aria-label="End session" onClick={() => setSheet('quit')}><Icon name="x" /></button>
-        <span className="meta" aria-label={`Step ${state.index + 1} of ${total}`}>{state.index + 1} / {total}</span>
-        <button className="icon-btn" aria-label="Settings" onClick={() => setSheet('settings')}><Icon name="sliders" /></button>
+        <button className="icon-btn" aria-label={t('player.end')} onClick={() => setSheet('quit')}><Icon name="x" /></button>
+        <span className="meta" aria-label={t('player.stepOf', { n: state.index + 1, total })}>{state.index + 1} / {total}</span>
+        <button className="icon-btn" aria-label={t('player.settings')} onClick={() => setSheet('settings')}><Icon name="sliders" /></button>
       </div>
-      <ol className="segs" aria-label="Session progress">
+      {!muted && (voiceStatus === 'no-voice' || voiceStatus === 'unsupported') && (
+        <p className="meta speech-hint" role="status">
+          {t(voiceStatus === 'no-voice' ? 'voice.hint.none' : 'voice.hint.unsupported', { language: LOCALE_INFO[locale].native })}
+        </p>
+      )}
+      <ol className="segs" aria-label={t('player.progress')}>
         {segments.map((f, i) => <li key={i}><i style={{ width: `${f * 100}%` }} /></li>)}
       </ol>
 
@@ -205,45 +229,45 @@ export function Player({ id }: { id: string }) {
         <div className="eyebrow">{eyebrow}</div>
         <h1 className="player-title">{heading}</h1>
         {step.kind === 'rest' && step.reason === 'start' && youllNeed(session) && <p className="sub">{youllNeed(session)}</p>}
-        {step.kind === 'rest' && <p className="sub">Up next: <strong>{step.next.name}</strong>{step.side ? ` · ${sideLabel(step.side)}` : ''}</p>}
+        {step.kind === 'rest' && <p className="sub">{t('player.upNext', { name: '\u0000' }).split('\u0000').flatMap((part, i) => (i === 0 ? [part] : [<strong key="n">{lx(step.next).name}</strong>, part]))}{step.side ? ` · ${sideLabel(step.side, t)}` : ''}</p>}
         {step.kind === 'work' && (
           <p className="sub">
-            {step.sets > 1 ? `Set ${step.set} of ${step.sets}` : ''}
+            {step.sets > 1 ? t('player.setOf', { set: step.set, sets: step.sets }) : ''}
             {step.sets > 1 && step.side ? ' · ' : ''}
-            {sideLabel(step.side)}
+            {sideLabel(step.side, t)}
           </p>
         )}
       </div>
 
       <div className={`player-stage${step.kind === 'rest' ? ' rest' : ''}`}>
-        <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} label={`${exercise.name} animation`} className="player-figure" />
+        <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} label={t('sessions.animation', { name: exercise.name })} className="player-figure" />
       </div>
 
       <div className="big" aria-live="off">
-        {isRepWork ? <>{step.value}<small>reps</small></> : formatClock(state.remainingMs / 1000)}
+        {isRepWork ? <>{step.value}<small>{t('player.repsLabel')}</small></> : formatClock(state.remainingMs / 1000)}
       </div>
 
       <div className="controls">
-        <button className="icon-btn" aria-label="Back" onClick={() => setState(prev(steps, state, autoReps))} disabled={state.index === 0}><Icon name="prev" /></button>
+        <button className="icon-btn" aria-label={t('player.prev')} onClick={() => nav(() => setState(prev(steps, state, autoReps)))} disabled={state.index === 0}><Icon name="prev" /></button>
         {isRepWork && !autoReps ? (
-          <button className="big-btn" onClick={() => setState(next(steps, state, autoReps))}><Icon name="check" />Done</button>
+          <button className="big-btn" onClick={() => nav(() => setState(next(steps, state, autoReps)))}><Icon name="check" />{t('common.done')}</button>
         ) : (
-          <button className="big-btn" onClick={() => setPaused((p) => !p)}>{paused ? <><Icon name="play" size={20} />Resume</> : <><Icon name="pause" size={20} />Pause</>}</button>
+          <button className="big-btn" onClick={() => setPaused((p) => !p)}>{paused ? <><Icon name="play" size={20} />{t('player.resume')}</> : <><Icon name="pause" size={20} />{t('player.pause')}</>}</button>
         )}
-        <button className="icon-btn" aria-label="Skip" onClick={() => setState(next(steps, state, autoReps))}><Icon name="next" /></button>
+        <button className="icon-btn" aria-label={t('player.skip')} onClick={() => nav(() => setState(next(steps, state, autoReps)))}><Icon name="next" /></button>
       </div>
 
       {sheet === 'quit' && (
-        <Sheet title="End this session?" onClose={() => setSheet(null)}>
-          <p className="meta">Your progress so far is not saved.</p>
-          <button className="btn primary" onClick={() => setSheet(null)}>Keep going</button>
-          <button className="btn" onClick={() => go('/')}>End session</button>
+        <Sheet title={t('player.quitTitle')} onClose={() => setSheet(null)}>
+          <p className="meta">{t('player.quitBody')}</p>
+          <button className="btn primary" onClick={() => setSheet(null)}>{t('player.keepGoing')}</button>
+          <button className="btn" onClick={() => go('/')}>{t('player.end')}</button>
         </Sheet>
       )}
       {sheet === 'settings' && (
-        <Sheet title="Sound and pacing" onClose={() => setSheet(null)}>
-          <button className="opt" role="switch" aria-checked={!muted} onClick={toggleMute}><Icon name={muted ? 'mute' : 'vol'} size={20} />Sound cues<span className={`sw${muted ? '' : ' on'}`} /></button>
-          <button className="opt" role="switch" aria-checked={autoReps} onClick={toggleAutoReps}><Icon name="repeat" size={20} />Auto-pace reps<span className={`sw${autoReps ? ' on' : ''}`} /></button>
+        <Sheet title={t('player.soundTitle')} onClose={() => setSheet(null)}>
+          <button className="opt" role="switch" aria-checked={!muted} onClick={toggleMute}><Icon name={muted ? 'mute' : 'vol'} size={20} />{t('player.sound')}<span className={`sw${muted ? '' : ' on'}`} /></button>
+          <button className="opt" role="switch" aria-checked={autoReps} onClick={toggleAutoReps}><Icon name="repeat" size={20} />{t('player.autoReps')}<span className={`sw${autoReps ? ' on' : ''}`} /></button>
         </Sheet>
       )}
     </div>

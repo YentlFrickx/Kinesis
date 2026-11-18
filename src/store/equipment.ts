@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { EXERCISE_MAP } from '../data/exercises'
-import { EQUIPMENT, EQUIPMENT_LABEL, type Equipment, type Exercise, type Session } from '../data/types'
+import { t } from '../i18n'
+import { EQUIPMENT, type Equipment, type Exercise, type Session } from '../data/types'
 
 const KEY = 'rw.equipment.v1'
 
@@ -42,5 +43,5 @@ export const sessionEquipment = (s: Session): Equipment[] =>
 /** "You'll need: Dumbbells, Resistance band", or null when the session is bodyweight only. */
 export const youllNeed = (s: Session): string | null => {
   const need = sessionEquipment(s)
-  return need.length ? `You'll need: ${need.map((q) => EQUIPMENT_LABEL[q]).join(', ')}` : null
+  return need.length ? t('equipment.youllNeed', { list: need.map((q) => t(`equipment.${q}`)).join(', ') }) : null
 }

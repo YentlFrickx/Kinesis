@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HistoryEntry } from '../store/history'
-import { balanceNudge, comebackDays, earnedMilestones, heatmap, sessionsThisWeek, startOfWeek, weekDays, weeklyBalance } from './progress'
+import { missingCategories, comebackDays, earnedMilestones, heatmap, sessionsThisWeek, startOfWeek, weekDays, weeklyBalance } from './progress'
 
 // Wed 2026-11-18 12:00 local
 const NOW = new Date(2026, 10, 18, 12).getTime()
@@ -78,10 +78,10 @@ describe('balance', () => {
     ]
     expect(weeklyBalance(e, NOW)).toEqual({ strength: 7, stretch: 1, mobility: 3 })
   })
-  it('nudges only about missing categories, and not on an empty week', () => {
-    expect(balanceNudge({ strength: 0, stretch: 0, mobility: 0 })).toBeNull()
-    expect(balanceNudge({ strength: 3, stretch: 1, mobility: 1 })).toBeNull()
-    expect(balanceNudge({ strength: 3, stretch: 0, mobility: 0 })).toContain('stretching or mobility')
-    expect(balanceNudge({ strength: 3, stretch: 2, mobility: 0 })).toContain('mobility')
+  it('reports only missing categories, and none on an empty week', () => {
+    expect(missingCategories({ strength: 0, stretch: 0, mobility: 0 })).toEqual([])
+    expect(missingCategories({ strength: 3, stretch: 1, mobility: 1 })).toEqual([])
+    expect(missingCategories({ strength: 3, stretch: 0, mobility: 0 })).toEqual(['stretch', 'mobility'])
+    expect(missingCategories({ strength: 3, stretch: 2, mobility: 0 })).toEqual(['mobility'])
   })
 })

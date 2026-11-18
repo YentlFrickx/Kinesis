@@ -78,10 +78,10 @@ export function deleteSession(id: string) {
   commit(sessions.filter((s) => s.id !== id))
 }
 
-export function duplicateSession(id: string): Session | undefined {
+export function duplicateSession(id: string, name?: string): Session | undefined {
   const src = getSession(id)
   if (!src) return
-  const copy: Session = { ...src, id: newId(), name: `${src.name} (copy)`, items: src.items.map((i) => ({ ...i })) }
+  const copy: Session = { ...src, id: newId(), name: name ?? `${src.name} (copy)`, items: src.items.map((i) => ({ ...i })) }
   commit([...sessions, copy])
   return copy
 }
