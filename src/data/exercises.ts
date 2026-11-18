@@ -62,6 +62,12 @@ const swingSupport: P = {
   elbowF: [114, 56], handF: [128, 54], elbowB: [86, 56], handB: [72, 54],
 }
 const calfRaiseArms: P = { ...handsOnHips }
+const quadruped: P = {
+  head: [40, 84], neck: [56, 88], hip: [104, 90],
+  kneeF: [104, 122], ankleF: [130, 124], toeF: [138, 124],
+  kneeB: [106, 122], ankleB: [132, 124], toeB: [140, 124],
+  elbowF: [56, 108], handF: [56, 124], elbowB: [58, 108], handB: [58, 124],
+}
 
 // ---- helpers for scenes with a box/step (shrink the figure so everything fits) ----
 const scalePose = (k: number, p: Pose): Pose => {
@@ -761,6 +767,201 @@ export const EXERCISES: Exercise[] = [
       },
     ],
   },
+  // ---------------- added: quadruped, wall work, core, spine ----------------
+  {
+    id: 'bird-dog', name: 'Bird dog', category: 'strength',
+    bodyAreas: ['core', 'glutes'],
+    mode: 'reps', defaultValue: 8, defaultSets: 2, perSide: false,
+    instructions: [
+      'Start on hands and knees, wrists under shoulders and knees under hips, back flat.',
+      'Reach one arm forward and the opposite leg back until both are in line with your torso.',
+      'Pause without rotating the hips or arching your back, then return and switch. One rep = one extension on each side.',
+    ],
+    animation: [
+      { pose: pose(quadruped), ms: 900 },
+      {
+        pose: pose({
+          ...quadruped, elbowB: [38, 88], handB: [18, 86],
+          kneeF: [130, 90], ankleF: [158, 90], toeF: [164, 92],
+        }), ms: 1300,
+      },
+      { pose: pose(quadruped), ms: 900 },
+      {
+        pose: pose({
+          ...quadruped, elbowF: [38, 88], handF: [18, 86],
+          kneeB: [132, 90], ankleB: [160, 90], toeB: [166, 92],
+        }), ms: 1300,
+      },
+    ],
+  },
+  {
+    id: 'donkey-kick', name: 'Donkey kick', category: 'strength',
+    bodyAreas: ['glutes', 'hamstrings'],
+    mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: true,
+    instructions: [
+      'Start on hands and knees with a flat back and braced core.',
+      'Keeping the knee bent at 90 degrees, press the sole of one foot toward the ceiling until the thigh is level with your back.',
+      'Squeeze the glute at the top without arching your lower back, then lower with control.',
+    ],
+    animation: [
+      { pose: pose(quadruped), ms: 1000 },
+      {
+        pose: pose({ ...quadruped, kneeF: [132, 92], ankleF: [136, 66], toeF: [142, 64] }), ms: 1000,
+      },
+    ],
+  },
+  {
+    id: 'wall-sit', name: 'Wall sit', category: 'strength',
+    bodyAreas: ['quads', 'glutes'],
+    mode: 'time', defaultValue: 30, defaultSets: 3, perSide: false,
+    instructions: [
+      'Lean your back flat against a wall and walk your feet out until your knees are bent to about 90 degrees.',
+      'Keep your knees over your ankles and your weight through your heels.',
+      'Hold, breathing steadily. Slide up a little to make it easier.',
+    ],
+    props: [{ x: 50, y: 10, w: 6, h: 116 }],
+    animation: [
+      {
+        pose: pose({
+          head: [63, 38], neck: [62, 52], hip: [64, 96],
+          kneeF: [104, 98], kneeB: [104, 98], ankleF: [104, 126], ankleB: [104, 126],
+          elbowF: [76, 78], handF: [90, 94], elbowB: [76, 78], handB: [90, 94],
+        }), ms: 1800,
+      },
+      {
+        pose: pose({
+          head: [63, 36], neck: [62, 50], hip: [64, 94],
+          kneeF: [104, 96], kneeB: [104, 96], ankleF: [104, 126], ankleB: [104, 126],
+          elbowF: [76, 76], handF: [90, 92], elbowB: [76, 76], handB: [90, 92],
+        }), ms: 1800,
+      },
+    ],
+  },
+  {
+    id: 'hollow-hold', name: 'Hollow hold', category: 'strength',
+    bodyAreas: ['core'],
+    mode: 'time', defaultValue: 20, defaultSets: 3, perSide: false,
+    instructions: [
+      'Lie on your back, arms overhead and legs straight, and press your lower back into the floor.',
+      'Lift your shoulders and legs a few centimetres off the floor so your body forms a shallow banana shape.',
+      'Hold. Bend your knees or lower your arms to make it easier, and stop if your lower back arches.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...supine, elbowF: [30, 112], handF: [12, 108], elbowB: [30, 112], handB: [12, 108],
+          kneeF: [112, 122], ankleF: [138, 124], toeF: [144, 123],
+          kneeB: [112, 122], ankleB: [138, 124], toeB: [144, 123],
+        }), ms: 1200,
+      },
+      {
+        pose: pose({
+          ...supine, head: [38, 104], neck: [48, 110],
+          elbowF: [30, 102], handF: [12, 96], elbowB: [30, 102], handB: [12, 96],
+          kneeF: [112, 112], ankleF: [138, 104], toeF: [144, 102],
+          kneeB: [112, 112], ankleB: [138, 104], toeB: [144, 102],
+        }), ms: 1200,
+      },
+    ],
+  },
+  {
+    id: 'tibialis-raise', name: 'Wall tibialis raise', category: 'strength',
+    bodyAreas: ['calves', 'feet'],
+    mode: 'reps', defaultValue: 15, defaultSets: 3, perSide: false,
+    instructions: [
+      'Lean your back against a wall with your feet about a foot and a half in front of you.',
+      'Keeping your heels on the floor, pull your toes up toward your shins as far as you can.',
+      'Lower slowly. Strengthens the shin muscles that help absorb impact and ease shin splints.',
+    ],
+    props: [{ x: 48, y: 10, w: 6, h: 116 }],
+    animation: [
+      {
+        pose: pose({
+          head: [62, 32], neck: [64, 46], hip: [70, 84],
+          kneeF: [84, 106], kneeB: [84, 106], ankleF: [96, 126], ankleB: [96, 126],
+          toeF: [108, 126], toeB: [108, 126],
+          elbowF: [68, 66], handF: [66, 84], elbowB: [68, 66], handB: [66, 84],
+        }), ms: 1100,
+      },
+      {
+        pose: pose({
+          head: [62, 32], neck: [64, 46], hip: [70, 84],
+          kneeF: [84, 106], kneeB: [84, 106], ankleF: [96, 126], ankleB: [96, 126],
+          toeF: [106, 108], toeB: [106, 108],
+          elbowF: [68, 66], handF: [66, 84], elbowB: [68, 66], handB: [66, 84],
+        }), ms: 1100,
+      },
+    ],
+  },
+  // ---------------- added: mobility and stretches ----------------
+  {
+    id: 'cat-cow', name: 'Cat-cow', category: 'mobility',
+    bodyAreas: ['core', 'full body'],
+    mode: 'reps', defaultValue: 10, defaultSets: 1, perSide: false,
+    instructions: [
+      'Start on hands and knees, wrists under shoulders and knees under hips.',
+      'Cow: breathe in, drop your belly and lift your chest and tailbone.',
+      'Cat: breathe out, round your spine toward the ceiling and tuck your chin. One rep = cow then cat.',
+    ],
+    animation: [
+      { pose: pose({ ...quadruped, head: [42, 76], neck: [56, 84], hip: [104, 94] }), ms: 1800 },
+      { pose: pose({ ...quadruped, head: [44, 104], neck: [56, 94], hip: [104, 86] }), ms: 1800 },
+    ],
+  },
+  {
+    id: 'cobra-stretch', name: 'Cobra stretch', category: 'stretch',
+    bodyAreas: ['core', 'hips'],
+    mode: 'time', defaultValue: 20, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie face down with your hands under your shoulders and legs relaxed behind you.',
+      'Press through your hands to lift your chest while your hips stay on the floor.',
+      'Keep your shoulders away from your ears and stop where it feels comfortable, with no pinching in the lower back.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          head: [28, 118], neck: [42, 120], hip: [95, 122],
+          kneeF: [118, 124], ankleF: [142, 124], toeF: [148, 124],
+          kneeB: [118, 124], ankleB: [142, 124], toeB: [148, 124],
+          elbowF: [50, 114], handF: [44, 124], elbowB: [50, 114], handB: [44, 124],
+        }), ms: 2000,
+      },
+      {
+        pose: pose({
+          head: [46, 90], neck: [58, 100], hip: [96, 122],
+          kneeF: [118, 124], ankleF: [142, 124], toeF: [148, 124],
+          kneeB: [118, 124], ankleB: [142, 124], toeB: [148, 124],
+          elbowF: [64, 112], handF: [60, 124], elbowB: [64, 112], handB: [60, 124],
+        }), ms: 2000,
+      },
+    ],
+  },
+  {
+    id: 'knee-to-chest-stretch', name: 'Knee-to-chest stretch', category: 'stretch',
+    bodyAreas: ['glutes', 'hips'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Lie on your back with one leg straight on the floor.',
+      'Hug the other knee toward your chest with both hands, keeping your head and lower back down.',
+      'Hold and breathe. You should feel it in the glute and lower back of the hugged leg.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...supine, kneeB: [115, 122], ankleB: [145, 123], toeB: [151, 121],
+          kneeF: [105, 94], ankleF: [122, 110], toeF: [126, 114],
+          elbowF: [74, 106], handF: [100, 96], elbowB: [74, 106], handB: [100, 96],
+        }), ms: 2000,
+      },
+      {
+        pose: pose({
+          ...supine, kneeB: [115, 122], ankleB: [145, 123], toeB: [151, 121],
+          kneeF: [70, 98], ankleF: [90, 106], toeF: [94, 110],
+          elbowF: [62, 108], handF: [76, 100], elbowB: [62, 108], handB: [76, 100],
+        }), ms: 2000,
+      },
+    ],
+  },
 ]
 
-export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
+export const EXERCISE_MAP =new Map(EXERCISES.map((e) => [e.id, e]))
