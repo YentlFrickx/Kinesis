@@ -3,6 +3,7 @@ import { Figure } from '../animation/Figure'
 import { EXERCISES } from '../data/exercises'
 import { EQUIPMENT, type Category, type Exercise } from '../data/types'
 import { useLocalize, useT } from '../i18n'
+import { Tips } from '../components/Tips'
 import { describe } from '../lib/format'
 import { canDo, toggleEquipment, useOwnedEquipment } from '../store/equipment'
 
@@ -82,6 +83,7 @@ export function ExerciseBrowser({ onAdd, addedCount }: Props) {
                   <Figure frames={e.animation} props={e.props} gear={e.gear} label={t('sessions.animation', { name: e.name })} />
                   <p className="tags">{e.bodyAreas.map((a) => t(`area.${a}`)).join(' · ')}</p>
                   <ol>{e.instructions.map((s) => <li key={s}>{s}</li>)}</ol>
+                  <Tips exercise={e} />
                 </div>
               )}
             </li>

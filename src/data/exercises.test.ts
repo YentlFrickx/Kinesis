@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EXERCISES } from './exercises'
+import { EXERCISES, EXERCISE_MAP } from './exercises'
 
 describe('exercises', () => {
   it('have unique ids', () => {
@@ -40,6 +40,24 @@ describe('exercise data integrity', () => {
       expect(e.defaultValue, e.id).toBeGreaterThan(0)
       expect(e.defaultSets, e.id).toBeGreaterThan(0)
       expect(e.instructions.length, e.id).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('coaching content', () => {
+  it('gives every exercise cues and mistakes', () => {
+    for (const e of EXERCISES) {
+      expect(e.cues?.length, e.id).toBeGreaterThan(0)
+      expect(e.commonMistakes?.length, e.id).toBeGreaterThan(0)
+    }
+  })
+  it('points easier/harder at existing, different exercises', () => {
+    for (const e of EXERCISES) {
+      for (const id of [e.easier, e.harder]) {
+        if (id === undefined) continue
+        expect(EXERCISE_MAP.has(id), `${e.id} -> ${id}`).toBe(true)
+        expect(id, e.id).not.toBe(e.id)
+      }
     }
   })
 })

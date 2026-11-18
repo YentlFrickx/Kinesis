@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
+import { Tips } from '../components/Tips'
 import { sessionLabel, useLocalize, useT } from '../i18n'
 import { EXERCISE_MAP } from '../data/exercises'
-import type { Exercise, Session, SessionItem } from '../data/types'
+import { MAX_NOTE_LENGTH, type Exercise, type Session, type SessionItem } from '../data/types'
 import { describe, formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
@@ -130,6 +131,9 @@ export function Editor({ id }: { id: string }) {
                   )}
                 </div>
               </div>
+              <input className="item-note" value={item.note ?? ''} maxLength={MAX_NOTE_LENGTH} placeholder={t('editor.notePlaceholder')} aria-label={`${ex.name} ${t('editor.note')}`}
+                onChange={(e) => setItem(idx, { note: e.target.value || undefined })} />
+              <Tips exercise={ex} />
               <button className="link danger tiny" onClick={() => remove(idx)}>{t('common.remove')}</button>
             </li>
           )

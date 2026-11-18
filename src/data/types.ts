@@ -18,6 +18,12 @@ export interface Exercise {
   /** Done on each side in turn (left, then right). */
   perSide: boolean
   instructions: string[]
+  /** Short "feel it in…" / form cues. */
+  cues?: string[]
+  commonMistakes?: string[]
+  /** Ids of a regression / progression exercise. */
+  easier?: string
+  harder?: string
   animation: Keyframe[]
   props?: Prop[]
   /** Small equipment needed. Omitted = bodyweight. */
@@ -31,7 +37,11 @@ export interface SessionItem {
   value: number
   sets: number
   restAfterSec?: number
+  /** Free-text user note, e.g. "use the 8 kg dumbbell". */
+  note?: string
 }
+
+export const MAX_NOTE_LENGTH = 200
 
 export interface Session {
   id: string

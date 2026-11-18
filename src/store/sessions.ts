@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
-import type { Session, SessionItem } from '../data/types'
+import { MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
 
 const KEY = 'rw.sessions.v1'
 const VERSION = 1
@@ -91,6 +91,12 @@ export const exportJson = () => JSON.stringify({ version: VERSION, sessions }, n
 const num = (v: unknown, min: number, max: number, fallback: number) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback
 
+/** A trimmed, length-clamped note as an optional field (empty or non-string notes are dropped). */
+const cleanNote = (v: unknown): { note?: string } => {
+  const note = typeof v === 'string' ? v.trim().slice(0, MAX_NOTE_LENGTH) : ''
+  return note ? { note } : {}
+}
+
 /** Imports sessions from JSON text. Returns the number added, or throws on invalid input. */
 export function importJson(text: string): number {
   const data = JSON.parse(text)
@@ -105,6 +111,7 @@ export function importJson(text: string): number {
         value: num(i.value, 1, 3600, 30),
         sets: num(i.sets, 1, 20, 1),
         ...(i.restAfterSec === undefined ? {} : { restAfterSec: num(i.restAfterSec, 0, 600, 0) }),
+        ...cleanNote(i.note),
       }))
     added.push({
       id: newId(),

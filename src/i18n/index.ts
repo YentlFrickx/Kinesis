@@ -2,7 +2,7 @@ import { useCallback, useSyncExternalStore } from 'react'
 import type { Exercise } from '../data/types'
 import { DEFAULT_LOCALE, LOCALES, LOCALE_INFO, detectLocale, matchLocale, starterName, translate, type Locale, type Params, type TranslationKey } from './core'
 import type { MessageKey } from './en'
-import { EXERCISE_TEXT } from './exerciseText'
+import { COACHING_TEXT, EXERCISE_TEXT } from './exerciseText'
 
 export { LOCALES, LOCALE_INFO, type Locale, type MessageKey, type TranslationKey }
 
@@ -59,7 +59,10 @@ export function localizeExercise(e: Exercise, l: Locale = locale): Exercise {
   let byId = cache.get(l)
   if (!byId) cache.set(l, (byId = new Map()))
   let out = byId.get(e.id)
-  if (!out) byId.set(e.id, (out = { ...e, name: text.name, instructions: text.instructions }))
+  if (!out) {
+    const c = COACHING_TEXT[l]?.[e.id]
+    byId.set(e.id, (out = { ...e, name: text.name, instructions: text.instructions, ...(c && e.cues ? { cues: c.cues, commonMistakes: c.commonMistakes } : {}) }))
+  }
   return out
 }
 
