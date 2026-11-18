@@ -18,6 +18,9 @@ import { comebackDays, sessionCategories, type MilestoneId } from '../lib/progre
 import { getHistory, recordCompletion } from '../store/history'
 import { syncMilestones } from '../store/milestones'
 import { getSession } from '../store/sessions'
+import { showToast } from '../store/toast'
+import { copyText } from '../lib/clipboard'
+import { snapshotItems, workoutText } from '../lib/workoutText'
 
 type T = ReturnType<typeof useT>
 
@@ -101,7 +104,7 @@ export function Player({ id }: { id: string }) {
         recorded.current = true
         const entry = recordCompletion(
           session.id, sessionLabel(session.id, session.name), activeMs.current / 1000,
-          sessionCategories(session, (i) => EXERCISE_MAP.get(i)?.category),
+          sessionCategories(session, (i) => EXERCISE_MAP.get(i)?.category), snapshotItems(session.items),
         )
         setReward({
           milestones: syncMilestones(),
@@ -191,6 +194,10 @@ export function Player({ id }: { id: string }) {
           </div>
         )}
         <button className="btn primary wide" onClick={() => go('/')}>{t('common.done')}</button>
+        <button className="btn wide" onClick={async () => {
+          const text = workoutText(sessionLabel(session.id, session.name), session.items, (i) => { const e = EXERCISE_MAP.get(i); return e && lx(e) }, t)
+          showToast(t((await copyText(text)) ? 'share.copied' : 'share.failed'))
+        }}><Icon name="copy" size={18} />{t('share.copy')}</button>
         <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0, autoReps)); setPaused(false) }}>{t('player.again')}</button>
       </div>
     )

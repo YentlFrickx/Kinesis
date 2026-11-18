@@ -15,6 +15,7 @@ export const en = {
   'common.new': 'New',
   'common.edit': 'Edit',
   'common.duplicate': 'Duplicate',
+  'common.copy': 'Copy',
   'common.delete': 'Delete',
   'common.test': 'Test',
   'common.reset': 'reset',
@@ -27,6 +28,18 @@ export const en = {
   'unit.reps': '{n} reps',
   'unit.perSide': '/ side',
   'unit.sets': '{n} ×',
+
+  // plain-text summary for pasting (Strava etc.)
+  'share.sets_one': '{count} set',
+  'share.sets_other': '{count} sets',
+  'share.reps_one': '{count} rep',
+  'share.reps_other': '{count} reps',
+  'share.seconds': '{n} sec',
+  'share.eachSide': 'each side',
+  'share.copy': 'Copy for Strava',
+  'share.copied': 'Copied. Paste it into your Strava workout.',
+  'share.failed': 'Couldn’t copy to the clipboard',
+  'share.copyAria': 'Copy {name} as text',
   'dur.approx': '~{duration}',
 
   // categories, areas, equipment, intensity
