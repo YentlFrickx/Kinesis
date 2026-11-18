@@ -1,0 +1,13 @@
+:root { --bg:#f6f7f9; --fg:#14181f; --card:#fff; --accent:#e4572e; --muted:#667085; }
+@media (prefers-color-scheme: dark) { :root { --bg:#101319; --fg:#eef1f5; --card:#1a1f29; --muted:#98a2b3; } }
+body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,sans-serif; }
+main { max-width:900px; margin:0 auto; padding:16px; }
+.grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); }
+.card { background:var(--card); border-radius:12px; padding:12px; }
+.card h2 { font-size:1.05rem; margin:8px 0 2px; }
+.meta { margin:0; color:var(--muted); font-size:.9rem; }
+.figure { width:100%; height:auto; display:block; }
+.floor { stroke:var(--muted); stroke-width:1.5; opacity:.5; }
+.bone { stroke:var(--fg); stroke-width:5; stroke-linecap:round; fill:none; }
+.bone.far { stroke:var(--muted); }
+.head { fill:var(--accent); }
