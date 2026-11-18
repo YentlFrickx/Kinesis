@@ -1,4 +1,8 @@
-name: Deploy to GitHub Pages
+name: Deploy to Cloudflare Pages
+
+# Production: every push to main is built and deployed to the Cloudflare Pages project's
+# production branch (served on its custom domain). PRs get previews via preview.yml.
+# Setup: see README ("Deploy").
 
 on:
   push:
@@ -7,15 +11,13 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: production
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,19 +28,10 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # Served from the root of the custom domain, so no BASE_PATH.
       - run: npm run build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
-      - uses: actions/upload-pages-artifact@v3
+      - uses: cloudflare/wrangler-action@v3
         with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'kinesis' }} --branch=main --commit-hash=${{ github.sha }} --commit-dirty=true

@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'kinesis-preview' }}
+  PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'kinesis' }}
 
 jobs:
   preview:

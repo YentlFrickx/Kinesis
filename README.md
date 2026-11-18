@@ -23,16 +23,13 @@ Add an entry to `src/data/exercises.ts`. The animation is a list of keyframe pos
 
 ## Deploy
 
-Pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, GitHub Pages). In the repo settings, set **Pages → Source** to **GitHub Actions** once.
-
-## PR previews
-
-Every pull request from a branch in this repo is built and deployed to its own [Cloudflare Pages](https://pages.cloudflare.com/) preview (`https://pr-<number>.<project>.pages.dev`) by `.github/workflows/preview.yml`; the URL is posted as a comment on the PR. Previews have a separate origin from production, so they never touch real localStorage data. Production still deploys from `main` to GitHub Pages.
+Production and PR previews both run on one [Cloudflare Pages](https://pages.cloudflare.com/) project, deployed by GitHub Actions: pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, deploy to the production branch); each pull request from a branch in this repo gets its own preview via `.github/workflows/preview.yml` (`https://pr-<number>.<project>.pages.dev`, posted as a PR comment). Previews have a separate origin from production, so they never touch real localStorage data. PRs from forks are skipped because they cannot access the secrets, and old previews are not deleted automatically (remove them in the Cloudflare dashboard).
 
 One-time setup:
 
-1. In Cloudflare, create a Pages project with direct upload (no Git connection): `npx wrangler pages project create kinesis-preview --production-branch=main` (or Dashboard → Workers & Pages → Create → Pages → Upload assets).
+1. Create the Pages project with direct upload (no Git connection): `npx wrangler pages project create kinesis --production-branch=main`.
 2. Create an API token (My Profile → API Tokens) with **Account → Cloudflare Pages → Edit**, and note your Account ID.
-3. In the GitHub repo → Settings → Secrets and variables → Actions, add the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. If you named the project something other than `kinesis-preview`, add a repository variable `CLOUDFLARE_PAGES_PROJECT`.
+3. In the GitHub repo → Settings → Secrets and variables → Actions, add the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. If the project is not named `kinesis`, add a repository variable `CLOUDFLARE_PAGES_PROJECT`.
+4. Custom domain: Cloudflare dashboard → Workers & Pages → the project → Custom domains → Set up a domain. Because the domain is on Cloudflare, the DNS record is created for you.
 
-Previews are not deleted automatically when a PR closes; remove old ones in the Cloudflare dashboard if you care. PRs from forks are skipped because they cannot access the secrets.
+The app is served from the domain root, so `BASE_PATH` is no longer set in CI. Data lives in each browser's localStorage per origin: anyone moving from the old GitHub Pages URL should use Export there and Import on the new domain.
