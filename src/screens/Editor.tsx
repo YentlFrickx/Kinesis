@@ -34,6 +34,7 @@ export function Editor({ id }: { id: string }) {
   const lx = useLocalize()
   const session = getSession(id)
   const [picking, setPicking] = useState(false)
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set())
   const [dragging, setDragging] = useState<number | null>(null)
   const listRef = useRef<HTMLOListElement>(null)
 
@@ -107,6 +108,12 @@ export function Editor({ id }: { id: string }) {
   const add = (e: Exercise) =>
     patch((s) => ({ ...s, items: [...s.items, { exerciseId: e.id, value: e.defaultValue, sets: e.defaultSets }] }))
 
+  const keyOf = (it: SessionItem, idx: number) => it.id ?? String(idx)
+  const toggle = (k: string) =>
+    setCollapsed((c) => { const n = new Set(c); if (n.has(k)) n.delete(k); else n.add(k); return n })
+  const allCollapsed = session.items.length > 0 && session.items.every((it, i) => collapsed.has(keyOf(it, i)))
+  const toggleAll = () => setCollapsed(allCollapsed ? new Set() : new Set(session.items.map(keyOf)))
+
   const steps = buildSteps(session, (i) => EXERCISE_MAP.get(i))
   const countOf = (exId: string) => session.items.filter((i) => i.exerciseId === exId).length
 
@@ -143,19 +150,28 @@ export function Editor({ id }: { id: string }) {
       </div>
 
       {session.items.length === 0 && <p className="empty">{t('editor.noExercises')}</p>}
+      {session.items.length > 1 && (
+        <button className="link tiny collapse-all" onClick={toggleAll}>{allCollapsed ? t('editor.expandAll') : t('editor.collapseAll')}</button>
+      )}
       <ol className="items" ref={listRef}>
         {session.items.map((item, idx) => {
           const raw = EXERCISE_MAP.get(item.exerciseId)
           if (!raw) return null
           const ex = lx(raw)
+          const k = keyOf(item, idx)
+          const open = !collapsed.has(k)
           return (
-            <li key={item.id ?? idx} className={`card item${dragging === idx ? ' dragging' : ''}`}>
+            <li key={item.id ?? idx} className={`card item${dragging === idx ? ' dragging' : ''}${open ? '' : ' collapsed'}`}>
               <div className="item-head">
-                <Figure frames={ex.animation} props={ex.props} gear={ex.gear} label={t('sessions.illustration', { name: ex.name })} className="thumb" />
-                <div className="ex-text">
-                  <strong>{ex.name}</strong>
-                  <span className="meta">{describe(ex.mode, item.value, item.sets, ex.perSide)}</span>
-                </div>
+                <button className="item-toggle" aria-expanded={open} onClick={() => toggle(k)}>
+                  <Figure frames={ex.animation} props={ex.props} gear={ex.gear} label={t('sessions.illustration', { name: ex.name })} className="thumb" />
+                  <span className="ex-text">
+                    <strong>{ex.name}</strong>
+                    <span className="meta">{describe(ex.mode, item.value, item.sets, ex.perSide)}</span>
+                  </span>
+                  <span className="fold" aria-hidden="true"><Icon name="chev" size={18} /></span>
+                  <span className="sr-only">{open ? t('editor.collapse') : t('editor.expand')}</span>
+                </button>
                 <button className="icon-btn grip" aria-label={t('editor.dragHandle', { name: ex.name })}
                   onPointerDown={(e) => onGripDown(e, idx)} onPointerMove={onGripMove} onPointerUp={endDrag} onPointerCancel={endDrag}
                   onKeyDown={(e) => onGripKey(e, idx, ex.name)}><Icon name="grip" size={20} /></button>
@@ -164,6 +180,7 @@ export function Editor({ id }: { id: string }) {
                   <button className="btn small down" onClick={() => move(idx, 1)} disabled={idx === session.items.length - 1} aria-label={t('editor.moveDown', { name: ex.name })}><Icon name="chev" size={16} /></button>
                 </div>
               </div>
+              {open && <>
               <div className="item-controls">
                 <div>
                   <span className="meta">{ex.mode === 'time' ? t('editor.seconds') : t('editor.reps')}</span>
@@ -190,6 +207,7 @@ export function Editor({ id }: { id: string }) {
                 <button className="link tiny" onClick={() => duplicateItem(idx)}>{t('editor.duplicateItem')}</button>
                 <button className="link danger tiny" onClick={() => remove(idx, ex.name)}>{t('common.remove')}</button>
               </div>
+              </>}
             </li>
           )
         })}
