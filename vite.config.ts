@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'Kinesis',
         short_name: 'Kinesis',
         description: 'Plan and follow bodyweight strength, stretching and mobility sessions.',
-        theme_color: '#e4572e',
-        background_color: '#f6f7f9',
+        theme_color: '#1f6b57',
+        background_color: '#f2f4f1',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
@@ -24,7 +24,7 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: { globPatterns: ['**/*.{js,css,html,svg,png}'] },
+      workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
     }),
   ],
   test: {

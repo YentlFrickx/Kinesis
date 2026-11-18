@@ -31,6 +31,17 @@ export function sessionsThisWeek(entries: HistoryEntry[], now: number): number {
   return entries.filter((e) => e.completedAt >= from && e.completedAt < to).length
 }
 
+/** Monday-first days of the week containing `now`, with how many sessions were completed on each. */
+export function weekDays(entries: HistoryEntry[], now: number): { day: number; count: number; today: boolean }[] {
+  const from = startOfWeek(now)
+  const today = startOfDay(now)
+  return Array.from({ length: 7 }, (_, i) => {
+    const day = addDays(from, i)
+    const count = entries.filter((e) => startOfDay(e.completedAt) === day).length
+    return { day, count, today: day === today }
+  })
+}
+
 export interface HeatDay {
   /** Local midnight. */
   day: number

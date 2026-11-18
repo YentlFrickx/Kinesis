@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Figure } from '../animation/Figure'
+import { Icon } from '../components/Icon'
 import { EXERCISE_MAP } from '../data/exercises'
 import { EQUIPMENT, EQUIPMENT_LABEL, type BodyArea, type Category, type Equipment, type SessionItem } from '../data/types'
 import { INTENSITIES, estimateItems, generateSession, neglectedCategories, replacementFor, SET_REST_SEC, TRANSITION_SEC, type Intensity } from '../lib/generator'
@@ -59,9 +60,9 @@ export function Generator() {
       <div className="card">
         <span className="meta">Duration</span>
         <div className="stepper" role="group" aria-label="Duration">
-          <button className="btn small" disabled={minutes <= 5} aria-label="Decrease duration" onClick={() => change(setMinutes)(minutes - 5)}>−</button>
+          <button className="btn small" disabled={minutes <= 5} aria-label="Decrease duration" onClick={() => change(setMinutes)(minutes - 5)}><Icon name="minus" size={16} /></button>
           <span className="stepper-val">{minutes} min</span>
-          <button className="btn small" disabled={minutes >= 90} aria-label="Increase duration" onClick={() => change(setMinutes)(minutes + 5)}>+</button>
+          <button className="btn small" disabled={minutes >= 90} aria-label="Increase duration" onClick={() => change(setMinutes)(minutes + 5)}><Icon name="plus" size={16} /></button>
         </div>
 
         <span className="meta">Categories</span>
@@ -123,7 +124,7 @@ export function Generator() {
       </ol>
 
       <div className="bar">
-        <button className="btn" onClick={regenerate}>↻ Regenerate</button>
+        <button className="btn" onClick={regenerate}><Icon name="refresh" size={16} />Regenerate</button>
         <button className="btn primary" disabled={items.length === 0} onClick={save}>Save session</button>
       </div>
     </div>
