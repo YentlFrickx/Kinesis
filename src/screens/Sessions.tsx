@@ -36,7 +36,10 @@ export function Sessions() {
     <div>
       <div className="head-row">
         <h1>Sessions</h1>
-        <button className="btn primary" onClick={() => go(`/session/${createSession().id}`)}>+ New</button>
+        <div className="actions">
+          <button className="btn" onClick={() => go('/generate')}>✨ Generate</button>
+          <button className="btn primary" onClick={() => go(`/session/${createSession().id}`)}>+ New</button>
+        </div>
       </div>
       <GoalRing />
       {sessions.length === 0 && (
