@@ -24,3 +24,15 @@ Add an entry to `src/data/exercises.ts`. The animation is a list of keyframe pos
 ## Deploy
 
 Pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, GitHub Pages). In the repo settings, set **Pages → Source** to **GitHub Actions** once.
+
+## PR previews
+
+Every pull request from a branch in this repo is built and deployed to its own [Cloudflare Pages](https://pages.cloudflare.com/) preview (`https://pr-<number>.<project>.pages.dev`) by `.github/workflows/preview.yml`; the URL is posted as a comment on the PR. Previews have a separate origin from production, so they never touch real localStorage data. Production still deploys from `main` to GitHub Pages.
+
+One-time setup:
+
+1. In Cloudflare, create a Pages project with direct upload (no Git connection): `npx wrangler pages project create kinesis-preview --production-branch=main` (or Dashboard → Workers & Pages → Create → Pages → Upload assets).
+2. Create an API token (My Profile → API Tokens) with **Account → Cloudflare Pages → Edit**, and note your Account ID.
+3. In the GitHub repo → Settings → Secrets and variables → Actions, add the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. If you named the project something other than `kinesis-preview`, add a repository variable `CLOUDFLARE_PAGES_PROJECT`.
+
+Previews are not deleted automatically when a PR closes; remove old ones in the Cloudflare dashboard if you care. PRs from forks are skipped because they cannot access the secrets.
