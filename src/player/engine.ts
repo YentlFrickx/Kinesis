@@ -74,10 +74,11 @@ export function estimateSeconds(steps: Step[]): number {
   )
 }
 
-/** Duration of a step in ms; Infinity for rep-based steps (user taps "done"). */
-export function stepMs(s: Step): number {
+/** Duration of a step in ms; Infinity for rep-based steps unless `autoReps` paces them (user taps "done"). */
+export function stepMs(s: Step, autoReps = false): number {
   if (s.kind === 'rest') return s.seconds * 1000
-  return s.mode === 'time' ? s.value * 1000 : Infinity
+  if (s.mode === 'time') return s.value * 1000
+  return autoReps ? s.value * SECONDS_PER_REP * 1000 : Infinity
 }
 
 export interface RunState {
@@ -86,20 +87,28 @@ export interface RunState {
   finished: boolean
 }
 
-export function goTo(steps: Step[], index: number): RunState {
+export function goTo(steps: Step[], index: number, autoReps = false): RunState {
   if (index >= steps.length) return { index: steps.length - 1, remainingMs: 0, finished: true }
   const i = Math.max(0, index)
-  return { index: i, remainingMs: stepMs(steps[i]), finished: false }
+  return { index: i, remainingMs: stepMs(steps[i], autoReps), finished: false }
 }
 
-export const initState = (steps: Step[]): RunState => goTo(steps, 0)
+export const initState = (steps: Step[], autoReps = false): RunState => goTo(steps, 0, autoReps)
 
-/** Advances the running step by `dtMs`; moves on to the next step when it runs out. */
-export function advance(steps: Step[], st: RunState, dtMs: number): RunState {
-  if (st.finished || !Number.isFinite(st.remainingMs)) return st
-  const remaining = st.remainingMs - dtMs
-  return remaining > 0 ? { ...st, remainingMs: remaining } : goTo(steps, st.index + 1)
+/**
+ * Advances the run by `dtMs`, which may span many steps (e.g. after the screen was locked):
+ * leftover time carries into the following steps. Stops at manual (rep) steps and at the end.
+ */
+export function advance(steps: Step[], st: RunState, dtMs: number, autoReps = false): RunState {
+  let cur = st
+  let left = dtMs
+  while (!cur.finished && Number.isFinite(cur.remainingMs)) {
+    if (cur.remainingMs > left) return { ...cur, remainingMs: cur.remainingMs - left }
+    left -= cur.remainingMs
+    cur = goTo(steps, cur.index + 1, autoReps)
+  }
+  return cur
 }
 
-export const next = (steps: Step[], st: RunState): RunState => goTo(steps, st.index + 1)
-export const prev = (steps: Step[], st: RunState): RunState => goTo(steps, st.index - 1)
+export const next = (steps: Step[], st: RunState, autoReps = false): RunState => goTo(steps, st.index + 1, autoReps)
+export const prev = (steps: Step[], st: RunState, autoReps = false): RunState => goTo(steps, st.index - 1, autoReps)

@@ -3,8 +3,8 @@ import { Figure } from '../animation/Figure'
 import { EXERCISE_MAP } from '../data/exercises'
 import { formatClock } from '../lib/format'
 import { go } from '../lib/router'
-import { beep, isMuted, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
-import { advance, buildSteps, goTo, initState, next, prev, type RunState, type Step } from '../player/engine'
+import { beep, getAutoReps, isMuted, setAutoReps, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
+import { advance, buildSteps, goTo, initState, next, prev, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
 import { youllNeed } from '../store/equipment'
 import { MILESTONES, comebackDays, sessionCategories } from '../lib/progress'
 import { getHistory, recordCompletion } from '../store/history'
@@ -40,7 +40,8 @@ function useWakeLock(active: boolean) {
 export function Player({ id }: { id: string }) {
   const session = getSession(id)
   const steps = useMemo(() => (session ? buildSteps(session, (i) => EXERCISE_MAP.get(i)) : []), [session])
-  const [state, setState] = useState<RunState>(() => initState(steps))
+  const [autoReps, setAutoRepsState] = useState(getAutoReps)
+  const [state, setState] = useState<RunState>(() => initState(steps, autoReps))
   const [paused, setPaused] = useState(false)
   const [muted, setMutedState] = useState(isMuted)
   const lastSec = useRef<number | null>(null)
@@ -50,19 +51,27 @@ export function Player({ id }: { id: string }) {
 
   useWakeLock(!state.finished)
 
-  // Timer loop
+  // Timer loop. Timestamp-based: each tick applies the real time elapsed since the last tick, so a
+  // throttled/stalled interval (locked screen, background tab) cannot cause drift. On return to the
+  // foreground the first tick carries the whole gap through as many steps as it covers.
   useEffect(() => {
     if (paused || state.finished || steps.length === 0) return
-    let last = performance.now()
-    const t = setInterval(() => {
-      const now = performance.now()
-      const dt = now - last
+    let last = Date.now()
+    const tick = () => {
+      const now = Date.now()
+      const dt = Math.max(0, now - last)
       last = now
       activeMs.current += dt
-      setState((s) => advance(steps, s, dt))
-    }, 100)
-    return () => clearInterval(t)
-  }, [paused, state.finished, steps])
+      setState((s) => advance(steps, s, dt, autoReps))
+    }
+    const t = setInterval(tick, 100)
+    const onVis = () => document.visibilityState === 'visible' && tick()
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [paused, state.finished, steps, autoReps])
 
   const step = steps[state.index]
 
@@ -103,7 +112,27 @@ export function Player({ id }: { id: string }) {
     }
   }, [state.remainingMs, state.finished, paused])
 
+  // Spoken rep count while auto-advancing rep steps
+  const lastRep = useRef(0)
+  useEffect(() => { lastRep.current = 0 }, [state.index])
+  useEffect(() => {
+    if (!autoReps || paused || state.finished || !step || step.kind !== 'work' || step.mode !== 'reps') return
+    const done = step.value - Math.ceil(state.remainingMs / (SECONDS_PER_REP * 1000))
+    if (done > lastRep.current) {
+      lastRep.current = done
+      if (done < step.value) speak(String(done))
+    }
+  }, [state.remainingMs, state.index, state.finished, autoReps, paused, step])
+
   useEffect(() => () => stopSpeaking(), [])
+
+  const toggleAutoReps = useCallback(() => {
+    const on = !autoReps
+    setAutoReps(on)
+    setAutoRepsState(on)
+    // Re-seat the current rep step so it switches between manual and paced immediately.
+    setState((s) => (!s.finished && steps[s.index]?.kind === 'work' && (steps[s.index] as { mode: string }).mode === 'reps' ? goTo(steps, s.index, on) : s))
+  }, [autoReps, steps])
 
   const toggleMute = useCallback(() => {
     setMutedState((m) => { setMuted(!m); return !m })
@@ -133,7 +162,7 @@ export function Player({ id }: { id: string }) {
           </div>
         )}
         <button className="btn primary wide" onClick={() => go('/')}>Done</button>
-        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0)); setPaused(false) }}>Do it again</button>
+        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0, autoReps)); setPaused(false) }}>Do it again</button>
       </div>
     )
   }
@@ -155,6 +184,7 @@ export function Player({ id }: { id: string }) {
       <div className="player-top">
         <button className="link" onClick={() => confirm('Stop this session?') && go('/')}>✕ Quit</button>
         <span className="meta">{state.index + 1} / {total}</span>
+        <button className="link" onClick={toggleAutoReps} aria-pressed={autoReps}>{autoReps ? '⏱ Auto reps' : '✋ Manual reps'}</button>
         <button className="link" onClick={toggleMute} aria-pressed={muted}>{muted ? '🔇 Muted' : '🔊 Sound'}</button>
       </div>
       <progress max={total} value={state.index} aria-label="Session progress" />
@@ -177,13 +207,13 @@ export function Player({ id }: { id: string }) {
       </div>
 
       <div className="controls">
-        <button className="btn" onClick={() => setState(prev(steps, state))} disabled={state.index === 0}>⏮ Back</button>
-        {isRepWork ? (
-          <button className="btn primary big-btn" onClick={() => setState(next(steps, state))}>✓ Done</button>
+        <button className="btn" onClick={() => setState(prev(steps, state, autoReps))} disabled={state.index === 0}>⏮ Back</button>
+        {isRepWork && !autoReps ? (
+          <button className="btn primary big-btn" onClick={() => setState(next(steps, state, autoReps))}>✓ Done</button>
         ) : (
           <button className="btn primary big-btn" onClick={() => setPaused((p) => !p)}>{paused ? '▶ Resume' : '⏸ Pause'}</button>
         )}
-        <button className="btn" onClick={() => setState(next(steps, state))}>Skip ⏭</button>
+        <button className="btn" onClick={() => setState(next(steps, state, autoReps))}>Skip ⏭</button>
       </div>
     </div>
   )

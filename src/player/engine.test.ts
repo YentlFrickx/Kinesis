@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Exercise, Session } from '../data/types'
-import { advance, buildSteps, estimateSeconds, goTo, initState, next, SWITCH_SECONDS } from './engine'
+import { advance, buildSteps, estimateSeconds, goTo, initState, next, SECONDS_PER_REP, stepMs, SWITCH_SECONDS } from './engine'
 
 const ex = (id: string, o: Partial<Exercise> = {}): Exercise => ({
   id, name: id, category: 'strength', bodyAreas: [], mode: 'time', defaultValue: 30,
@@ -80,5 +80,43 @@ describe('run state', () => {
     const st = initState(repSteps)
     expect(advance(repSteps, st, 10_000)).toBe(st)
     expect(next(repSteps, st).finished).toBe(true)
+  })
+
+  const long = buildSteps(session([{ exerciseId: 'plank', value: 5, sets: 3 }], { defaultTransitionSec: 3 }), lookup)
+
+  it('catches up across several long with a large dt, carrying leftover time', () => {
+    const st = advance(long, initState(long), 3000 + 5000 + 1500)
+    expect(st).toMatchObject({ index: 2, finished: false })
+    expect(st.remainingMs).toBe(stepMs(long[2]) - 1500)
+  })
+
+  it('catch-up equals many small ticks', () => {
+    let a = initState(long)
+    for (let i = 0; i < 95; i++) a = advance(long, a, 100)
+    expect(advance(long, initState(long), 9500)).toEqual(a)
+  })
+
+  it('finishes when dt exceeds the whole session, and stops at manual rep steps', () => {
+    expect(advance(steps, initState(steps), 10 * 60_000).finished).toBe(true)
+    const mixed = buildSteps(session([
+      { exerciseId: 'plank', value: 5, sets: 1 }, { exerciseId: 'bridge', value: 5, sets: 1 },
+    ], { defaultTransitionSec: 0 }), lookup)
+    expect(advance(mixed, initState(mixed), 60_000)).toMatchObject({ index: 1, finished: false, remainingMs: Infinity })
+  })
+
+  it('pause/resume preserves remaining time (no dt applied while paused)', () => {
+    let st = advance(steps, initState(steps), 1234)
+    const paused = st
+    st = advance(steps, st, 0)
+    expect(st).toEqual(paused)
+    expect(st.remainingMs).toBe(3000 - 1234)
+  })
+
+  it('auto-advance paces rep steps at SECONDS_PER_REP', () => {
+    const repSteps = buildSteps(session([{ exerciseId: 'bridge', value: 5, sets: 1 }], { defaultTransitionSec: 0 }), lookup)
+    let st = initState(repSteps, true)
+    expect(st.remainingMs).toBe(5 * SECONDS_PER_REP * 1000)
+    st = advance(repSteps, st, 5 * SECONDS_PER_REP * 1000, true)
+    expect(st.finished).toBe(true)
   })
 })
