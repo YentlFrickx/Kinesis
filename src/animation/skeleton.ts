@@ -18,6 +18,9 @@ export const BONES: ReadonlyArray<readonly [Joint, Joint]> = [
   ['neck', 'elbowF'], ['elbowF', 'handF'],
 ]
 
+/** Simple rectangle drawn behind the figure (box, wall...). */
+export interface Prop { x: number; y: number; w: number; h: number }
+
 export const VIEWBOX = { width: 200, height: 140, floorY: 126 }
 
 /** Neutral standing pose, facing right, used as a base for building poses. */

@@ -1,32 +1,25 @@
-# React + TypeScript + Vite
+# Runner Workouts
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A small offline-capable web app (PWA) for planning and following bodyweight and stretching sessions, built for runners.
 
-Currently, two official plugins are available:
+- **Library:** 21 exercises (strength, stretches, mobility) with a looping stick-figure animation and instructions.
+- **Planner:** build named sessions; per exercise set seconds or reps, sets and rest after it; defaults for rest between sets and exercises. Reorder, duplicate, delete, export/import as JSON.
+- **Player:** guided run with countdown, rep "Done" button, auto left/right with a switch-sides step, rest steps with next-up preview, beeps and voice cues (mute toggle), vibration and screen wake-lock.
+- Data stays in your browser (localStorage). No backend, works offline once loaded.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Develop
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev        # app on http://localhost:5173, animation review sheet at /contact.html
+npm test           # player engine tests
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Adding an exercise
+
+Add an entry to `src/data/exercises.ts`. The animation is a list of keyframe poses (joint coordinates in a 200×140 box, floor at y=126) drawn by the shared skeleton in `src/animation/`. Check it on `/contact.html`.
+
+## Deploy
+
+Pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, GitHub Pages). In the repo settings, set **Pages → Source** to **GitHub Actions** once.

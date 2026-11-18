@@ -1,4 +1,4 @@
-import type { Keyframe } from '../animation/skeleton'
+import type { Keyframe, Prop } from '../animation/skeleton'
 
 export type Category = 'strength' | 'stretch' | 'mobility'
 export type BodyArea = 'glutes' | 'hips' | 'quads' | 'hamstrings' | 'calves' | 'core' | 'full body'
@@ -16,6 +16,7 @@ export interface Exercise {
   perSide: boolean
   instructions: string[]
   animation: Keyframe[]
+  props?: Prop[]
 }
 
 export interface SessionItem {
