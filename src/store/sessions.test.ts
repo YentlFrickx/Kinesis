@@ -52,6 +52,21 @@ describe('sessions store', () => {
     expect(new Set(ids(JSON.parse(all).sessions)).size).toBe(2)
   })
 
+  it('keeps, trims and clamps item notes on import', async () => {
+    const { s } = await load({ 'rw.seeded.v1': '1' })
+    s.importJson(JSON.stringify({ sessions: [{ name: 'x', items: [
+      { exerciseId: 'push-up', value: 5, sets: 1, note: '  use the 8 kg dumbbell  ' },
+      { exerciseId: 'push-up', value: 5, sets: 1, note: 'n'.repeat(500) },
+      { exerciseId: 'push-up', value: 5, sets: 1, note: 42 },
+      { exerciseId: 'push-up', value: 5, sets: 1, note: '   ' },
+    ] }] }))
+    const items = JSON.parse(s.exportJson()).sessions[0].items
+    expect(items[0].note).toBe('use the 8 kg dumbbell')
+    expect(items[1].note).toHaveLength(200)
+    expect('note' in items[2]).toBe(false)
+    expect('note' in items[3]).toBe(false)
+  })
+
   it('validates and clamps imports', async () => {
     const { s } = await load({ 'rw.seeded.v1': '1' })
     expect(() => s.importJson('nope')).toThrow()

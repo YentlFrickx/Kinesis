@@ -3,7 +3,7 @@ import { EXERCISES } from '../data/exercises'
 import { STARTERS } from '../data/templates'
 import { CATALOGS, LOCALES, detectLocale, matchLocale, starterName, translate, type Catalogs } from './core'
 import { en } from './en'
-import { EXERCISE_TEXT } from './exerciseText'
+import { COACHING_TEXT, EXERCISE_TEXT } from './exerciseText'
 
 describe('translate', () => {
   it('translates, interpolates and picks plural forms', () => {
@@ -58,6 +58,9 @@ describe('exercise content', () => {
         expect(text[e.id], `${l}:${e.id}`).toBeDefined()
         expect(text[e.id].name.trim(), `${l}:${e.id}`).not.toBe('')
         expect(text[e.id].instructions.length, `${l}:${e.id}`).toBe(e.instructions.length)
+        const c = COACHING_TEXT[l]?.[e.id]
+        expect(c?.cues.length, `${l}:${e.id} cues`).toBe(e.cues?.length)
+        expect(c?.commonMistakes.length, `${l}:${e.id} mistakes`).toBe(e.commonMistakes?.length)
       }
       expect(Object.keys(text).filter((id) => !EXERCISES.some((e) => e.id === id)), l).toEqual([])
     }

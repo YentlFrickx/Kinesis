@@ -11,6 +11,7 @@ import { speaksCountdown, speaksReps } from '../player/voice'
 import { LOCALE_INFO, sessionLabel, useLocale, useLocalize, useT } from '../i18n'
 import { advance, buildSteps, goTo, initState, next, prev, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
 import { Icon } from '../components/Icon'
+import { Tips } from '../components/Tips'
 import { Sheet } from '../components/Sheet'
 import { youllNeed } from '../store/equipment'
 import { comebackDays, sessionCategories, type MilestoneId } from '../lib/progress'
@@ -115,6 +116,11 @@ export function Player({ id }: { id: string }) {
     if (!step) return
     beep(step.kind === 'work' ? 1040 : 520, 200)
     speak(announce(step, t, lx), { priority: 'step', interrupt: interrupt.current })
+    // The first cue is spoken once, at the start of an exercise (first set, first side), unless verbosity is names-only.
+    if (step.kind === 'work' && step.set === 1 && step.side !== 'right' && getSpeechSettings().verbosity !== 'names') {
+      const cue = lx(step.exercise).cues?.[0]
+      if (cue) speak(cue, { priority: 'count' })
+    }
     interrupt.current = false
     vibrate(step.kind === 'work' ? 200 : 80)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -246,6 +252,9 @@ export function Player({ id }: { id: string }) {
       <div className="big" aria-live="off">
         {isRepWork ? <>{step.value}<small>{t('player.repsLabel')}</small></> : formatClock(state.remainingMs / 1000)}
       </div>
+
+      {session.items[step.itemIndex]?.note && <p className="note-line">{session.items[step.itemIndex].note}</p>}
+      <div className="player-tips"><Tips key={exercise.id} exercise={exercise} /></div>
 
       <div className="controls">
         <button className="icon-btn" aria-label={t('player.prev')} onClick={() => nav(() => setState(prev(steps, state, autoReps)))} disabled={state.index === 0}><Icon name="prev" /></button>

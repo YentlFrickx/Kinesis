@@ -1,4 +1,5 @@
 import { pose, type Keyframe, type Pose, type Prop } from '../animation/skeleton'
+import { COACHING } from './coaching'
 import type { Exercise } from './types'
 
 type P = Partial<Pose>
@@ -125,7 +126,7 @@ const pushupUp: P = {
   elbowF: [50, 105], handF: [50, 124], elbowB: [50, 105], handB: [50, 124],
 }
 
-export const EXERCISES: Exercise[] = [
+const BASE: Exercise[] = [
   // ---------------- strength ----------------
   {
     id: 'glute-bridge', name: 'Glute bridge', category: 'strength',
@@ -1657,5 +1658,8 @@ export const EXERCISES: Exercise[] = [
     ],
   },
 ]
+
+/** The library with the coaching content merged in. */
+export const EXERCISES: Exercise[] = BASE.map((e) => ({ ...e, ...COACHING[e.id] }))
 
 export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
