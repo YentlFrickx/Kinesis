@@ -1,13 +1,17 @@
 import { Icon } from '../components/Icon'
+import { EXERCISE_MAP } from '../data/exercises'
+import { copyText } from '../lib/clipboard'
+import { workoutText } from '../lib/workoutText'
+import { getSession } from '../store/sessions'
 import { Sheet } from '../components/Sheet'
 import { useState } from 'react'
 import { Balance } from '../components/Balance'
 import { GoalRing } from '../components/GoalRing'
 import { Heatmap } from '../components/Heatmap'
 import { formatDate, formatDuration, formatTime } from '../lib/format'
-import { sessionLabel, useT } from '../i18n'
+import { sessionLabel, useLocalize, useT } from '../i18n'
 import { MILESTONES } from '../lib/progress'
-import { clearHistory, deleteEntry, getHistory, restoreHistory, useHistory } from '../store/history'
+import { clearHistory, deleteEntry, getHistory, restoreHistory, useHistory, type HistoryEntry } from '../store/history'
 import { showToast } from '../store/toast'
 import { useUnlocked } from '../store/milestones'
 
@@ -23,9 +27,16 @@ const dayLabel = (time: number, t: ReturnType<typeof useT>) => {
 
 export function History() {
   const t = useT()
+  const lx = useLocalize()
   const [confirmClear, setConfirmClear] = useState(false)
   const entries = useHistory()
   const unlocked = useUnlocked()
+  // Entries recorded before items were stored fall back to the session as it is now (if it still exists).
+  const items = (e: HistoryEntry) => e.items ?? getSession(e.sessionId)?.items
+  const copy = async (e: HistoryEntry) => {
+    const text = workoutText(sessionLabel(e.sessionId, e.sessionName), items(e) ?? [], (i) => { const x = EXERCISE_MAP.get(i); return x && lx(x) }, t)
+    showToast(t((await copyText(text)) ? 'share.copied' : 'share.failed'))
+  }
   const totalSec = entries.reduce((n, e) => n + e.durationSec, 0)
 
   const groups: { key: string; label: string; items: typeof entries }[] = []
@@ -73,7 +84,12 @@ export function History() {
                           {formatTime(e.completedAt, { hour: '2-digit', minute: '2-digit' })} · {formatDuration(e.durationSec)}
                         </div>
                       </div>
+                      <div className="actions">
+                      {items(e) && (
+                        <button className="btn small" onClick={() => copy(e)} aria-label={t('share.copyAria', { name: sessionLabel(e.sessionId, e.sessionName) })}><Icon name="copy" size={16} />{t('common.copy')}</button>
+                      )}
                       <button className="btn small danger" onClick={() => deleteEntry(e.id)} aria-label={t('history.removeAria', { name: sessionLabel(e.sessionId, e.sessionName) })}>{t('common.remove')}</button>
+                      </div>
                     </div>
                   </li>
                 ))}
