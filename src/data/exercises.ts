@@ -1138,6 +1138,237 @@ export const EXERCISES: Exercise[] = [
       },
     ],
   },
+  // ---- band ----
+  {
+    id: 'standing-band-kickback', name: 'Standing band kickback', category: 'strength',
+    bodyAreas: ['glutes', 'hamstrings'],
+    mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: true,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'ankleB', to: [170, 100] }],
+    instructions: [
+      'Loop a band around one ankle and anchor the other end low in front of you, such as a door anchor or sturdy furniture. Hold a wall for balance.',
+      'Keeping your torso upright, press the banded leg straight back by squeezing your glute. Do not arch your lower back.',
+      'Return slowly against the band. The working leg is the one with the band.',
+    ],
+    animation: [
+      { pose: pose({ kneeB: [104, 101], ankleB: [108, 122], toeB: [116, 124], ...handsOnHips }), ms: 1100 },
+      { pose: pose({ kneeB: [92, 102], ankleB: [66, 106], toeB: [60, 110], ...handsOnHips }), ms: 1100 },
+    ],
+  },
+  {
+    id: 'band-straight-arm-pulldown', name: 'Band straight-arm pulldown', category: 'strength',
+    bodyAreas: ['upper back', 'shoulders'],
+    mode: 'reps', defaultValue: 12, defaultSets: 3, perSide: false,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'handF', to: [160, 2] }],
+    instructions: [
+      'Anchor a band high in front of you, such as over a door. Stand tall holding the band with both hands and arms straight, reaching forward and up.',
+      'Keeping your arms straight, sweep them down toward your thighs by squeezing your lats. Keep your ribs down.',
+      'Return slowly. Mimics the pull phase of freestyle swimming.',
+    ],
+    animation: [
+      { pose: pose({ elbowF: [118, 26], handF: [136, 14], elbowB: [118, 26], handB: [136, 14] }), ms: 1300 },
+      { pose: pose({ elbowF: [102, 58], handF: [104, 77], elbowB: [102, 58], handB: [104, 77] }), ms: 1300 },
+    ],
+  },
+  {
+    id: 'banded-clamshell', name: 'Banded clamshell', category: 'strength',
+    bodyAreas: ['glutes', 'hips'],
+    mode: 'reps', defaultValue: 15, defaultSets: 2, perSide: true,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'kneeB', to: 'kneeF' }],
+    instructions: [
+      'Lie on your side with a small loop band just above your knees, knees bent and heels together.',
+      'Keeping your feet touching, lift the top knee against the band without rolling your pelvis back.',
+      'Lower with control. A harder version of the clamshell for the hip stabilisers.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...sideLying, kneeB: [120, 116], ankleB: [98, 117], toeB: [94, 119],
+          kneeF: [120, 114], ankleF: [98, 115], toeF: [94, 117],
+        }), ms: 1000,
+      },
+      {
+        pose: pose({
+          ...sideLying, kneeB: [120, 116], ankleB: [98, 117], toeB: [94, 119],
+          kneeF: [116, 92], ankleF: [98, 114], toeF: [94, 117],
+        }), ms: 1000,
+      },
+    ],
+  },
+  {
+    id: 'band-pull-through', name: 'Band pull-through', category: 'strength',
+    bodyAreas: ['glutes', 'hamstrings'],
+    mode: 'reps', defaultValue: 12, defaultSets: 3, perSide: false,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'handF', to: [8, 116] }],
+    instructions: [
+      'Anchor a band low behind you. Face away from it, straddle the band and hold it with both hands between your legs.',
+      'Hinge at the hips, pushing them back with a flat back and soft knees, letting the band pull your hands through your legs.',
+      'Drive your hips forward and squeeze your glutes to stand tall. Teaches the hip hinge with a load.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          head: [131, 52], neck: [118, 58], hip: [84, 78],
+          kneeF: [96, 100], kneeB: [96, 100], ankleF: [98, 126], ankleB: [98, 126],
+          elbowF: [104, 82], handF: [90, 98], elbowB: [104, 82], handB: [90, 98],
+        }), ms: 1500,
+      },
+      { pose: pose({ elbowF: [102, 58], handF: [100, 78], elbowB: [102, 58], handB: [100, 78] }), ms: 1500 },
+    ],
+  },
+  {
+    id: 'banded-ankle-dorsiflexion', name: 'Banded ankle dorsiflexion', category: 'strength',
+    bodyAreas: ['calves', 'feet'],
+    mode: 'reps', defaultValue: 15, defaultSets: 2, perSide: true,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'toeF', to: [192, 122] }],
+    instructions: [
+      'Sit on the floor with one leg straight and a band looped around the top of that foot, anchored on something sturdy in front of you.',
+      'Pull your toes toward your shin against the band, keeping your heel down and your knee straight.',
+      'Release slowly. Strengthens the shin muscles that help with shin splints and foot strike.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...seatedRow, neck: [78, 86], head: [80, 72],
+          elbowF: [66, 104], handF: [62, 122], elbowB: [66, 104], handB: [62, 122],
+          toeF: [146, 124], toeB: [146, 124],
+        }), ms: 1100,
+      },
+      {
+        pose: pose({
+          ...seatedRow, neck: [78, 86], head: [80, 72],
+          elbowF: [66, 104], handF: [62, 122], elbowB: [66, 104], handB: [62, 122],
+          toeF: [138, 108], toeB: [138, 108],
+        }), ms: 1100,
+      },
+    ],
+  },
+  {
+    id: 'seated-band-calf-press', name: 'Seated band calf press', category: 'strength',
+    bodyAreas: ['calves', 'feet'],
+    mode: 'reps', defaultValue: 15, defaultSets: 3, perSide: true,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'handF', to: 'toeF' }],
+    instructions: [
+      'Sit with one leg straight, a band looped around the ball of that foot and an end in each hand.',
+      'Press your foot away like pushing a gas pedal until your toes point, keeping your knee straight.',
+      'Return slowly against the band. Builds calf and Achilles strength without any load on the joints.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...seatedRow, elbowF: [96, 98], handF: [112, 104], elbowB: [96, 98], handB: [112, 104],
+          toeF: [138, 108], toeB: [138, 108],
+        }), ms: 1000,
+      },
+      {
+        pose: pose({
+          ...seatedRow, elbowF: [96, 98], handF: [112, 104], elbowB: [96, 98], handB: [112, 104],
+          toeF: [146, 124], toeB: [146, 124],
+        }), ms: 1600,
+      },
+    ],
+  },
+  // ---- dumbbell ----
+  {
+    id: 'dumbbell-rdl', name: 'Dumbbell Romanian deadlift', category: 'strength',
+    bodyAreas: ['hamstrings', 'glutes', 'core'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: false,
+    equipment: ['dumbbell'],
+    gear: [{ kind: 'dumbbell', at: 'handF' }],
+    instructions: [
+      'Stand tall holding a dumbbell in each hand in front of your thighs, feet hip-width apart.',
+      'Push your hips back with soft knees and a flat back, sliding the weights down your thighs to mid-shin.',
+      'Squeeze your glutes to stand tall. Keep the weights close to your legs throughout.',
+    ],
+    animation: [
+      { pose: pose({ elbowF: [102, 58], handF: [106, 78], elbowB: [102, 58], handB: [106, 78] }), ms: 1500 },
+      {
+        pose: pose({
+          head: [131, 63], neck: [120, 66], hip: [84, 76],
+          kneeF: [96, 100], kneeB: [96, 100], ankleF: [98, 126], ankleB: [98, 126],
+          elbowF: [118, 86], handF: [116, 106], elbowB: [118, 86], handB: [116, 106],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'bent-over-dumbbell-row', name: 'Bent-over dumbbell row', category: 'strength',
+    bodyAreas: ['upper back', 'arms'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: false,
+    equipment: ['dumbbell'],
+    gear: [{ kind: 'dumbbell', at: 'handF' }],
+    instructions: [
+      'Hinge forward at the hips with a flat back and soft knees, holding a dumbbell in each hand with arms hanging.',
+      'Row the weights toward your hips by driving your elbows back and squeezing your shoulder blades.',
+      'Lower slowly. Keep your torso still and your neck neutral.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          head: [133, 58], neck: [122, 62], hip: [84, 78],
+          kneeF: [96, 102], kneeB: [96, 102], ankleF: [98, 126], ankleB: [98, 126],
+          elbowF: [122, 84], handF: [120, 104], elbowB: [122, 84], handB: [120, 104],
+        }), ms: 1200,
+      },
+      {
+        pose: pose({
+          head: [133, 58], neck: [122, 62], hip: [84, 78],
+          kneeF: [96, 102], kneeB: [96, 102], ankleF: [98, 126], ankleB: [98, 126],
+          elbowF: [103, 72], handF: [116, 84], elbowB: [103, 72], handB: [116, 84],
+        }), ms: 1200,
+      },
+    ],
+  },
+  {
+    id: 'dumbbell-single-leg-calf-raise', name: 'Loaded single-leg calf raise', category: 'strength',
+    bodyAreas: ['calves'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: true,
+    equipment: ['dumbbell'],
+    gear: [{ kind: 'dumbbell', at: 'handF' }],
+    instructions: [
+      'Stand on one foot holding a dumbbell in the same-side hand (the other hand on a wall), the other foot lifted behind you.',
+      'Rise onto the ball of your foot as high as you can.',
+      'Lower slowly over about three seconds. Progress from bodyweight calf raises once those feel easy.',
+    ],
+    animation: [
+      { pose: pose({ kneeB: [100, 101], ankleB: [78, 104], toeB: [74, 112] }), ms: 1100 },
+      {
+        pose: pose({
+          head: [100, 14], neck: [100, 28], hip: [100, 66], kneeF: [100, 91], kneeB: [100, 91],
+          ankleF: [100, 115], toeF: [109, 126], ankleB: [78, 94], toeB: [74, 102],
+          elbowF: [102, 47], handF: [102, 66], elbowB: [102, 47], handB: [102, 66],
+        }), ms: 1900,
+      },
+    ],
+  },
+  {
+    id: 'dumbbell-reverse-lunge', name: 'Dumbbell reverse lunge', category: 'strength',
+    bodyAreas: ['quads', 'glutes', 'hamstrings'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: true,
+    equipment: ['dumbbell'],
+    gear: [{ kind: 'dumbbell', at: 'handF' }],
+    instructions: [
+      'Stand tall holding a dumbbell in each hand at your sides.',
+      'Step one leg back and lower until both knees are about 90 degrees, keeping your torso upright.',
+      'Push through the front heel to return to standing. Progress from bodyweight lunges once those feel easy.',
+    ],
+    animation: [
+      { pose: pose({}), ms: 1300 },
+      {
+        pose: pose({
+          head: [100, 44], neck: [100, 58], hip: [100, 96],
+          kneeF: [125, 96], ankleF: [125, 126], toeF: [135, 126],
+          kneeB: [95, 122], ankleB: [68, 112], toeB: [78, 124],
+          elbowF: [102, 78], handF: [102, 96], elbowB: [102, 78], handB: [102, 96],
+        }), ms: 1300,
+      },
+    ],
+  },
 ]
 
 export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
