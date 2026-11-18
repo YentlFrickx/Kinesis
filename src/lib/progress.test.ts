@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HistoryEntry } from '../store/history'
-import { balanceNudge, comebackDays, earnedMilestones, heatmap, sessionsThisWeek, startOfWeek, weeklyBalance } from './progress'
+import { balanceNudge, comebackDays, earnedMilestones, heatmap, sessionsThisWeek, startOfWeek, weekDays, weeklyBalance } from './progress'
 
 // Wed 2026-11-18 12:00 local
 const NOW = new Date(2026, 10, 18, 12).getTime()
@@ -17,6 +17,14 @@ describe('weeks', () => {
   it('counts only the current week', () => {
     const e = [at(2026, 11, 16), at(2026, 11, 18), at(2026, 11, 15), at(2026, 11, 23)]
     expect(sessionsThisWeek(e, NOW)).toBe(2)
+  })
+})
+
+describe('weekDays', () => {
+  it('returns Monday-first days with per-day counts and marks today', () => {
+    const days = weekDays([at(2026, 11, 16), at(2026, 11, 16), at(2026, 11, 18), at(2026, 11, 15)], NOW)
+    expect(days.map((d) => d.count)).toEqual([2, 0, 1, 0, 0, 0, 0])
+    expect(days.map((d) => d.today)).toEqual([false, false, true, false, false, false, false])
   })
 })
 

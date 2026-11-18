@@ -17,6 +17,7 @@ export function Heatmap({ weeks = 12 }: { weeks?: number }) {
               key={d.day}
               className={`heat-cell${d.future ? ' future' : ''}`}
               data-level={Math.min(d.count, 3)}
+              role="img"
               title={label(d.day, d.count)}
               aria-label={label(d.day, d.count)}
             />

@@ -5,6 +5,8 @@ import { formatClock } from '../lib/format'
 import { go } from '../lib/router'
 import { beep, getAutoReps, isMuted, setAutoReps, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
 import { advance, buildSteps, goTo, initState, next, prev, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
+import { Icon } from '../components/Icon'
+import { Sheet } from '../components/Sheet'
 import { youllNeed } from '../store/equipment'
 import { MILESTONES, comebackDays, sessionCategories } from '../lib/progress'
 import { getHistory, recordCompletion } from '../store/history'
@@ -44,6 +46,7 @@ export function Player({ id }: { id: string }) {
   const [state, setState] = useState<RunState>(() => initState(steps, autoReps))
   const [paused, setPaused] = useState(false)
   const [muted, setMutedState] = useState(isMuted)
+  const [sheet, setSheet] = useState<'quit' | 'settings' | null>(null)
   const lastSec = useRef<number | null>(null)
   const activeMs = useRef(0)
   const recorded = useRef(false)
@@ -150,14 +153,15 @@ export function Player({ id }: { id: string }) {
   if (state.finished) {
     return (
       <div className="player done">
-        <h1>Session complete 🎉</h1>
+        <div className="done-mark" aria-hidden="true"><Icon name="check" size={44} /></div>
+        <h1>Session complete</h1>
         <p className="meta">{session.name}</p>
         {reward && (reward.comeback > 0 || reward.milestones.length > 0) && (
           <div className="reward" role="status">
             {reward.comeback > 0 && <p>Welcome back! Great to see you again.</p>}
             {reward.milestones.map((id) => {
               const m = MILESTONES.find((x) => x.id === id)
-              return m && <p key={id}>{m.emoji} <strong>{m.title}</strong> unlocked</p>
+              return m && <p key={id}><Icon name="award" size={18} /><span><strong>{m.title}</strong> unlocked</span></p>
             })}
           </div>
         )}
@@ -179,42 +183,69 @@ export function Player({ id }: { id: string }) {
           ? 'Rest'
           : step.reason === 'start' ? 'Get ready' : 'Next up'
 
+  const segments = session.items.map((_, i) => {
+    const idx = steps.map((x, n) => (x.itemIndex === i ? n : -1)).filter((n) => n >= 0)
+    if (idx.length === 0) return 0
+    return Math.min(1, Math.max(0, (state.index - idx[0]) / idx.length))
+  })
+  const eyebrow = step.kind === 'work' ? 'Exercise' : step.reason === 'switch' ? 'Change side' : step.reason === 'start' ? 'Starting soon' : 'Recover'
+
   return (
     <div className="player">
       <div className="player-top">
-        <button className="link" onClick={() => confirm('Stop this session?') && go('/')}>✕ Quit</button>
-        <span className="meta">{state.index + 1} / {total}</span>
-        <button className="link" onClick={toggleAutoReps} aria-pressed={autoReps}>{autoReps ? '⏱ Auto reps' : '✋ Manual reps'}</button>
-        <button className="link" onClick={toggleMute} aria-pressed={muted}>{muted ? '🔇 Muted' : '🔊 Sound'}</button>
+        <button className="icon-btn" aria-label="End session" onClick={() => setSheet('quit')}><Icon name="x" /></button>
+        <span className="meta" aria-label={`Step ${state.index + 1} of ${total}`}>{state.index + 1} / {total}</span>
+        <button className="icon-btn" aria-label="Settings" onClick={() => setSheet('settings')}><Icon name="sliders" /></button>
       </div>
-      <progress max={total} value={state.index} aria-label="Session progress" />
+      <ol className="segs" aria-label="Session progress">
+        {segments.map((f, i) => <li key={i}><i style={{ width: `${f * 100}%` }} /></li>)}
+      </ol>
 
-      <h1 className="player-title">{heading}</h1>
-      {step.kind === 'rest' && step.reason === 'start' && youllNeed(session) && <p className="sub">{youllNeed(session)}</p>}
-      {step.kind === 'rest' && <p className="sub">Up next: <strong>{step.next.name}</strong>{step.side ? ` · ${sideLabel(step.side)}` : ''}</p>}
-      {step.kind === 'work' && (
-        <p className="sub">
-          {step.sets > 1 ? `Set ${step.set} of ${step.sets}` : ''}
-          {step.sets > 1 && step.side ? ' · ' : ''}
-          {sideLabel(step.side)}
-        </p>
-      )}
+      <div className="player-head">
+        <div className="eyebrow">{eyebrow}</div>
+        <h1 className="player-title">{heading}</h1>
+        {step.kind === 'rest' && step.reason === 'start' && youllNeed(session) && <p className="sub">{youllNeed(session)}</p>}
+        {step.kind === 'rest' && <p className="sub">Up next: <strong>{step.next.name}</strong>{step.side ? ` · ${sideLabel(step.side)}` : ''}</p>}
+        {step.kind === 'work' && (
+          <p className="sub">
+            {step.sets > 1 ? `Set ${step.set} of ${step.sets}` : ''}
+            {step.sets > 1 && step.side ? ' · ' : ''}
+            {sideLabel(step.side)}
+          </p>
+        )}
+      </div>
 
-      <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} label={`${exercise.name} animation`} className="player-figure" />
+      <div className={`player-stage${step.kind === 'rest' ? ' rest' : ''}`}>
+        <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} label={`${exercise.name} animation`} className="player-figure" />
+      </div>
 
       <div className="big" aria-live="off">
-        {isRepWork ? `${step.value} reps` : formatClock(state.remainingMs / 1000)}
+        {isRepWork ? <>{step.value}<small>reps</small></> : formatClock(state.remainingMs / 1000)}
       </div>
 
       <div className="controls">
-        <button className="btn" onClick={() => setState(prev(steps, state, autoReps))} disabled={state.index === 0}>⏮ Back</button>
+        <button className="icon-btn" aria-label="Back" onClick={() => setState(prev(steps, state, autoReps))} disabled={state.index === 0}><Icon name="prev" /></button>
         {isRepWork && !autoReps ? (
-          <button className="btn primary big-btn" onClick={() => setState(next(steps, state, autoReps))}>✓ Done</button>
+          <button className="big-btn" onClick={() => setState(next(steps, state, autoReps))}><Icon name="check" />Done</button>
         ) : (
-          <button className="btn primary big-btn" onClick={() => setPaused((p) => !p)}>{paused ? '▶ Resume' : '⏸ Pause'}</button>
+          <button className="big-btn" onClick={() => setPaused((p) => !p)}>{paused ? <><Icon name="play" size={20} />Resume</> : <><Icon name="pause" size={20} />Pause</>}</button>
         )}
-        <button className="btn" onClick={() => setState(next(steps, state, autoReps))}>Skip ⏭</button>
+        <button className="icon-btn" aria-label="Skip" onClick={() => setState(next(steps, state, autoReps))}><Icon name="next" /></button>
       </div>
+
+      {sheet === 'quit' && (
+        <Sheet title="End this session?" onClose={() => setSheet(null)}>
+          <p className="meta">Your progress so far is not saved.</p>
+          <button className="btn primary" onClick={() => setSheet(null)}>Keep going</button>
+          <button className="btn" onClick={() => go('/')}>End session</button>
+        </Sheet>
+      )}
+      {sheet === 'settings' && (
+        <Sheet title="Sound and pacing" onClose={() => setSheet(null)}>
+          <button className="opt" role="switch" aria-checked={!muted} onClick={toggleMute}><Icon name={muted ? 'mute' : 'vol'} size={20} />Sound cues<span className={`sw${muted ? '' : ' on'}`} /></button>
+          <button className="opt" role="switch" aria-checked={autoReps} onClick={toggleAutoReps}><Icon name="repeat" size={20} />Auto-pace reps<span className={`sw${autoReps ? ' on' : ''}`} /></button>
+        </Sheet>
+      )}
     </div>
   )
 }

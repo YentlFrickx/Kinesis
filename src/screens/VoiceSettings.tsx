@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from '../components/Icon'
 import { getVoiceURI, setVoiceURI, speak, speechSupported } from '../player/cues'
 import { useEnglishVoices } from '../player/useVoices'
 
@@ -15,7 +16,7 @@ export function VoiceSettings() {
   }
 
   return (
-    <div className="card voice-settings">
+    <div className="opt" style={{ display: 'block' }}>
       <label htmlFor="voice-select"><strong>Voice cues</strong> <span className="meta">(English)</span></label>
       <div className="voice-row">
         <select id="voice-select" value={selected}
@@ -25,7 +26,7 @@ export function VoiceSettings() {
             <option key={v.voiceURI} value={v.voiceURI}>{v.name} ({v.lang})</option>
           ))}
         </select>
-        <button className="btn small" onClick={() => test(selected)}>▶ Test</button>
+        <button className="btn small" onClick={() => test(selected)}><Icon name="play" size={14} />Test</button>
       </div>
       {voices.length === 0 && (
         <p className="meta">No English voice found on this device yet. Cues will use the device default in English where possible.</p>

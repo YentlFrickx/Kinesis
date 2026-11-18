@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Figure } from '../animation/Figure'
+import { Icon } from '../components/Icon'
 import { EXERCISE_MAP } from '../data/exercises'
 import type { Exercise, Session, SessionItem } from '../data/types'
 import { describe, formatDuration } from '../lib/format'
@@ -16,9 +17,9 @@ function Stepper({ label, value, min, max, step, suffix, onChange }: {
   const set = (v: number) => onChange(Math.min(max, Math.max(min, v)))
   return (
     <div className="stepper" role="group" aria-label={label}>
-      <button className="btn small" onClick={() => set(value - step)} disabled={value <= min} aria-label={`Decrease ${label}`}>−</button>
+      <button className="btn small" onClick={() => set(value - step)} disabled={value <= min} aria-label={`Decrease ${label}`}><Icon name="minus" size={16} /></button>
       <span className="stepper-val">{value}{suffix}</span>
-      <button className="btn small" onClick={() => set(value + step)} disabled={value >= max} aria-label={`Increase ${label}`}>+</button>
+      <button className="btn small" onClick={() => set(value + step)} disabled={value >= max} aria-label={`Increase ${label}`}><Icon name="plus" size={16} /></button>
     </div>
   )
 }
@@ -101,8 +102,8 @@ export function Editor({ id }: { id: string }) {
                   <span className="meta">{describe(ex.mode, item.value, item.sets, ex.perSide)}</span>
                 </div>
                 <div className="reorder">
-                  <button className="btn small" onClick={() => move(idx, -1)} disabled={idx === 0} aria-label={`Move ${ex.name} up`}>↑</button>
-                  <button className="btn small" onClick={() => move(idx, 1)} disabled={idx === session.items.length - 1} aria-label={`Move ${ex.name} down`}>↓</button>
+                  <button className="btn small up" onClick={() => move(idx, -1)} disabled={idx === 0} aria-label={`Move ${ex.name} up`}><Icon name="chev" size={16} /></button>
+                  <button className="btn small down" onClick={() => move(idx, 1)} disabled={idx === session.items.length - 1} aria-label={`Move ${ex.name} down`}><Icon name="chev" size={16} /></button>
                 </div>
               </div>
               <div className="item-controls">
@@ -134,7 +135,7 @@ export function Editor({ id }: { id: string }) {
 
       <div className="bar">
         <span className="meta">~{formatDuration(estimateSeconds(steps))}</span>
-        <button className="btn primary" disabled={steps.length === 0} onClick={() => go(`/play/${id}`)}>▶ Start</button>
+        <button className="btn primary" disabled={steps.length === 0} onClick={() => go(`/play/${id}`)}><Icon name="play" size={16} />Start</button>
       </div>
     </div>
   )

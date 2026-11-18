@@ -1,3 +1,6 @@
+import { Icon } from '../components/Icon'
+import { Sheet } from '../components/Sheet'
+import { useState } from 'react'
 import { Balance } from '../components/Balance'
 import { GoalRing } from '../components/GoalRing'
 import { Heatmap } from '../components/Heatmap'
@@ -17,6 +20,7 @@ const dayLabel = (t: number) => {
 }
 
 export function History() {
+  const [confirmClear, setConfirmClear] = useState(false)
   const entries = useHistory()
   const unlocked = useUnlocked()
   const totalSec = entries.reduce((n, e) => n + e.durationSec, 0)
@@ -40,7 +44,7 @@ export function History() {
       <ul className="badges">
         {MILESTONES.map((m) => (
           <li key={m.id} className={`badge${m.id in unlocked ? '' : ' locked'}`}>
-            <div className="emoji" aria-hidden="true">{m.emoji}</div>
+            <div className="medal" aria-hidden="true"><Icon name="award" size={20} /></div>
             <strong>{m.title}</strong>
             <div className="meta">{m.description}</div>
           </li>
@@ -74,9 +78,16 @@ export function History() {
             </section>
           ))}
           <div className="actions footer-actions">
-            <button className="btn small danger" onClick={() => confirm('Clear all history?') && clearHistory()}>Clear history</button>
+            <button className="btn small danger" onClick={() => setConfirmClear(true)}>Clear history</button>
           </div>
         </>
+      )}
+      {confirmClear && (
+        <Sheet title="Clear all history?" onClose={() => setConfirmClear(false)}>
+          <p className="meta">This removes every completed session and resets your streak and goal progress. It cannot be undone.</p>
+          <button className="btn primary" onClick={() => setConfirmClear(false)}>Keep history</button>
+          <button className="btn danger" onClick={() => { clearHistory(); setConfirmClear(false) }}>Clear history</button>
+        </Sheet>
       )}
     </div>
   )

@@ -9,7 +9,7 @@ test('first launch → create → play → history → export/import', async ({ 
   expect(starters).toBeGreaterThan(0) // seeded on first launch
 
   // Create a session and add exercises.
-  await page.getByRole('button', { name: '+ New' }).click()
+  await page.getByRole('button', { name: 'New', exact: true }).click()
   await page.getByLabel('Session name').fill('E2E session')
   await page.getByRole('button', { name: '+ Add exercises' }).click()
   await page.getByRole('button', { name: /^Add / }).first().click()
@@ -20,7 +20,7 @@ test('first launch → create → play → history → export/import', async ({ 
   await expect(cards).toHaveCount(starters + 1)
 
   // Play it to completion by skipping through every step.
-  await cards.filter({ hasText: 'E2E session' }).getByRole('button', { name: '▶ Start' }).click()
+  await cards.filter({ hasText: 'E2E session' }).getByRole('button', { name: 'Start E2E session' }).click()
   const complete = page.getByRole('heading', { name: /Session complete/ })
   for (let i = 0; i < 100 && !(await complete.isVisible()); i++) {
     await page.getByRole('button', { name: /Skip/ }).click()
@@ -36,6 +36,7 @@ test('first launch → create → play → history → export/import', async ({ 
 
   // Export, delete the session, re-import.
   await page.getByRole('button', { name: 'Sessions', exact: true }).click()
+  await page.getByRole('button', { name: 'Settings' }).click()
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Export' }).click()
   const file = info.outputPath('export.json')
@@ -43,8 +44,10 @@ test('first launch → create → play → history → export/import', async ({ 
   const exported = await readFile(file, 'utf8')
   expect(JSON.parse(exported).sessions).toHaveLength(starters + 1)
 
-  page.once('dialog', (d) => d.accept())
-  await cards.filter({ hasText: 'E2E session' }).getByRole('button', { name: 'Delete' }).click()
+  await page.keyboard.press('Escape')
+  await cards.filter({ hasText: 'E2E session' }).getByRole('button', { name: 'More for E2E session' }).click()
+  await page.getByRole('button', { name: 'Delete', exact: true }).click()
+  await page.getByRole('button', { name: 'Delete session' }).click()
   await expect(cards).toHaveCount(starters)
   await page.locator('input[type=file]').setInputFiles({ name: 'kinesis-sessions.json', mimeType: 'application/json', buffer: Buffer.from(exported) })
   await expect(page.getByRole('status')).toContainText(`Imported ${starters + 1} session(s)`)
