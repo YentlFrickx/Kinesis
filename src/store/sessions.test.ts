@@ -87,7 +87,8 @@ describe('sessions store', () => {
     expect(imported.name).toHaveLength(80)
     expect(imported.defaultSetRestSec).toBe(600)
     expect(imported.defaultTransitionSec).toBe(10)
-    expect(imported.items).toEqual([
+    expect(imported.items.every((i: { id?: string }) => typeof i.id === 'string' && i.id)).toBe(true)
+    expect(imported.items.map(({ id: _id, ...rest }: { id?: string }) => rest)).toEqual([
       { exerciseId: 'push-up', value: 3600, sets: 1, restAfterSec: 0 },
       { exerciseId: 'forearm-plank', value: 30, sets: 20 },
     ])
@@ -98,5 +99,26 @@ describe('sessions store', () => {
     expect(s.exportJson()).toContain('"sessions": []')
     const v = await load({ 'rw.sessions.v1': JSON.stringify({ version: 99, sessions: [{}] }), 'rw.seeded.v1': '1' })
     expect(JSON.parse(v.s.exportJson()).sessions).toEqual([])
+  })
+})
+
+describe('item ids', () => {
+  it('migrates stored sessions without ids, keeping data and existing ids', async () => {
+    const stored = { version: 1, sessions: [{ id: 'x', name: 'X', defaultSetRestSec: 30, defaultTransitionSec: 10,
+      items: [{ exerciseId: 'push-up', value: 5, sets: 2, note: 'hi' }, { id: 'keep', exerciseId: 'push-up', value: 6, sets: 1 }] }] }
+    const { s } = await load({ 'rw.seeded.v1': '1', 'rw.sessions.v1': JSON.stringify(stored) })
+    const items = s.getSession('x')!.items
+    expect(items[0]).toMatchObject({ exerciseId: 'push-up', value: 5, sets: 2, note: 'hi' })
+    expect(items[0].id).toBeTruthy()
+    expect(items[1].id).toBe('keep')
+  })
+
+  it('restores a deleted session at its index', async () => {
+    const { s } = await load({ 'rw.seeded.v1': '1' })
+    const a = s.createSession('A'); s.createSession('B')
+    const at = s.sessionIndex(a.id)
+    s.deleteSession(a.id)
+    s.restoreSession(a, at)
+    expect(s.sessionIndex(a.id)).toBe(at)
   })
 })

@@ -67,3 +67,6 @@ export function recordCompletion(sessionId: string, sessionName: string, duratio
 
 export const deleteEntry = (id: string) => commit(entries.filter((e) => e.id !== id))
 export const clearHistory = () => commit([])
+
+/** Replaces the whole history (used by undo). */
+export const restoreHistory = (list: HistoryEntry[]) => commit(list)

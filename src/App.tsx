@@ -7,6 +7,7 @@ import { Editor } from './screens/Editor'
 import { History } from './screens/History'
 import { Player } from './screens/Player'
 import { Sessions } from './screens/Sessions'
+import { Toast } from './components/Toast'
 import './App.css'
 
 const TABS: { key: string; path: string; label: MessageKey; icon: IconName }[] = [
@@ -43,6 +44,7 @@ export default function App() {
           ))}
         </div>
       </nav>
+      <Toast />
     </>
   )
 }

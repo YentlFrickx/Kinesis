@@ -7,7 +7,8 @@ import { Heatmap } from '../components/Heatmap'
 import { formatDate, formatDuration, formatTime } from '../lib/format'
 import { sessionLabel, useT } from '../i18n'
 import { MILESTONES } from '../lib/progress'
-import { clearHistory, deleteEntry, useHistory } from '../store/history'
+import { clearHistory, deleteEntry, getHistory, restoreHistory, useHistory } from '../store/history'
+import { showToast } from '../store/toast'
 import { useUnlocked } from '../store/milestones'
 
 const dayKey = (t: number) => new Date(t).toDateString()
@@ -88,7 +89,11 @@ export function History() {
         <Sheet title={t('history.clearTitle')} onClose={() => setConfirmClear(false)}>
           <p className="meta">{t('history.clearBody')}</p>
           <button className="btn primary" onClick={() => setConfirmClear(false)}>{t('history.keep')}</button>
-          <button className="btn danger" onClick={() => { clearHistory(); setConfirmClear(false) }}>{t('history.clear')}</button>
+          <button className="btn danger" onClick={() => {
+            const snapshot = getHistory()
+            clearHistory()
+            showToast(t('history.cleared'), () => restoreHistory(snapshot))
+            setConfirmClear(false) }}>{t('history.clear')}</button>
         </Sheet>
       )}
     </div>

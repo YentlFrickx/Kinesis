@@ -33,6 +33,8 @@ export interface Exercise {
 }
 
 export interface SessionItem {
+  /** Stable id used as React key; assigned by the sessions store (migrated on load, generated on import). */
+  id?: string
   exerciseId: string
   value: number
   sets: number

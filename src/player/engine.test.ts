@@ -120,3 +120,15 @@ describe('run state', () => {
     expect(st.finished).toBe(true)
   })
 })
+
+describe('rest after the last item', () => {
+  it('ignores restAfterSec on the last item (no trailing rest)', () => {
+    const mk = (restAfterSec?: number): Session => ({
+      id: 's', name: 's', defaultSetRestSec: 0, defaultTransitionSec: 0,
+      items: [{ exerciseId: 'plank', value: 5, sets: 1, restAfterSec }],
+    })
+    const look = (i: string) => lib.get(i)
+    expect(buildSteps(mk(60), look)).toEqual(buildSteps(mk(undefined), look))
+    expect(buildSteps(mk(60), look).at(-1)?.kind).toBe('work')
+  })
+})
