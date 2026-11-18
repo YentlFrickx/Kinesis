@@ -1,15 +1,17 @@
 import { useState } from 'react'
+import { useT } from '../i18n'
+import { formatDate } from '../lib/format'
 import { heatmap } from '../lib/progress'
 import { useHistory } from '../store/history'
 
-const label = (day: number, count: number) =>
-  `${new Date(day).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}: ${count} session${count === 1 ? '' : 's'}`
-
 export function Heatmap({ weeks = 12 }: { weeks?: number }) {
+  const t = useT()
+  const label = (day: number, count: number) =>
+    `${formatDate(day, { weekday: 'short', day: 'numeric', month: 'short' })}: ${t('sessions.sessionCount', { count })}`
   const [now] = useState(Date.now)
   const grid = heatmap(useHistory(), now, weeks)
   return (
-    <div className="heat" role="group" aria-label={`Activity, last ${weeks} weeks`}>
+    <div className="heat" role="group" aria-label={t('history.activityAria', { weeks })}>
       {grid.map((week, w) => (
         <div key={w} className="heat-col">
           {week.map((d) => (

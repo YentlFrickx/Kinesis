@@ -202,3 +202,9 @@ ul, ol { padding: 0; margin: 0; }
 }
 .btn.up .ic { transform: rotate(-90deg); }
 .btn.down .ic { transform: rotate(90deg); }
+.voice-field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; margin-top: 12px; font-weight: 600; font-size: .9rem; }
+.voice-field input[type="range"] { grid-column: 1; accent-color: var(--accent); min-height: 32px; width: 100%; }
+.voice-field select { grid-column: 1 / -1; padding: 10px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); color: var(--fg); font: inherit; }
+.voice-field .meta { grid-column: 2; grid-row: 2; }
+.seg-pick button[lang] { text-transform: none; }
+.speech-hint { margin: 0 0 8px; text-align: center; }

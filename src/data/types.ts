@@ -5,7 +5,6 @@ export type BodyArea = 'glutes' | 'hips' | 'quads' | 'hamstrings' | 'calves' | '
 
 export type Equipment = 'dumbbell' | 'band'
 export const EQUIPMENT: readonly Equipment[] = ['dumbbell', 'band']
-export const EQUIPMENT_LABEL: Record<Equipment, string> = { dumbbell: 'Dumbbells', band: 'Resistance band' }
 
 export interface Exercise {
   id: string

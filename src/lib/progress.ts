@@ -66,24 +66,13 @@ export function heatmap(entries: HistoryEntry[], now: number, weeks = 12): HeatD
   )
 }
 
-export interface Milestone {
-  id: string
-  emoji: string
-  title: string
-  description: string
-}
-
-export const MILESTONES: Milestone[] = [
-  { id: 'first-session', emoji: '🌱', title: 'First session', description: 'Complete your first session.' },
-  { id: 'sessions-10', emoji: '🔟', title: '10 sessions', description: 'Complete 10 sessions.' },
-  { id: 'sessions-50', emoji: '🏅', title: '50 sessions', description: 'Complete 50 sessions.' },
-  { id: 'goal-week', emoji: '🎯', title: 'Goal reached', description: 'Hit your weekly goal for the first time.' },
-  { id: 'all-starters', emoji: '🧭', title: 'Tried every starter', description: 'Complete each starter session at least once.' },
-]
+/** Milestone ids; their titles and descriptions live in the i18n catalogs (`milestone.<id>.title` / `.desc`). */
+export const MILESTONES = ['first-session', 'sessions-10', 'sessions-50', 'goal-week', 'all-starters'] as const
+export type MilestoneId = (typeof MILESTONES)[number]
 
 /** Ids of the milestones that the given history satisfies. */
-export function earnedMilestones(entries: HistoryEntry[], goal: number): string[] {
-  const earned: string[] = []
+export function earnedMilestones(entries: HistoryEntry[], goal: number): MilestoneId[] {
+  const earned: MilestoneId[] = []
   if (entries.length >= 1) earned.push('first-session')
   if (entries.length >= 10) earned.push('sessions-10')
   if (entries.length >= 50) earned.push('sessions-50')
@@ -107,7 +96,6 @@ export function comebackDays(previousCompletedAt: number | undefined, now: numbe
 }
 
 export const CATEGORIES: readonly Category[] = ['strength', 'stretch', 'mobility']
-export const CATEGORY_LABEL: Record<Category, string> = { strength: 'Strength', stretch: 'Stretching', mobility: 'Mobility' }
 
 /** Number of exercises per category in a session (unknown exercises are ignored). */
 export function sessionCategories(session: Session, categoryOf: (exerciseId: string) => Category | undefined) {
@@ -131,10 +119,8 @@ export function weeklyBalance(entries: HistoryEntry[], now: number): Record<Cate
   return total
 }
 
-/** A gentle suggestion when the week so far leaves out a category; null when balanced or nothing to go on yet. */
-export function balanceNudge(balance: Record<Category, number>): string | null {
-  if (CATEGORIES.every((c) => balance[c] === 0)) return null
-  const missing = CATEGORIES.filter((c) => balance[c] === 0).map((c) => CATEGORY_LABEL[c].toLowerCase())
-  if (missing.length === 0) return null
-  return `No ${missing.join(' or ')} yet this week. Adding some would round things out.`
+/** Categories the week so far leaves out, for a gentle nudge; empty when balanced or when there is nothing to go on yet. */
+export function missingCategories(balance: Record<Category, number>): Category[] {
+  if (CATEGORIES.every((c) => balance[c] === 0)) return []
+  return CATEGORIES.filter((c) => balance[c] === 0)
 }
