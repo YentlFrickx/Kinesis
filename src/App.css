@@ -160,13 +160,13 @@ ul, ol { padding: 0; margin: 0; }
 .segs { display: flex; gap: 6px; margin: 4px 0 16px; padding: 0; list-style: none; }
 .segs li { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .segs li i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
-.player-head { text-align: center; }
+.player-head { text-align: center; display: flex; flex-direction: column; justify-content: center; min-height: 9rem; } /* fixed room for a 2-line title and 2-line subtitle so the figure never resizes between steps */
 .player-title { margin: 4px 0 2px; font-size: 1.9rem; }
 .sub { margin: 0; color: var(--muted); min-height: 1.4em; }
 .player-stage { flex: 1; min-height: 160px; display: grid; place-items: center; background: var(--surface); border-radius: 28px; margin: 16px 0; padding: 12px 28px; transition: background .3s; }
 .player-stage.rest { background: var(--soft); }
 .player-figure { max-width: 380px; max-height: 100%; }
-.big { text-align: center; font: 800 4.75rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.big { text-align: center; font: 800 4.75rem/1 var(--font-display); font-variant-numeric: tabular-nums; min-height: 6.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; } /* same height for clock and rep count */
 .big small { display: block; font: 600 .85rem var(--font-body); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 6px; }
 .controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 20px; }
 .controls .icon-btn { width: 56px; height: 56px; background: var(--surface); }
