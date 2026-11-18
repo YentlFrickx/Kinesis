@@ -1,4 +1,4 @@
-import { pose, type Pose } from '../animation/skeleton'
+import { pose, type Keyframe, type Pose, type Prop } from '../animation/skeleton'
 import type { Exercise } from './types'
 
 type P = Partial<Pose>
@@ -62,6 +62,43 @@ const swingSupport: P = {
   elbowF: [114, 56], handF: [128, 54], elbowB: [86, 56], handB: [72, 54],
 }
 const calfRaiseArms: P = { ...handsOnHips }
+
+// ---- helpers for scenes with a box/step (shrink the figure so everything fits) ----
+const scalePose = (k: number, p: Pose): Pose => {
+  const out = {} as Record<keyof Pose, readonly [number, number]>
+  for (const j of Object.keys(p) as (keyof Pose)[]) out[j] = [100 + (p[j][0] - 100) * k, 126 - (126 - p[j][1]) * k]
+  return out
+}
+const scaleFrames = (k: number, frames: Keyframe[]): Keyframe[] => frames.map((f) => ({ ...f, pose: scalePose(k, f.pose) }))
+const scaleProps = (k: number, props: Prop[]): Prop[] =>
+  props.map((p) => ({ x: 100 + (p.x - 100) * k, y: 126 - (126 - p.y) * k, w: p.w * k, h: p.h * k }))
+
+/** Upright, straight-legged pose centred at x with the hip at hipY. */
+const upright = (x: number, hipY: number): P => ({
+  head: [x, hipY - 52], neck: [x, hipY - 38], hip: [x, hipY],
+  kneeF: [x, hipY + 25], ankleF: [x, hipY + 50], toeF: [x + 10, hipY + 50],
+  kneeB: [x, hipY + 25], ankleB: [x, hipY + 50], toeB: [x + 10, hipY + 50],
+  elbowF: [x, hipY - 18], handF: [x, hipY], elbowB: [x, hipY - 18], handB: [x, hipY],
+})
+
+const BOX_K = 0.8
+const boxProps: Prop[] = [{ x: 88, y: 112, w: 55, h: 14 }]
+const stepProps: Prop[] = [{ x: 104, y: 110, w: 56, h: 16 }]
+const chairProps: Prop[] = [
+  { x: 50, y: 52, w: 6, h: 46 }, { x: 50, y: 92, w: 50, h: 6 },
+  { x: 52, y: 98, w: 4, h: 28 }, { x: 94, y: 98, w: 4, h: 28 },
+]
+const seatedFoot: P = {
+  head: [74, 40], neck: [74, 54], hip: [74, 90],
+  kneeF: [100, 92], kneeB: [100, 92], ankleF: [102, 119], ankleB: [102, 119],
+  elbowF: [84, 76], handF: [96, 90], elbowB: [84, 76], handB: [96, 90],
+}
+const pushupUp: P = {
+  head: [37, 84], neck: [50, 86], hip: [100, 104],
+  kneeF: [125, 113], ankleF: [150, 122], toeF: [154, 125],
+  kneeB: [125, 113], ankleB: [150, 122], toeB: [154, 125],
+  elbowF: [50, 105], handF: [50, 124], elbowB: [50, 105], handB: [50, 124],
+}
 
 export const EXERCISES: Exercise[] = [
   // ---------------- strength ----------------
@@ -525,6 +562,203 @@ export const EXERCISES: Exercise[] = [
     animation: [
       { pose: pose({ ...swingSupport, kneeF: [88, 98], ankleF: [75, 119], toeF: [81, 125] }), ms: 900 },
       { pose: pose({ ...swingSupport, kneeF: [119, 92], ankleF: [138, 108], toeF: [146, 112] }), ms: 900 },
+    ],
+  },
+  // ---------------- added: balance, split squats, calf/foot work, push-up ----------------
+  {
+    id: 'single-leg-balance', name: 'Single-leg balance', category: 'strength',
+    bodyAreas: ['hips', 'calves', 'core'],
+    mode: 'time', defaultValue: 30, defaultSets: 2, perSide: true,
+    instructions: [
+      'Stand on one leg with a slightly soft knee and lift the other knee to hip height.',
+      'Keep your hips level and your gaze on a fixed point. Small wobbles are normal.',
+      'Make it harder by closing your eyes or standing on a folded towel or cushion.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          kneeB: [118, 90], ankleB: [114, 114], toeB: [120, 116],
+          elbowF: [108, 56], handF: [120, 62], elbowB: [92, 56], handB: [82, 62],
+        }), ms: 1400,
+      },
+      {
+        pose: pose({
+          head: [103, 24], neck: [102, 38], hip: [101, 76], kneeF: [101, 101],
+          kneeB: [120, 86], ankleB: [116, 110], toeB: [122, 112],
+          elbowF: [110, 54], handF: [123, 56], elbowB: [92, 54], handB: [80, 54],
+        }), ms: 1400,
+      },
+    ],
+  },
+  {
+    id: 'bulgarian-split-squat', name: 'Bulgarian split squat', category: 'strength',
+    bodyAreas: ['quads', 'glutes', 'hamstrings'],
+    mode: 'reps', defaultValue: 8, defaultSets: 3, perSide: true,
+    instructions: [
+      'Stand a stride in front of a bench and rest the top of your back foot on it.',
+      'Lower straight down until the front thigh is about parallel to the floor.',
+      'Keep your torso tall and your front heel planted, then drive back up. The front leg is the working leg.',
+    ],
+    props: [{ x: 15, y: 102, w: 47, h: 24 }],
+    animation: [
+      {
+        pose: pose({
+          ...handsOnHips,
+          kneeF: [112, 100], ankleF: [116, 126], toeF: [126, 126],
+          kneeB: [78, 92], ankleB: [56, 100], toeB: [49, 102],
+        }), ms: 1500,
+      },
+      {
+        pose: pose({
+          head: [100, 46], neck: [100, 60], hip: [96, 98],
+          kneeF: [122, 98], ankleF: [118, 126], toeF: [128, 126],
+          kneeB: [72, 112], ankleB: [54, 101], toeB: [47, 103],
+          elbowF: [88, 76], handF: [96, 92], elbowB: [88, 76], handB: [96, 92],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'single-leg-half-squat', name: 'Single-leg half squat', category: 'strength',
+    bodyAreas: ['quads', 'glutes', 'core'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: true,
+    instructions: [
+      'Stand on one leg with the other leg held out in front, arms forward for balance.',
+      'Bend the standing knee to roughly 45 to 60 degrees, hips back, knee tracking over your toes.',
+      'Press back up to standing. Do not go deeper than you can control.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          kneeB: [121, 92], ankleB: [142, 106], toeB: [150, 108], ...armsForward,
+        }), ms: 1500,
+      },
+      {
+        pose: pose({
+          head: [101, 44], neck: [94, 56], hip: [84, 94],
+          kneeF: [110, 100], ankleF: [100, 126], toeF: [110, 126],
+          kneeB: [108, 100], ankleB: [132, 108], toeB: [140, 110],
+          elbowF: [108, 64], handF: [124, 66], elbowB: [108, 64], handB: [124, 66],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'straight-leg-calf-raise-box', name: 'Straight-leg calf raise (on box)', category: 'strength',
+    bodyAreas: ['calves'],
+    mode: 'reps', defaultValue: 15, defaultSets: 3, perSide: false,
+    instructions: [
+      'Stand with the balls of both feet on the edge of a box or step, heels hanging off. Hold a wall for balance.',
+      'Keep your knees straight and rise as high as you can onto your toes.',
+      'Lower slowly until your heels drop below the step for a full stretch. Targets the gastrocnemius.',
+    ],
+    props: scaleProps(BOX_K, boxProps),
+    animation: scaleFrames(BOX_K, [
+      { pose: pose({ ...upright(88, 70), toeF: [98, 112], toeB: [98, 112], ankleF: [88, 120], ankleB: [88, 120] }), ms: 1800 },
+      { pose: pose({ ...upright(89, 48), toeF: [99, 112], toeB: [99, 112], ankleF: [89, 98], ankleB: [89, 98] }), ms: 1200 },
+    ]),
+  },
+  {
+    id: 'bent-knee-calf-raise-box', name: 'Bent-knee calf raise (on box)', category: 'strength',
+    bodyAreas: ['calves'],
+    mode: 'reps', defaultValue: 15, defaultSets: 3, perSide: false,
+    instructions: [
+      'Stand with the balls of both feet on a box edge and bend your knees slightly, holding a wall for balance.',
+      'Keeping the knees bent the whole time, rise onto your toes as high as you can.',
+      'Lower slowly below the step. The bent knee shifts the work to the deeper soleus muscle.',
+    ],
+    props: scaleProps(BOX_K, boxProps),
+    animation: scaleFrames(BOX_K, [
+      {
+        pose: pose({
+          head: [86, 22], neck: [86, 36], hip: [84, 74],
+          kneeF: [102, 95], kneeB: [102, 95], ankleF: [88, 118], ankleB: [88, 118], toeF: [98, 112], toeB: [98, 112],
+          elbowF: [74, 56], handF: [84, 74], elbowB: [74, 56], handB: [84, 74],
+        }), ms: 1800,
+      },
+      {
+        pose: pose({
+          head: [87, 4], neck: [87, 18], hip: [85, 56],
+          kneeF: [103, 77], kneeB: [103, 77], ankleF: [89, 99], ankleB: [89, 99], toeF: [99, 112], toeB: [99, 112],
+          elbowF: [75, 38], handF: [85, 56], elbowB: [75, 38], handB: [85, 56],
+        }), ms: 1200,
+      },
+    ]),
+  },
+  {
+    id: 'push-up', name: 'Push-up', category: 'strength',
+    bodyAreas: ['chest', 'arms', 'core'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: false,
+    instructions: [
+      'Start in a high plank, hands under your shoulders, body in one straight line.',
+      'Lower your chest toward the floor with elbows at about 45 degrees from your body.',
+      'Press back up without letting your hips sag. Drop to your knees if you need an easier version.',
+    ],
+    animation: [
+      { pose: pose(pushupUp), ms: 1000 },
+      {
+        pose: pose({
+          ...pushupUp, head: [37, 110], neck: [50, 112], hip: [100, 115],
+          kneeF: [125, 119], kneeB: [125, 119], ankleF: [150, 123], ankleB: [150, 123],
+          elbowF: [68, 106], elbowB: [68, 106],
+        }), ms: 1000,
+      },
+    ],
+  },
+  {
+    id: 'toe-curls-towel', name: 'Toe curls with towel', category: 'strength',
+    bodyAreas: ['feet'],
+    mode: 'reps', defaultValue: 15, defaultSets: 2, perSide: true,
+    instructions: [
+      'Sit on a chair with one foot flat on a small towel laid on a smooth floor.',
+      'Curl your toes to scrunch the towel toward you, keeping your heel on the floor.',
+      'Relax and spread the toes, then repeat. Strengthens the small muscles under the arch.',
+    ],
+    props: [...chairProps, { x: 96, y: 124, w: 50, h: 2 }],
+    animation: [
+      { pose: pose({ ...seatedFoot, toeF: [116, 125], toeB: [116, 125] }), ms: 900 },
+      { pose: pose({ ...seatedFoot, toeF: [108, 122], toeB: [108, 122] }), ms: 900 },
+    ],
+  },
+  {
+    id: 'calf-stretch-step', name: 'Calf stretch on a step', category: 'stretch',
+    bodyAreas: ['calves'],
+    mode: 'time', defaultValue: 30, defaultSets: 2, perSide: false,
+    instructions: [
+      'Stand with the balls of your feet on a step and heels hanging off. Hold a rail or wall.',
+      'Let your heels sink down below the step until you feel the stretch in your calves and Achilles.',
+      'Keep your knees straight. Bend them slightly to shift the stretch lower down to the Achilles.',
+    ],
+    props: scaleProps(BOX_K, stepProps),
+    animation: scaleFrames(BOX_K, [
+      { pose: pose({ ...upright(100, 58), toeF: [110, 110], toeB: [110, 110], ankleF: [100, 108], ankleB: [100, 108] }), ms: 1800 },
+      { pose: pose({ ...upright(100, 72), toeF: [110, 110], toeB: [110, 110], ankleF: [100, 122], ankleB: [100, 122] }), ms: 1800 },
+    ]),
+  },
+  {
+    id: 'toe-extension', name: 'Toe extension', category: 'stretch',
+    bodyAreas: ['feet'],
+    mode: 'time', defaultValue: 30, defaultSets: 2, perSide: false,
+    instructions: [
+      'Kneel with your toes tucked under so the soles face behind you.',
+      'Slowly sit back toward your heels until you feel the stretch along the bottom of your toes and arches.',
+      'Hold, easing off if it is sharp. Lift your hips to release.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          head: [91, 44], neck: [90, 58], hip: [88, 96],
+          kneeF: [98, 122], kneeB: [98, 122], ankleF: [74, 108], ankleB: [74, 108], toeF: [76, 125], toeB: [76, 125],
+          elbowF: [92, 80], handF: [98, 112], elbowB: [92, 80], handB: [98, 112],
+        }), ms: 2000,
+      },
+      {
+        pose: pose({
+          head: [81, 52], neck: [80, 66], hip: [78, 104],
+          kneeF: [98, 122], kneeB: [98, 122], ankleF: [74, 108], ankleB: [74, 108], toeF: [76, 125], toeB: [76, 125],
+          elbowF: [84, 88], handF: [98, 114], elbowB: [84, 88], handB: [98, 114],
+        }), ms: 2000,
+      },
     ],
   },
 ]
