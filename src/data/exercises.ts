@@ -56,7 +56,7 @@ const forearmPlank: P = {
   head: [35, 97], neck: [48, 100], hip: [96, 107],
   kneeF: [123, 113], ankleF: [150, 120], toeF: [156, 125],
   kneeB: [123, 113], ankleB: [150, 120], toeB: [156, 125],
-  elbowF: [48, 124], handF: [70, 124], elbowB: [48, 124], handB: [70, 124],
+  elbowF: [50, 124], handF: [28, 124], elbowB: [50, 124], handB: [28, 124],
 }
 // Side-lying leg raise, seen from the front: head on the bottom arm, top hand propped on the floor.
 const sideLegDown: P = {
