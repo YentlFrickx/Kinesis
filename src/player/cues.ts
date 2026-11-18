@@ -2,6 +2,15 @@ import { pickVoice } from './voice'
 
 const MUTE_KEY = 'rw.muted'
 const VOICE_KEY = 'rw.voice'
+const AUTO_REPS_KEY = 'rw.autoReps'
+
+/** Auto-advance rep steps at SECONDS_PER_REP (off by default: tap "Done" instead). */
+export const getAutoReps = (): boolean => {
+  try { return localStorage.getItem(AUTO_REPS_KEY) === '1' } catch { return false }
+}
+export const setAutoReps = (on: boolean) => {
+  try { localStorage.setItem(AUTO_REPS_KEY, on ? '1' : '0') } catch { /* ignore */ }
+}
 
 export const isMuted = (): boolean => {
   try { return localStorage.getItem(MUTE_KEY) === '1' } catch { return false }
