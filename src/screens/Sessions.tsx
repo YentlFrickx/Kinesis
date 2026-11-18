@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { EXERCISE_MAP } from '../data/exercises'
 import { formatDuration } from '../lib/format'
 import { go } from '../lib/router'
+import { VoiceSettings } from './VoiceSettings'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import {
   createSession, deleteSession, duplicateSession, exportJson, importJson, missingStarters, restoreStarters, useSessions,
@@ -69,6 +70,7 @@ export function Sessions() {
         <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => onImport(e.target.files?.[0])} />
       </div>
       {msg && <p className="meta" role="status">{msg}</p>}
+      <VoiceSettings />
     </div>
   )
 }

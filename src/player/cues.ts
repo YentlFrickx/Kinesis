@@ -1,4 +1,7 @@
+import { pickVoice } from './voice'
+
 const MUTE_KEY = 'rw.muted'
+const VOICE_KEY = 'rw.voice'
 
 export const isMuted = (): boolean => {
   try { return localStorage.getItem(MUTE_KEY) === '1' } catch { return false }
@@ -33,11 +36,28 @@ export function beep(freq = 880, ms = 120) {
   osc.stop(a.currentTime + ms / 1000)
 }
 
-export function speak(text: string) {
-  if (isMuted() || typeof speechSynthesis === 'undefined') return
+export const getVoiceURI = (): string | null => {
+  try { return localStorage.getItem(VOICE_KEY) } catch { return null }
+}
+export const setVoiceURI = (uri: string | null) => {
   try {
+    if (uri) localStorage.setItem(VOICE_KEY, uri)
+    else localStorage.removeItem(VOICE_KEY)
+  } catch { /* ignore */ }
+}
+
+export const speechSupported = () => typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined'
+
+/** Speaks `text` in English, using the chosen voice (or the best English one). `force` ignores the mute toggle. */
+export function speak(text: string, opts: { force?: boolean } = {}) {
+  if ((isMuted() && !opts.force) || !speechSupported()) return
+  try {
+    const u = new SpeechSynthesisUtterance(text)
+    const voice = pickVoice(speechSynthesis.getVoices(), getVoiceURI())
+    if (voice) u.voice = voice
+    u.lang = voice?.lang ?? 'en-GB' // forces English even when no English voice is listed yet
     speechSynthesis.cancel()
-    speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+    speechSynthesis.speak(u)
   } catch { /* ignore */ }
 }
 
