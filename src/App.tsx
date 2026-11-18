@@ -1,4 +1,5 @@
 import { useRoute, go } from './lib/router'
+import { Generator } from './screens/Generator'
 import { ExerciseBrowser } from './screens/ExerciseBrowser'
 import { Editor } from './screens/Editor'
 import { History } from './screens/History'
@@ -14,6 +15,7 @@ export default function App() {
 
   let body
   if (section === 'session' && id) body = <Editor key={id} id={id} />
+  else if (section === 'generate') body = <Generator />
   else if (section === 'history') body = <History />
   else if (section === 'library') body = (<><h1>Exercises</h1><ExerciseBrowser /></>)
   else body = <Sessions />
