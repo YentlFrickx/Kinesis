@@ -1,7 +1,7 @@
 import type { Keyframe, Prop } from '../animation/skeleton'
 
 export type Category = 'strength' | 'stretch' | 'mobility'
-export type BodyArea = 'glutes' | 'hips' | 'quads' | 'hamstrings' | 'calves' | 'core' | 'chest' | 'arms' | 'feet' | 'full body'
+export type BodyArea = 'glutes' | 'hips' | 'quads' | 'hamstrings' | 'calves' | 'core' | 'chest' | 'arms' | 'shoulders' | 'upper back' | 'feet' | 'full body'
 
 export interface Exercise {
   id: string

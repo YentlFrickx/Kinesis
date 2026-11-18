@@ -62,6 +62,11 @@ const swingSupport: P = {
   elbowF: [114, 56], handF: [128, 54], elbowB: [86, 56], handB: [72, 54],
 }
 const calfRaiseArms: P = { ...handsOnHips }
+const proneBase: P = {
+  hip: [95, 122],
+  kneeF: [118, 124], ankleF: [142, 124], toeF: [148, 124],
+  kneeB: [118, 124], ankleB: [142, 124], toeB: [148, 124],
+}
 const quadruped: P = {
   head: [40, 84], neck: [56, 88], hip: [104, 90],
   kneeF: [104, 122], ankleF: [130, 124], toeF: [138, 124],
@@ -962,6 +967,127 @@ export const EXERCISES: Exercise[] = [
       },
     ],
   },
+  // ---------------- added: triathlon (swim shoulders, aero/bike posture, run hips) ----------------
+  {
+    id: 'prone-y-raise', name: 'Prone Y raise', category: 'strength',
+    bodyAreas: ['shoulders', 'upper back'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie face down with your arms overhead in a Y shape, thumbs pointing up and forehead hovering just off the floor.',
+      'Pull your shoulder blades back and down, then lift both arms a few centimetres without shrugging.',
+      "Lower slowly. Builds the shoulder-blade stability that protects a swimmer's shoulders.",
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...proneBase, head: [28, 119], neck: [42, 121],
+          elbowF: [24, 122], handF: [8, 124], elbowB: [24, 122], handB: [8, 124],
+        }), ms: 1200,
+      },
+      {
+        pose: pose({
+          ...proneBase, head: [30, 108], neck: [44, 114],
+          elbowF: [26, 104], handF: [8, 98], elbowB: [26, 104], handB: [8, 98],
+        }), ms: 1200,
+      },
+    ],
+  },
+  {
+    id: 'prone-w-raise', name: 'Prone W raise', category: 'strength',
+    bodyAreas: ['shoulders', 'upper back'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie face down with your elbows bent and tucked by your ribs, hands near your head in a W shape.',
+      'Squeeze your shoulder blades together and lift your elbows and hands off the floor, rotating the arms outward.',
+      'Pause, then lower slowly. Targets the rotator cuff and mid-back used in the swim catch.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...proneBase, head: [28, 119], neck: [42, 121],
+          elbowF: [58, 124], handF: [38, 124], elbowB: [58, 124], handB: [38, 124],
+        }), ms: 1200,
+      },
+      {
+        pose: pose({
+          ...proneBase, head: [30, 108], neck: [44, 114],
+          elbowF: [58, 110], handF: [38, 104], elbowB: [58, 110], handB: [38, 104],
+        }), ms: 1200,
+      },
+    ],
+  },
+  {
+    id: 'thoracic-rotation', name: 'Quadruped thoracic rotation', category: 'mobility',
+    bodyAreas: ['upper back', 'shoulders'],
+    mode: 'reps', defaultValue: 8, defaultSets: 1, perSide: true,
+    instructions: [
+      'Start on hands and knees and place one hand behind your head, elbow pointing down.',
+      'Rotate your chest and lift that elbow toward the ceiling, following it with your eyes. Keep your hips square.',
+      'Return the elbow toward the opposite arm. Counteracts a stiff upper back from the bike and aids swim rotation.',
+    ],
+    animation: [
+      { pose: pose({ ...quadruped, elbowB: [60, 104], handB: [44, 88] }), ms: 1400 },
+      { pose: pose({ ...quadruped, head: [38, 80], elbowB: [58, 66], handB: [44, 82] }), ms: 1400 },
+    ],
+  },
+  {
+    id: 'wall-angel', name: 'Wall angel', category: 'mobility',
+    bodyAreas: ['upper back', 'shoulders'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Stand with your back, head and hips against a wall and your feet a short step out. Arms bent beside you.',
+      'Slide your arms up the wall overhead without letting your ribs flare or your lower back arch.',
+      'Slide back down with control. Opens the chest and upper back after time in the aero position.',
+    ],
+    props: [{ x: 50, y: 10, w: 6, h: 116 }],
+    animation: [
+      {
+        pose: pose({
+          head: [62, 28], neck: [62, 42], hip: [64, 80],
+          kneeF: [74, 103], kneeB: [74, 103], ankleF: [84, 126], ankleB: [84, 126],
+          toeF: [94, 126], toeB: [94, 126],
+          elbowF: [68, 58], handF: [64, 42], elbowB: [68, 58], handB: [64, 42],
+        }), ms: 1600,
+      },
+      {
+        pose: pose({
+          head: [62, 28], neck: [62, 42], hip: [64, 80],
+          kneeF: [74, 103], kneeB: [74, 103], ankleF: [84, 126], ankleB: [84, 126],
+          toeF: [94, 126], toeB: [94, 126],
+          elbowF: [64, 22], handF: [62, 2], elbowB: [64, 22], handB: [62, 2],
+        }), ms: 1600,
+      },
+    ],
+  },
+  {
+    id: 'couch-stretch', name: 'Couch stretch', category: 'stretch',
+    bodyAreas: ['quads', 'hips'],
+    mode: 'time', defaultValue: 45, defaultSets: 1, perSide: true,
+    instructions: [
+      'Kneel with the shin of your back leg up the wall (or on a couch) and your other foot planted in front.',
+      'Squeeze the glute of the back leg and rise to an upright torso until you feel the front of the thigh and hip stretch.',
+      'Hold and breathe. Counters tight hip flexors from long rides and swim kicking. Use a cushion under the knee.',
+    ],
+    props: [{ x: 20, y: 10, w: 6, h: 116 }],
+    animation: [
+      {
+        pose: pose({
+          head: [58, 40], neck: [58, 54], hip: [56, 96],
+          kneeB: [34, 124], ankleB: [29, 92], toeB: [28, 86],
+          kneeF: [92, 100], ankleF: [92, 126], toeF: [102, 126],
+          elbowF: [70, 78], handF: [88, 98], elbowB: [70, 78], handB: [88, 98],
+        }), ms: 2000,
+      },
+      {
+        pose: pose({
+          head: [64, 42], neck: [64, 56], hip: [62, 100],
+          kneeB: [34, 124], ankleB: [29, 92], toeB: [28, 86],
+          kneeF: [94, 100], ankleF: [94, 126], toeF: [104, 126],
+          elbowF: [76, 80], handF: [90, 98], elbowB: [76, 80], handB: [90, 98],
+        }), ms: 2000,
+      },
+    ],
+  },
 ]
 
-export const EXERCISE_MAP =new Map(EXERCISES.map((e) => [e.id, e]))
+export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
