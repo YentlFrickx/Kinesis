@@ -4,7 +4,7 @@ import { formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import {
-  createSession, deleteSession, duplicateSession, exportJson, importJson, useSessions,
+  createSession, deleteSession, duplicateSession, exportJson, importJson, missingStarters, restoreStarters, useSessions,
 } from '../store/sessions'
 
 export function Sessions() {
@@ -63,6 +63,9 @@ export function Sessions() {
       <div className="actions footer-actions">
         <button className="btn small" onClick={download} disabled={sessions.length === 0}>Export</button>
         <button className="btn small" onClick={() => fileRef.current?.click()}>Import</button>
+        {missingStarters(sessions).length > 0 && (
+          <button className="btn small" onClick={() => setMsg(`Restored ${restoreStarters()} starter session(s).`)}>Restore starter sessions</button>
+        )}
         <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => onImport(e.target.files?.[0])} />
       </div>
       {msg && <p className="meta" role="status">{msg}</p>}

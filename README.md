@@ -5,6 +5,7 @@ A small offline-capable web app (PWA) for planning and following bodyweight and 
 - **Library:** 30 exercises (strength, stretches, mobility) with a looping stick-figure animation and instructions.
 - **Planner:** build named sessions; per exercise set seconds or reps, sets and rest after it; defaults for rest between sets and exercises. Reorder, duplicate, delete, export/import as JSON.
 - **Player:** guided run with countdown, rep "Done" button, auto left/right with a switch-sides step, rest steps with next-up preview, beeps and voice cues (mute toggle), vibration and screen wake-lock.
+- **Starter sessions:** a 30-minute runner strength workout and a short feet & calves stretch are added on first launch (restorable from the Sessions screen).
 - Data stays in your browser (localStorage). No backend, works offline once loaded.
 
 ## Develop

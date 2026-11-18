@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { EXERCISE_MAP } from '../data/exercises'
+import { STARTERS } from '../data/templates'
 import type { Session, SessionItem } from '../data/types'
 
 const KEY = 'rw.sessions.v1'
@@ -16,6 +17,8 @@ function read(): Session[] {
   }
 }
 
+const SEEDED_KEY = 'rw.seeded.v1'
+
 let sessions: Session[] = read()
 const listeners = new Set<() => void>()
 
@@ -27,6 +30,29 @@ function commit(next: Session[]) {
     /* storage unavailable: keep in-memory state */
   }
   listeners.forEach((l) => l())
+}
+
+const cloneStarter = (s: Session): Session => ({ ...s, items: s.items.map((i) => ({ ...i })) })
+
+/** Starter sessions that are not currently in the list (e.g. deleted by the user). */
+export const missingStarters = (list: Session[] = sessions) => STARTERS.filter((s) => !list.some((x) => x.id === s.id))
+
+/** Re-adds any missing starter sessions. Returns how many were added. */
+export function restoreStarters(): number {
+  const missing = missingStarters()
+  if (missing.length) commit([...sessions, ...missing.map(cloneStarter)])
+  return missing.length
+}
+
+// Add the starter sessions once, on first launch (also for users who already had sessions).
+try {
+  if (localStorage.getItem(SEEDED_KEY) !== '1') {
+    sessions = [...sessions, ...missingStarters().map(cloneStarter)]
+    localStorage.setItem(KEY, JSON.stringify({ version: VERSION, sessions }))
+    localStorage.setItem(SEEDED_KEY, '1')
+  }
+} catch {
+  /* storage unavailable: no seeding */
 }
 
 const subscribe = (l: () => void) => {
