@@ -45,17 +45,26 @@ const wgs: P = {
   kneeB: [60, 113], ankleB: [38, 124], toeB: [46, 126],
   elbowF: [112, 98], handF: [112, 125], elbowB: [108, 98], handB: [106, 125],
 }
-const plankBase: P = {
-  head: [38, 96], neck: [50, 98], hip: [98, 109],
-  kneeF: [124, 115], ankleF: [150, 122], toeF: [155, 125],
-  kneeB: [124, 115], ankleB: [150, 122], toeB: [155, 125],
-  elbowF: [50, 124], handF: [68, 124], elbowB: [50, 124], handB: [68, 124],
-}
 const sidePlankUp: P = {
   head: [32, 94], neck: [44, 98], hip: [92, 104],
   kneeF: [114, 114], ankleF: [136, 123], toeF: [142, 125],
   kneeB: [114, 113], ankleB: [136, 122], toeB: [142, 124],
   elbowF: [44, 124], handF: [62, 124], elbowB: [46, 84], handB: [46, 64],
+}
+// Forearm plank: shoulders over elbows, one straight line from head to heels.
+const forearmPlank: P = {
+  head: [35, 97], neck: [48, 100], hip: [96, 107],
+  kneeF: [123, 113], ankleF: [150, 120], toeF: [156, 125],
+  kneeB: [123, 113], ankleB: [150, 120], toeB: [156, 125],
+  elbowF: [50, 124], handF: [28, 124], elbowB: [50, 124], handB: [28, 124],
+}
+// Side-lying leg raise, seen from the front: head on the bottom arm, top hand propped on the floor.
+const sideLegDown: P = {
+  head: [28, 113], neck: [42, 118], hip: [95, 121],
+  elbowB: [30, 123], handB: [18, 123],
+  elbowF: [54, 107], handF: [64, 121],
+  kneeB: [120, 122], ankleB: [145, 122], toeB: [151, 124],
+  kneeF: [120, 119], ankleF: [145, 119], toeF: [151, 121],
 }
 const swingSupport: P = {
   kneeB: [100, 101], ankleB: [100, 126], toeB: [110, 126],
@@ -259,8 +268,13 @@ export const EXERCISES: Exercise[] = [
       'Breathe steadily and hold.',
     ],
     animation: [
-      { pose: pose(plankBase), ms: 1500 },
-      { pose: pose({ ...plankBase, hip: [98, 106], kneeF: [124, 113], kneeB: [124, 113], head: [38, 94], neck: [50, 96] }), ms: 1500 },
+      { pose: pose(forearmPlank), ms: 1800 },
+      {
+        pose: pose({
+          ...forearmPlank, head: [35, 95], neck: [48, 98], hip: [97, 105],
+          kneeF: [124, 111], kneeB: [124, 111], ankleF: [151, 119], ankleB: [151, 119],
+        }), ms: 1800,
+      },
     ],
   },
   {
@@ -316,17 +330,12 @@ export const EXERCISES: Exercise[] = [
       'Lower slowly without letting your hips roll.',
     ],
     animation: [
+      { pose: pose(sideLegDown), ms: 1000 },
       {
-        pose: pose({
-          ...sideLying, kneeB: [120, 118], ankleB: [145, 118], toeB: [151, 121],
-          kneeF: [120, 116], ankleF: [145, 116], toeF: [151, 119],
-        }), ms: 1200,
+        pose: pose({ ...sideLegDown, kneeF: [115, 105], ankleF: [136, 91], toeF: [143, 89] }), ms: 1100,
       },
       {
-        pose: pose({
-          ...sideLying, kneeB: [120, 118], ankleB: [145, 118], toeB: [151, 121],
-          kneeF: [116, 100], ankleF: [136, 84], toeF: [143, 82],
-        }), ms: 1200,
+        pose: pose({ ...sideLegDown, kneeF: [115, 105], ankleF: [136, 91], toeF: [143, 89] }), ms: 400,
       },
     ],
   },
@@ -1366,6 +1375,284 @@ export const EXERCISES: Exercise[] = [
           kneeB: [95, 122], ankleB: [68, 112], toeB: [78, 124],
           elbowF: [102, 78], handF: [102, 96], elbowB: [102, 78], handB: [102, 96],
         }), ms: 1300,
+      },
+    ],
+  },
+  // ---------------- added: strength ----------------
+  {
+    id: 'superman', name: 'Superman', category: 'strength',
+    bodyAreas: ['glutes', 'upper back'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie face down with your arms extended overhead and your legs straight.',
+      'Lift your arms, chest and legs a few centimetres off the floor together, keeping your neck long.',
+      'Squeeze your glutes and back for a second, then lower with control.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...proneBase, head: [28, 119], neck: [42, 121],
+          elbowF: [24, 122], handF: [8, 124], elbowB: [24, 122], handB: [8, 124],
+        }), ms: 1300,
+      },
+      {
+        pose: pose({
+          ...proneBase, head: [30, 106], neck: [44, 113],
+          elbowF: [26, 102], handF: [8, 96], elbowB: [26, 102], handB: [8, 96],
+          kneeF: [118, 114], ankleF: [142, 106], toeF: [148, 104],
+          kneeB: [118, 114], ankleB: [142, 106], toeB: [148, 104],
+        }), ms: 1300,
+      },
+    ],
+  },
+  {
+    id: 'fire-hydrant', name: 'Fire hydrant', category: 'strength',
+    bodyAreas: ['glutes', 'hips'],
+    mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: true,
+    instructions: [
+      'Start on hands and knees with a flat back and braced core.',
+      'Keeping the knee bent at 90 degrees, lift one knee out to the side without rotating your pelvis.',
+      'Pause at the top, then lower with control. Targets the outer glute and hip stabilisers.',
+    ],
+    animation: [
+      { pose: pose(quadruped), ms: 1000 },
+      { pose: pose({ ...quadruped, kneeF: [112, 100], ankleF: [126, 112], toeF: [134, 114] }), ms: 1000 },
+    ],
+  },
+  {
+    id: 'glute-bridge-march', name: 'Glute bridge march', category: 'strength',
+    bodyAreas: ['glutes', 'core', 'hamstrings'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie on your back with knees bent and lift into a glute bridge.',
+      'Holding the hips level, lift one foot off the floor and bring the knee toward your chest.',
+      'Place it back down and switch. One rep = one lift on each side.',
+    ],
+    animation: [
+      { pose: pose({ ...bridgeDown, hip: [88, 96], neck: [46, 108], head: [32, 112] }), ms: 900 },
+      {
+        pose: pose({
+          ...bridgeDown, hip: [88, 96], neck: [46, 108], head: [32, 112],
+          kneeF: [100, 76], ankleF: [120, 88], toeF: [128, 92],
+        }), ms: 900,
+      },
+      { pose: pose({ ...bridgeDown, hip: [88, 96], neck: [46, 108], head: [32, 112] }), ms: 900 },
+      {
+        pose: pose({
+          ...bridgeDown, hip: [88, 96], neck: [46, 108], head: [32, 112],
+          kneeB: [102, 76], ankleB: [122, 88], toeB: [130, 92],
+        }), ms: 900,
+      },
+    ],
+  },
+  {
+    id: 'lying-leg-raise', name: 'Lying leg raise', category: 'strength',
+    bodyAreas: ['core', 'hips'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie on your back with legs straight and hands under your hips; press your lower back into the floor.',
+      'Raise both legs together until they point at the ceiling.',
+      'Lower slowly, stopping before your back arches. Bend the knees if that is too hard.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...supine, kneeF: [112, 121], ankleF: [140, 122], toeF: [146, 119],
+          kneeB: [112, 121], ankleB: [140, 122], toeB: [146, 119],
+        }), ms: 1500,
+      },
+      {
+        pose: pose({
+          ...supine, kneeF: [88, 94], ankleF: [90, 66], toeF: [100, 64],
+          kneeB: [88, 94], ankleB: [90, 66], toeB: [100, 64],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'plank-shoulder-tap', name: 'Plank shoulder tap', category: 'strength',
+    bodyAreas: ['core', 'shoulders'],
+    mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
+    instructions: [
+      'Start in a high plank with hands under shoulders and feet slightly wider than hip width.',
+      'Tap one hand to the opposite shoulder while keeping your hips from rocking.',
+      'Return and alternate. One rep = one tap on each side.',
+    ],
+    animation: [
+      { pose: pose(pushupUp), ms: 800 },
+      { pose: pose({ ...pushupUp, elbowB: [60, 98], handB: [54, 90] }), ms: 800 },
+      { pose: pose(pushupUp), ms: 800 },
+      { pose: pose({ ...pushupUp, elbowF: [60, 98], handF: [54, 90] }), ms: 800 },
+    ],
+  },
+  {
+    id: 'mountain-climber', name: 'Mountain climber', category: 'strength',
+    bodyAreas: ['core', 'hips', 'full body'],
+    mode: 'time', defaultValue: 30, defaultSets: 2, perSide: false,
+    instructions: [
+      'Start in a high plank with your shoulders over your wrists and your body in one line.',
+      'Drive one knee toward your chest, then switch legs in a running motion.',
+      'Keep your hips low and your core braced. Slow down if your form slips.',
+    ],
+    animation: [
+      { pose: pose(pushupUp), ms: 450 },
+      { pose: pose({ ...pushupUp, kneeF: [78, 100], ankleF: [96, 118], toeF: [102, 122] }), ms: 450 },
+      { pose: pose(pushupUp), ms: 450 },
+      { pose: pose({ ...pushupUp, kneeB: [80, 100], ankleB: [98, 118], toeB: [104, 122] }), ms: 450 },
+    ],
+  },
+  {
+    id: 'good-morning', name: 'Bodyweight good morning', category: 'strength',
+    bodyAreas: ['hamstrings', 'glutes', 'upper back'],
+    mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: false,
+    instructions: [
+      'Stand with feet hip-width apart, knees soft and hands behind your head.',
+      'Push your hips back and hinge forward with a flat back until you feel your hamstrings load.',
+      'Drive your hips forward to stand tall again. The hinge comes from the hips, not the spine.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          head: [100, 24], neck: [100, 38], hip: [100, 76],
+          elbowF: [92, 28], handF: [98, 20], elbowB: [92, 28], handB: [98, 20],
+        }), ms: 1500,
+      },
+      {
+        pose: pose({
+          head: [138, 64], neck: [127, 70], hip: [88, 78],
+          kneeF: [94, 102], kneeB: [94, 102],
+          elbowF: [124, 58], handF: [132, 62], elbowB: [124, 58], handB: [132, 62],
+        }), ms: 1500,
+      },
+    ],
+  },
+  // ---------------- added: mobility ----------------
+  {
+    id: 'deep-squat-hold', name: 'Deep squat hold', category: 'mobility',
+    bodyAreas: ['hips', 'calves', 'glutes'],
+    mode: 'time', defaultValue: 30, defaultSets: 2, perSide: false,
+    instructions: [
+      'Stand with feet slightly wider than your shoulders and toes turned out a little.',
+      'Sink into a deep squat with your heels down and chest up, hands together in front of your chest.',
+      'Use your elbows to gently press the knees out. Hold on to a doorframe if you need support.',
+    ],
+    animation: [
+      { pose: pose({ ...handsOnHips, elbowF: [100, 58], handF: [108, 52], elbowB: [100, 58], handB: [108, 52] }), ms: 1500 },
+      {
+        pose: pose({
+          head: [92, 56], neck: [88, 70], hip: [76, 106],
+          kneeF: [112, 100], kneeB: [112, 100], ankleF: [96, 126], ankleB: [96, 126],
+          toeF: [108, 126], toeB: [108, 126],
+          elbowF: [100, 88], handF: [108, 78], elbowB: [100, 88], handB: [108, 78],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'supine-twist', name: 'Supine spinal twist', category: 'mobility',
+    bodyAreas: ['hips', 'upper back'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Lie on your back with arms out to the sides and knees bent.',
+      'Let both knees fall slowly to one side while your shoulders stay on the floor.',
+      'Breathe out and relax into the rotation, then come back to centre and switch sides.',
+    ],
+    animation: [
+      { pose: pose(bridgeDown), ms: 1800 },
+      {
+        pose: pose({
+          ...bridgeDown, kneeF: [110, 108], ankleF: [124, 120], toeF: [134, 124],
+          kneeB: [112, 110], ankleB: [128, 122], toeB: [138, 125],
+        }), ms: 1800,
+      },
+    ],
+  },
+  // ---------------- added: stretches ----------------
+  {
+    id: 'seated-forward-fold', name: 'Seated forward fold', category: 'stretch',
+    bodyAreas: ['hamstrings', 'calves'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: false,
+    instructions: [
+      'Sit with both legs straight in front of you and your toes pointing up.',
+      'Hinge from the hips and reach toward your feet with a long spine.',
+      'Stop where you feel a stretch behind the thighs. Do not force it or round hard through the back.',
+    ],
+    animation: [
+      {
+        pose: pose({
+          ...seated, head: [80, 66], neck: [80, 80],
+          kneeB: [105, 122], ankleB: [130, 122], toeB: [133, 110],
+          elbowF: [98, 98], handF: [112, 118], elbowB: [98, 98], handB: [112, 118],
+        }), ms: 1800,
+      },
+      {
+        pose: pose({
+          ...seated, head: [124, 90], neck: [110, 94],
+          kneeB: [105, 122], ankleB: [130, 122], toeB: [133, 110],
+          elbowF: [118, 108], handF: [132, 118], elbowB: [118, 108], handB: [132, 118],
+        }), ms: 2200,
+      },
+    ],
+  },
+  {
+    id: 'cross-body-shoulder-stretch', name: 'Cross-body shoulder stretch', category: 'stretch',
+    bodyAreas: ['shoulders', 'upper back'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Stand tall and bring one arm straight across your chest at shoulder height.',
+      'Use the other hand to hold it just above the elbow and draw it gently closer.',
+      'Keep the shoulder down and relaxed. You should feel it in the back of the shoulder.',
+    ],
+    animation: [
+      { pose: pose({ elbowF: [100, 58], handF: [100, 76], elbowB: [100, 58], handB: [100, 76] }), ms: 1500 },
+      {
+        pose: pose({
+          elbowF: [112, 42], handF: [92, 40], elbowB: [104, 50], handB: [114, 42],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'triceps-stretch', name: 'Overhead triceps stretch', category: 'stretch',
+    bodyAreas: ['arms', 'shoulders'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Stand tall and raise one arm, bending the elbow so your hand drops behind your head.',
+      'With the other hand, gently press the raised elbow back and down.',
+      'Keep your ribs down and avoid arching your back.',
+    ],
+    animation: [
+      { pose: pose({ elbowF: [100, 58], handF: [100, 76], elbowB: [100, 58], handB: [100, 76] }), ms: 1500 },
+      {
+        pose: pose({
+          elbowF: [102, 10], handF: [90, 28], elbowB: [112, 22], handB: [104, 10],
+        }), ms: 1500,
+      },
+    ],
+  },
+  {
+    id: 'doorway-chest-stretch', name: 'Doorway chest stretch', category: 'stretch',
+    bodyAreas: ['chest', 'shoulders'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Stand beside a doorframe or wall with your forearm against it, elbow bent at about 90 degrees.',
+      'Take a small step forward and gently turn your body away until you feel the front of the shoulder and chest open.',
+      'Keep your shoulder down and your neck relaxed. Great for desk or bike posture.',
+    ],
+    props: [{ x: 134, y: 10, w: 6, h: 116 }],
+    animation: [
+      {
+        pose: pose({
+          head: [100, 24], neck: [100, 38], hip: [100, 76],
+          elbowF: [118, 40], handF: [132, 24], elbowB: [100, 58], handB: [100, 76],
+        }), ms: 1800,
+      },
+      {
+        pose: pose({
+          head: [108, 24], neck: [108, 38], hip: [102, 76],
+          kneeF: [102, 101], kneeB: [102, 101],
+          elbowF: [120, 40], handF: [132, 24], elbowB: [100, 58], handB: [100, 76],
+        }), ms: 1800,
       },
     ],
   },
