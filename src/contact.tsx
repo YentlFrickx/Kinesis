@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
         <strong>{e.name}</strong>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
           {e.animation.map((f, i) => (
-            <Figure key={i} frames={e.animation} props={e.props} staticPose={f.pose} label={`${e.name} ${i}`} />
+            <Figure key={i} frames={e.animation} props={e.props} gear={e.gear} staticPose={f.pose} label={`${e.name} ${i}`} />
           ))}
         </div>
       </div>

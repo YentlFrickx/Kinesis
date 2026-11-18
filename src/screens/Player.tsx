@@ -141,7 +141,7 @@ export function Player({ id }: { id: string }) {
         </p>
       )}
 
-      <Figure frames={exercise.animation} props={exercise.props} playing={!paused} label={`${exercise.name} animation`} className="player-figure" />
+      <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} label={`${exercise.name} animation`} className="player-figure" />
 
       <div className="big" aria-live="off">
         {isRepWork ? `${step.value} reps` : formatClock(state.remainingMs / 1000)}

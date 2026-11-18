@@ -62,6 +62,11 @@ const swingSupport: P = {
   elbowF: [114, 56], handF: [128, 54], elbowB: [86, 56], handB: [72, 54],
 }
 const calfRaiseArms: P = { ...handsOnHips }
+const seatedRow: P = {
+  head: [82, 70], neck: [80, 84], hip: [80, 120],
+  kneeF: [108, 122], ankleF: [136, 122], toeF: [141, 112],
+  kneeB: [108, 122], ankleB: [136, 122], toeB: [141, 112],
+}
 const proneBase: P = {
   hip: [95, 122],
   kneeF: [118, 124], ankleF: [142, 124], toeF: [148, 124],
@@ -1085,6 +1090,51 @@ export const EXERCISES: Exercise[] = [
           kneeF: [94, 100], ankleF: [94, 126], toeF: [104, 126],
           elbowF: [76, 80], handF: [90, 98], elbowB: [76, 80], handB: [90, 98],
         }), ms: 2000,
+      },
+    ],
+  },
+  // ---------------- added: small equipment ----------------
+  {
+    id: 'seated-band-row', name: 'Seated band row', category: 'strength',
+    bodyAreas: ['upper back', 'arms'],
+    mode: 'reps', defaultValue: 12, defaultSets: 3, perSide: false,
+    equipment: ['band'],
+    gear: [{ kind: 'band', from: 'toeF', to: 'handF' }],
+    instructions: [
+      'Sit tall with your legs straight and loop a resistance band around the soles of your feet, holding an end in each hand.',
+      'Squeeze your shoulder blades together and pull your elbows back past your ribs. Keep your chest up and do not lean back.',
+      'Return slowly with control. Builds the pulling muscles that support swimming and an upright riding posture.',
+    ],
+    animation: [
+      {
+        pose: pose({ ...seatedRow, elbowF: [100, 92], handF: [118, 102], elbowB: [100, 92], handB: [118, 102] }), ms: 1200,
+      },
+      {
+        pose: pose({ ...seatedRow, elbowF: [64, 98], handF: [88, 100], elbowB: [64, 98], handB: [88, 100] }), ms: 1200,
+      },
+    ],
+  },
+  {
+    id: 'goblet-squat', name: 'Goblet squat', category: 'strength',
+    bodyAreas: ['quads', 'glutes', 'core'],
+    mode: 'reps', defaultValue: 10, defaultSets: 3, perSide: false,
+    equipment: ['dumbbell'],
+    gear: [{ kind: 'dumbbell', at: 'handF' }],
+    instructions: [
+      'Stand with feet shoulder-width apart, holding one dumbbell vertically against your chest with both hands.',
+      'Sit your hips back and down, keeping your chest tall and elbows inside your knees, until your thighs are about parallel.',
+      'Drive through your heels to stand. The weight in front helps you stay upright.',
+    ],
+    animation: [
+      {
+        pose: pose({ elbowF: [98, 68], handF: [108, 58], elbowB: [98, 68], handB: [108, 58] }), ms: 1500,
+      },
+      {
+        pose: pose({
+          head: [106, 52], neck: [100, 66], hip: [76, 98],
+          kneeF: [112, 100], kneeB: [112, 100],
+          elbowF: [96, 90], handF: [110, 78], elbowB: [96, 90], handB: [110, 78],
+        }), ms: 1500,
       },
     ],
   },

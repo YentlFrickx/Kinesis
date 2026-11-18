@@ -21,6 +21,15 @@ export const BONES: ReadonlyArray<readonly [Joint, Joint]> = [
 /** Simple rectangle drawn behind the figure (box, wall...). */
 export interface Prop { x: number; y: number; w: number; h: number }
 
+/** A joint to follow, or a fixed point in the 200x140 box. */
+export type Anchor = Joint | readonly [number, number]
+
+/** Equipment drawn with the figure. It follows joints, so it moves with the animation. */
+export type Gear =
+  | { kind: 'dumbbell'; at: Joint }
+  /** Elastic band drawn as a line between two anchors; it stretches as they move apart. */
+  | { kind: 'band'; from: Anchor; to: Anchor }
+
 export const VIEWBOX = { width: 200, height: 140, floorY: 126 }
 
 /** Neutral standing pose, facing right, used as a base for building poses. */

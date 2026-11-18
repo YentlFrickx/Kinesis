@@ -93,7 +93,7 @@ export function Editor({ id }: { id: string }) {
           return (
             <li key={idx} className="card item">
               <div className="item-head">
-                <Figure frames={ex.animation} props={ex.props} label={`${ex.name} illustration`} className="thumb" />
+                <Figure frames={ex.animation} props={ex.props} gear={ex.gear} label={`${ex.name} illustration`} className="thumb" />
                 <div className="ex-text">
                   <strong>{ex.name}</strong>
                   <span className="meta">{describe(ex.mode, item.value, item.sets, ex.perSide)}</span>
