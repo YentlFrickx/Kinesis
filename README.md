@@ -23,6 +23,13 @@ npm run build
 
 Add an entry to `src/data/exercises.ts`. The animation is a list of keyframe poses (joint coordinates in a 200×140 box, floor at y=126) drawn by the shared skeleton in `src/animation/`. Check it on `/contact.html`.
 
+## Testing
+
+- `npm test` runs the Vitest unit tests (stores, player engine, progress, data integrity); `npm run test:coverage` adds a coverage report (also run in CI).
+- `npm run e2e` runs the Playwright suite (smoke flow, service-worker/offline check, axe accessibility scan) on desktop and mobile Chromium projects. By default it builds the app and serves it with `vite preview`; first run `npx playwright install chromium`. Set `BASE_URL` to test a deployment instead, e.g. `BASE_URL=https://pr-12.kinesis.pages.dev npm run e2e`.
+- In CI, `preview.yml` waits for the Cloudflare Pages preview and runs the suite against it with `BASE_URL`; a failure fails the PR check, and the HTML report and traces are uploaded as the `playwright-report-preview` artifact. PRs from forks (no secrets, no preview) run the same suite against a local `vite preview` instead. `deploy.yml` smoke-tests production after deploying when the repository variable `PRODUCTION_URL` is set.
+- The axe scan skips rules that currently fail (`KNOWN_ISSUES` in `e2e/a11y.spec.ts`); remove them as the accessibility issues are fixed.
+
 ## Deploy
 
 Production and PR previews both run on one [Cloudflare Pages](https://pages.cloudflare.com/) project, deployed by GitHub Actions: pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, deploy to the production branch); each pull request from a branch in this repo gets its own preview via `.github/workflows/preview.yml` (`https://pr-<number>.<project>.pages.dev`, posted as a PR comment). Previews have a separate origin from production, so they never touch real localStorage data. PRs from forks are skipped because they cannot access the secrets, and old previews are not deleted automatically (remove them in the Cloudflare dashboard).

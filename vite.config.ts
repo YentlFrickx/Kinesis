@@ -27,5 +27,8 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,png}'] },
     }),
   ],
-  test: { include: ['src/**/*.test.ts'] },
+  test: {
+    include: ['src/**/*.test.ts'],
+    coverage: { provider: 'v8', include: ['src/store/**', 'src/lib/**', 'src/player/**', 'src/data/**'], reporter: ['text', 'text-summary'] },
+  },
 })

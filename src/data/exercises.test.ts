@@ -15,3 +15,31 @@ describe('exercises', () => {
     }
   })
 })
+
+describe('exercise data integrity', () => {
+  const AREAS = ['glutes', 'hips', 'quads', 'hamstrings', 'calves', 'core', 'chest', 'arms', 'shoulders', 'upper back', 'feet', 'full body']
+  const inBox = ([x, y]: readonly [number, number]) => x >= 0 && x <= 200 && y >= 0 && y <= 140
+
+  it('keeps every animation point inside the 200x140 box', () => {
+    for (const e of EXERCISES) {
+      expect(e.animation.length, e.id).toBeGreaterThan(0)
+      for (const f of e.animation) {
+        expect(f.ms, e.id).toBeGreaterThan(0)
+        for (const [j, p] of Object.entries(f.pose)) expect(inBox(p), `${e.id} ${j} ${p}`).toBe(true)
+      }
+      for (const p of e.props ?? []) expect(p.x >= 0 && p.y >= 0 && p.x + p.w <= 200 && p.y + p.h <= 140, `${e.id} prop`).toBe(true)
+    }
+  })
+
+  it('uses valid categories, body areas and defaults', () => {
+    for (const e of EXERCISES) {
+      expect(['strength', 'stretch', 'mobility'], e.id).toContain(e.category)
+      expect(e.bodyAreas.length, e.id).toBeGreaterThan(0)
+      for (const a of e.bodyAreas) expect(AREAS, e.id).toContain(a)
+      expect(['time', 'reps'], e.id).toContain(e.mode)
+      expect(e.defaultValue, e.id).toBeGreaterThan(0)
+      expect(e.defaultSets, e.id).toBeGreaterThan(0)
+      expect(e.instructions.length, e.id).toBeGreaterThan(0)
+    }
+  })
+})
