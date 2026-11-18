@@ -5,6 +5,7 @@ import type { Exercise, Session, SessionItem } from '../data/types'
 import { describe, formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
+import { youllNeed } from '../store/equipment'
 import { getSession, updateSession, useSessions } from '../store/sessions'
 import { ExerciseBrowser } from './ExerciseBrowser'
 
@@ -71,6 +72,7 @@ export function Editor({ id }: { id: string }) {
       <button className="link" onClick={() => go('/')}>← Sessions</button>
       <input className="name-input" value={session.name} maxLength={80} aria-label="Session name"
         onChange={(e) => patch((s) => ({ ...s, name: e.target.value }))} />
+      {youllNeed(session) && <p className="gear-note">{youllNeed(session)}</p>}
 
       <div className="card rest-settings">
         <div>

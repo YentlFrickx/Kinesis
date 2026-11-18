@@ -5,6 +5,7 @@ import { formatClock } from '../lib/format'
 import { go } from '../lib/router'
 import { beep, isMuted, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
 import { advance, buildSteps, goTo, initState, next, prev, type RunState, type Step } from '../player/engine'
+import { youllNeed } from '../store/equipment'
 import { getSession } from '../store/sessions'
 
 const sideLabel = (s: 'left' | 'right' | null) => (s ? `${s[0].toUpperCase()}${s.slice(1)} side` : '')
@@ -132,6 +133,7 @@ export function Player({ id }: { id: string }) {
       <progress max={total} value={state.index} aria-label="Session progress" />
 
       <h1 className="player-title">{heading}</h1>
+      {step.kind === 'rest' && step.reason === 'start' && youllNeed(session) && <p className="sub">{youllNeed(session)}</p>}
       {step.kind === 'rest' && <p className="sub">Up next: <strong>{step.next.name}</strong>{step.side ? ` · ${sideLabel(step.side)}` : ''}</p>}
       {step.kind === 'work' && (
         <p className="sub">

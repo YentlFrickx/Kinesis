@@ -4,6 +4,7 @@ import { formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { VoiceSettings } from './VoiceSettings'
 import { buildSteps, estimateSeconds } from '../player/engine'
+import { youllNeed } from '../store/equipment'
 import {
   createSession, deleteSession, duplicateSession, exportJson, importJson, missingStarters, restoreStarters, useSessions,
 } from '../store/sessions'
@@ -49,6 +50,7 @@ export function Sessions() {
                 <div>
                   <strong>{s.name}</strong>
                   <div className="meta">{work} exercise{work === 1 ? '' : 's'} · ~{formatDuration(estimateSeconds(steps))}</div>
+                  {youllNeed(s) && <div className="gear-note">{youllNeed(s)}</div>}
                 </div>
                 <button className="btn primary" disabled={steps.length === 0} onClick={() => go(`/play/${s.id}`)}>▶ Start</button>
               </div>
