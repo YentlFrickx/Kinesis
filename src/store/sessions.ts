@@ -6,12 +6,19 @@ import { MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
 const KEY = 'rw.sessions.v1'
 const VERSION = 1
 
+const newId = () => crypto.randomUUID()
+
+/** Gives every item a stable id (existing ids are kept); returns the same objects when nothing changed. */
+export function withItemIds(list: Session[]): Session[] {
+  return list.map((s) => (s.items.every((i) => i.id) ? s : { ...s, items: s.items.map((i) => (i.id ? i : { ...i, id: newId() })) }))
+}
+
 function read(): Session[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const data = JSON.parse(raw)
-    return data?.version === VERSION && Array.isArray(data.sessions) ? data.sessions : []
+    return data?.version === VERSION && Array.isArray(data.sessions) ? withItemIds(data.sessions) : []
   } catch {
     return []
   }
@@ -23,7 +30,7 @@ let sessions: Session[] = read()
 const listeners = new Set<() => void>()
 
 function commit(next: Session[]) {
-  sessions = next
+  sessions = withItemIds(next)
   try {
     localStorage.setItem(KEY, JSON.stringify({ version: VERSION, sessions }))
   } catch {
@@ -62,8 +69,6 @@ const subscribe = (l: () => void) => {
 
 export const useSessions = () => useSyncExternalStore(subscribe, () => sessions)
 export const getSession = (id: string) => sessions.find((s) => s.id === id)
-const newId = () => crypto.randomUUID()
-
 export function createSession(name = 'New session'): Session {
   const s: Session = { id: newId(), name, items: [], defaultSetRestSec: 30, defaultTransitionSec: 10 }
   commit([...sessions, s])
@@ -78,10 +83,20 @@ export function deleteSession(id: string) {
   commit(sessions.filter((s) => s.id !== id))
 }
 
+/** Puts a previously deleted session back at `index` (used by undo). No-op if it already exists. */
+export function restoreSession(session: Session, index = sessions.length) {
+  if (sessions.some((s) => s.id === session.id)) return
+  const next = [...sessions]
+  next.splice(Math.min(index, next.length), 0, session)
+  commit(next)
+}
+
+export const sessionIndex = (id: string) => sessions.findIndex((s) => s.id === id)
+
 export function duplicateSession(id: string, name?: string): Session | undefined {
   const src = getSession(id)
   if (!src) return
-  const copy: Session = { ...src, id: newId(), name: name ?? `${src.name} (copy)`, items: src.items.map((i) => ({ ...i })) }
+  const copy: Session = { ...src, id: newId(), name: name ?? `${src.name} (copy)`, items: src.items.map((i) => ({ ...i, id: newId() })) }
   commit([...sessions, copy])
   return copy
 }
@@ -107,6 +122,7 @@ export function importJson(text: string): number {
     const items: SessionItem[] = raw.items
       .filter((i: SessionItem) => EXERCISE_MAP.has(i?.exerciseId))
       .map((i: SessionItem) => ({
+        id: newId(),
         exerciseId: i.exerciseId,
         value: num(i.value, 1, 3600, 30),
         sets: num(i.sets, 1, 20, 1),

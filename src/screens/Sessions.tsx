@@ -12,7 +12,8 @@ import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import { youllNeed } from '../store/equipment'
 import { useHistory } from '../store/history'
-import { createSession, deleteSession, duplicateSession, importJson, useSessions } from '../store/sessions'
+import { createSession, deleteSession, duplicateSession, importJson, restoreSession, sessionIndex, useSessions } from '../store/sessions'
+import { showToast } from '../store/toast'
 import { SettingsSheet } from './Settings'
 
 const lookup = (id: string) => EXERCISE_MAP.get(id)
@@ -132,7 +133,10 @@ export function Sessions() {
       {sheet?.kind === 'menu' && target && (
         <Sheet title={sessionLabel(target.id, target.name)} onClose={close}>
           <button className="opt" onClick={() => go(`/session/${target.id}`)}><Icon name="edit" size={20} />{t('common.edit')}</button>
-          <button className="opt" onClick={() => { duplicateSession(target.id, `${sessionLabel(target.id, target.name)} ${t('sessions.copySuffix')}`); close() }}><Icon name="copy" size={20} />{t('common.duplicate')}</button>
+          <button className="opt" onClick={() => { const label = sessionLabel(target.id, target.name)
+            const copy = duplicateSession(target.id, `${label} ${t('sessions.copySuffix')}`)
+            if (copy) showToast(t('sessions.duplicated', { name: label }), () => deleteSession(copy.id))
+            close() }}><Icon name="copy" size={20} />{t('common.duplicate')}</button>
           <button className="opt danger" onClick={() => setSheet({ kind: 'delete', id: target.id })}><Icon name="trash" size={20} />{t('common.delete')}</button>
         </Sheet>
       )}
@@ -140,7 +144,12 @@ export function Sessions() {
         <Sheet title={t('sessions.deleteTitle', { name: sessionLabel(target.id, target.name) })} onClose={close}>
           <p className="meta">{t('sessions.deleteBody')}</p>
           <button className="btn primary" onClick={close}>{t('sessions.keep')}</button>
-          <button className="btn danger" onClick={() => { deleteSession(target.id); close() }}>{t('sessions.deleteConfirm')}</button>
+          <button className="btn danger" onClick={() => {
+            const snapshot = target
+            const at = sessionIndex(target.id)
+            deleteSession(target.id)
+            showToast(t('sessions.deleted', { name: sessionLabel(snapshot.id, snapshot.name) }), () => restoreSession(snapshot, at))
+            close() }}>{t('sessions.deleteConfirm')}</button>
         </Sheet>
       )}
     </div>
