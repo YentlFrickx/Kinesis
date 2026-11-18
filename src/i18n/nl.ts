@@ -146,8 +146,6 @@ export const nl: Partial<Record<MessageKey, string>> = {
   'editor.expandAll': 'Alles uitklappen',
   'editor.collapse': 'Inklappen',
   'editor.expand': 'Uitklappen',
-  'editor.moveUp': '{name} omhoog verplaatsen',
-  'editor.moveDown': '{name} omlaag verplaatsen',
   'editor.decrease': '{label} verlagen',
   'editor.increase': '{label} verhogen',
   'editor.start': 'Start',

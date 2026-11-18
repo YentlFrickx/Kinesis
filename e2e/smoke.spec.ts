@@ -15,7 +15,7 @@ test('first launch → create → play → history → export/import', async ({ 
   await page.getByRole('button', { name: /^Add / }).first().click()
   await page.getByRole('button', { name: /^Add / }).nth(1).click()
   await page.getByRole('button', { name: 'Done' }).click()
-  await expect(page.locator('[aria-label^="Move "]')).toHaveCount(4) // up + down for two items
+  await expect(page.locator('.item .grip')).toHaveCount(2) // one drag handle per item
   await page.getByRole('button', { name: '← Sessions' }).click()
   await expect(cards).toHaveCount(starters + 1)
 

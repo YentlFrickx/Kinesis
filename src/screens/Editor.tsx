@@ -58,7 +58,6 @@ export function Editor({ id }: { id: string }) {
       items.splice(to, 0, items.splice(from, 1)[0])
       return { ...s, items }
     })
-  const move = (idx: number, dir: -1 | 1) => moveTo(idx, idx + dir)
   const remove = (idx: number, name: string) => {
     const before = session.items
     const removed = before[idx]
@@ -200,10 +199,6 @@ export function Editor({ id }: { id: string }) {
                 onChange={(e) => setItem(idx, { note: e.target.value || undefined })} />
               <Tips exercise={ex} />
               <div className="item-actions">
-                <div className="reorder">
-                  <button className="btn small up" onClick={() => move(idx, -1)} disabled={idx === 0} aria-label={t('editor.moveUp', { name: ex.name })}><Icon name="chev" size={16} /></button>
-                  <button className="btn small down" onClick={() => move(idx, 1)} disabled={idx === session.items.length - 1} aria-label={t('editor.moveDown', { name: ex.name })}><Icon name="chev" size={16} /></button>
-                </div>
                 <button className="link tiny" onClick={() => duplicateItem(idx)}>{t('editor.duplicateItem')}</button>
                 <button className="link danger tiny" onClick={() => remove(idx, ex.name)}>{t('common.remove')}</button>
               </div>

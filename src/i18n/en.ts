@@ -152,8 +152,6 @@ export const en = {
   'editor.expandAll': 'Expand all',
   'editor.collapse': 'Collapse',
   'editor.expand': 'Expand',
-  'editor.moveUp': 'Move {name} up',
-  'editor.moveDown': 'Move {name} down',
   'editor.decrease': 'Decrease {label}',
   'editor.increase': 'Increase {label}',
   'editor.start': 'Start',

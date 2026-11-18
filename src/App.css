@@ -135,7 +135,6 @@ ul, ol { padding: 0; margin: 0; }
 .stepper { display: flex; align-items: center; gap: 6px; margin: 4px 0 8px; }
 .stepper-val { min-width: 56px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .item-head { display: flex; align-items: center; gap: 10px; }
-.reorder { display: flex; flex-direction: column; gap: 4px; }
 .item-controls { display: flex; flex-wrap: wrap; gap: 14px; margin: 10px 0 4px; }
 .editor { padding-bottom: 80px; }
 .bar { position: fixed; left: 0; right: 0; bottom: calc(var(--tabs-h) - 6px + env(safe-area-inset-bottom, 0px)); max-width: 480px; margin: 0 auto; z-index: 4; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 16px; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--line); }
@@ -200,8 +199,6 @@ ul, ol { padding: 0; margin: 0; }
   .sheet { animation: none; }
   .player-stage, .sw::after { transition: none; }
 }
-.btn.up .ic { transform: rotate(-90deg); }
-.btn.down .ic { transform: rotate(90deg); }
 .voice-field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; margin-top: 12px; font-weight: 600; font-size: .9rem; }
 .voice-field input[type="range"] { grid-column: 1; accent-color: var(--accent); min-height: 32px; width: 100%; }
 .voice-field select { grid-column: 1 / -1; padding: 10px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); color: var(--fg); font: inherit; }
@@ -236,8 +233,6 @@ ul, ol { padding: 0; margin: 0; }
 .item.collapsed .fold { transform: none; }
 .item .figure.thumb { width: 56px; }
 .item.collapsed .figure.thumb { width: 44px; }
-.item .reorder { flex-direction: row; gap: 2px; }
-.item .reorder .btn.small { min-height: 34px; padding: 4px 8px; }
 .item .grip { width: 34px; height: 34px; }
 .item-controls { gap: 8px 12px; margin: 8px 0 2px; flex-wrap: nowrap; }
 .item-controls > div { min-width: 0; }
@@ -252,5 +247,3 @@ ul, ol { padding: 0; margin: 0; }
 .item-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(116px, 1fr)); flex-wrap: unset; }
 .item-controls .stepper-val { min-width: 30px; }
 .item-actions { align-items: center; flex-wrap: wrap; }
-.item-actions .reorder { margin-left: auto; }
-.item-actions .reorder { order: 3; }
