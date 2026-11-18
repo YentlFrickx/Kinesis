@@ -45,17 +45,26 @@ const wgs: P = {
   kneeB: [60, 113], ankleB: [38, 124], toeB: [46, 126],
   elbowF: [112, 98], handF: [112, 125], elbowB: [108, 98], handB: [106, 125],
 }
-const plankBase: P = {
-  head: [38, 96], neck: [50, 98], hip: [98, 109],
-  kneeF: [124, 115], ankleF: [150, 122], toeF: [155, 125],
-  kneeB: [124, 115], ankleB: [150, 122], toeB: [155, 125],
-  elbowF: [50, 124], handF: [68, 124], elbowB: [50, 124], handB: [68, 124],
-}
 const sidePlankUp: P = {
   head: [32, 94], neck: [44, 98], hip: [92, 104],
   kneeF: [114, 114], ankleF: [136, 123], toeF: [142, 125],
   kneeB: [114, 113], ankleB: [136, 122], toeB: [142, 124],
   elbowF: [44, 124], handF: [62, 124], elbowB: [46, 84], handB: [46, 64],
+}
+// Forearm plank: shoulders over elbows, one straight line from head to heels.
+const forearmPlank: P = {
+  head: [35, 97], neck: [48, 100], hip: [96, 107],
+  kneeF: [123, 113], ankleF: [150, 120], toeF: [156, 125],
+  kneeB: [123, 113], ankleB: [150, 120], toeB: [156, 125],
+  elbowF: [48, 124], handF: [70, 124], elbowB: [48, 124], handB: [70, 124],
+}
+// Side-lying leg raise, seen from the front: head on the bottom arm, top hand propped on the floor.
+const sideLegDown: P = {
+  head: [28, 113], neck: [42, 118], hip: [95, 121],
+  elbowB: [30, 123], handB: [18, 123],
+  elbowF: [54, 107], handF: [64, 121],
+  kneeB: [120, 122], ankleB: [145, 122], toeB: [151, 124],
+  kneeF: [120, 119], ankleF: [145, 119], toeF: [151, 121],
 }
 const swingSupport: P = {
   kneeB: [100, 101], ankleB: [100, 126], toeB: [110, 126],
@@ -259,8 +268,13 @@ export const EXERCISES: Exercise[] = [
       'Breathe steadily and hold.',
     ],
     animation: [
-      { pose: pose(plankBase), ms: 1500 },
-      { pose: pose({ ...plankBase, hip: [98, 106], kneeF: [124, 113], kneeB: [124, 113], head: [38, 94], neck: [50, 96] }), ms: 1500 },
+      { pose: pose(forearmPlank), ms: 1800 },
+      {
+        pose: pose({
+          ...forearmPlank, head: [35, 95], neck: [48, 98], hip: [97, 105],
+          kneeF: [124, 111], kneeB: [124, 111], ankleF: [151, 119], ankleB: [151, 119],
+        }), ms: 1800,
+      },
     ],
   },
   {
@@ -316,17 +330,12 @@ export const EXERCISES: Exercise[] = [
       'Lower slowly without letting your hips roll.',
     ],
     animation: [
+      { pose: pose(sideLegDown), ms: 1000 },
       {
-        pose: pose({
-          ...sideLying, kneeB: [120, 118], ankleB: [145, 118], toeB: [151, 121],
-          kneeF: [120, 116], ankleF: [145, 116], toeF: [151, 119],
-        }), ms: 1200,
+        pose: pose({ ...sideLegDown, kneeF: [115, 105], ankleF: [136, 91], toeF: [143, 89] }), ms: 1100,
       },
       {
-        pose: pose({
-          ...sideLying, kneeB: [120, 118], ankleB: [145, 118], toeB: [151, 121],
-          kneeF: [116, 100], ankleF: [136, 84], toeF: [143, 82],
-        }), ms: 1200,
+        pose: pose({ ...sideLegDown, kneeF: [115, 105], ankleF: [136, 91], toeF: [143, 89] }), ms: 400,
       },
     ],
   },
