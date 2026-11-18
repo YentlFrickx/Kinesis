@@ -6,7 +6,7 @@ import { go } from '../lib/router'
 import { beep, isMuted, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
 import { advance, buildSteps, goTo, initState, next, prev, type RunState, type Step } from '../player/engine'
 import { youllNeed } from '../store/equipment'
-import { MILESTONES, comebackDays } from '../lib/progress'
+import { MILESTONES, comebackDays, sessionCategories } from '../lib/progress'
 import { getHistory, recordCompletion } from '../store/history'
 import { syncMilestones } from '../store/milestones'
 import { getSession } from '../store/sessions'
@@ -72,7 +72,10 @@ export function Player({ id }: { id: string }) {
     if (state.finished) {
       if (!recorded.current && session) {
         recorded.current = true
-        const entry = recordCompletion(session.id, session.name, activeMs.current / 1000)
+        const entry = recordCompletion(
+          session.id, session.name, activeMs.current / 1000,
+          sessionCategories(session, (i) => EXERCISE_MAP.get(i)?.category),
+        )
         setReward({
           milestones: syncMilestones(),
           comeback: comebackDays(getHistory()[1]?.completedAt, entry.completedAt),

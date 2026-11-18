@@ -1,4 +1,5 @@
 import { STARTERS } from '../data/templates'
+import type { Category, Session } from '../data/types'
 import type { HistoryEntry } from '../store/history'
 
 const DAY_MS = 86_400_000
@@ -92,4 +93,37 @@ export function comebackDays(previousCompletedAt: number | undefined, now: numbe
   if (previousCompletedAt === undefined) return 0
   const days = Math.floor((startOfDay(now) - startOfDay(previousCompletedAt)) / DAY_MS)
   return days >= 7 ? days : 0
+}
+
+export const CATEGORIES: readonly Category[] = ['strength', 'stretch', 'mobility']
+export const CATEGORY_LABEL: Record<Category, string> = { strength: 'Strength', stretch: 'Stretching', mobility: 'Mobility' }
+
+/** Number of exercises per category in a session (unknown exercises are ignored). */
+export function sessionCategories(session: Session, categoryOf: (exerciseId: string) => Category | undefined) {
+  const counts: Partial<Record<Category, number>> = {}
+  for (const item of session.items) {
+    const c = categoryOf(item.exerciseId)
+    if (c) counts[c] = (counts[c] ?? 0) + 1
+  }
+  return counts
+}
+
+/** Exercises done per category in the calendar week that contains `now`. Entries without category data are skipped. */
+export function weeklyBalance(entries: HistoryEntry[], now: number): Record<Category, number> {
+  const from = startOfWeek(now)
+  const to = addDays(from, 7)
+  const total: Record<Category, number> = { strength: 0, stretch: 0, mobility: 0 }
+  for (const e of entries) {
+    if (e.completedAt < from || e.completedAt >= to || !e.categories) continue
+    for (const c of CATEGORIES) total[c] += e.categories[c] ?? 0
+  }
+  return total
+}
+
+/** A gentle suggestion when the week so far leaves out a category; null when balanced or nothing to go on yet. */
+export function balanceNudge(balance: Record<Category, number>): string | null {
+  if (CATEGORIES.every((c) => balance[c] === 0)) return null
+  const missing = CATEGORIES.filter((c) => balance[c] === 0).map((c) => CATEGORY_LABEL[c].toLowerCase())
+  if (missing.length === 0) return null
+  return `No ${missing.join(' or ')} yet this week. Adding some would round things out.`
 }

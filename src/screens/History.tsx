@@ -1,3 +1,4 @@
+import { Balance } from '../components/Balance'
 import { GoalRing } from '../components/GoalRing'
 import { Heatmap } from '../components/Heatmap'
 import { formatDuration } from '../lib/format'
@@ -32,6 +33,7 @@ export function History() {
     <div>
       <h1>History</h1>
       <GoalRing editable />
+      <Balance />
       <h2 className="meta">Last 12 weeks</h2>
       <Heatmap />
       <h2 className="meta">Milestones · {MILESTONES.filter((m) => m.id in unlocked).length}/{MILESTONES.length}</h2>

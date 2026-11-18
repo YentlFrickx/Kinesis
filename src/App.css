@@ -104,3 +104,7 @@ ul, ol { padding:0; margin:0; }
 .badge.locked { opacity:.45; filter:grayscale(1); }
 .reward { margin:12px 0; text-align:center; }
 .reward p { margin:4px 0; }
+.balance-row { display:grid; grid-template-columns:90px 1fr 28px; align-items:center; gap:8px; margin:6px 0; }
+.balance-track { height:8px; border-radius:4px; background:var(--line); overflow:hidden; }
+.balance-fill { height:100%; background:var(--accent); border-radius:4px; }
+.balance-note { margin:8px 0 0; }

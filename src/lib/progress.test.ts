@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HistoryEntry } from '../store/history'
-import { comebackDays, earnedMilestones, heatmap, sessionsThisWeek, startOfWeek } from './progress'
+import { balanceNudge, comebackDays, earnedMilestones, heatmap, sessionsThisWeek, startOfWeek, weeklyBalance } from './progress'
 
 // Wed 2026-11-18 12:00 local
 const NOW = new Date(2026, 10, 18, 12).getTime()
@@ -56,5 +56,24 @@ describe('comebackDays', () => {
     expect(comebackDays(undefined, NOW)).toBe(0)
     expect(comebackDays(at(2026, 11, 12).completedAt, NOW)).toBe(0) // 6 days
     expect(comebackDays(at(2026, 11, 11).completedAt, NOW)).toBe(7)
+  })
+})
+
+describe('balance', () => {
+  const withCats = (e: HistoryEntry, categories: HistoryEntry['categories']): HistoryEntry => ({ ...e, categories })
+  it('sums categories for the current week, skipping old entries without data', () => {
+    const e = [
+      withCats(at(2026, 11, 16), { strength: 5, stretch: 1 }),
+      withCats(at(2026, 11, 17), { strength: 2, mobility: 3 }),
+      withCats(at(2026, 11, 9), { strength: 9 }), // last week
+      at(2026, 11, 18), // no category data
+    ]
+    expect(weeklyBalance(e, NOW)).toEqual({ strength: 7, stretch: 1, mobility: 3 })
+  })
+  it('nudges only about missing categories, and not on an empty week', () => {
+    expect(balanceNudge({ strength: 0, stretch: 0, mobility: 0 })).toBeNull()
+    expect(balanceNudge({ strength: 3, stretch: 1, mobility: 1 })).toBeNull()
+    expect(balanceNudge({ strength: 3, stretch: 0, mobility: 0 })).toContain('stretching or mobility')
+    expect(balanceNudge({ strength: 3, stretch: 2, mobility: 0 })).toContain('mobility')
   })
 })
