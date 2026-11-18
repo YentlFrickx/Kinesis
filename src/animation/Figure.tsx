@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { clockNow, subscribeClock } from './clock'
 import { BONES, VIEWBOX, poseAt, type Keyframe, type Pose, type Prop } from './skeleton'
 
 interface Props {
   frames: readonly Keyframe[]
   props?: readonly Prop[]
-  /** Animate the figure. When false, shows the first keyframe. */
+  /** Animate the figure (default). When false, shows the first keyframe. */
   playing?: boolean
   /** Render this exact pose instead of animating (used by the contact sheet). */
   staticPose?: Pose
@@ -12,18 +13,15 @@ interface Props {
   className?: string
 }
 
-const FRAME_MS = 33 // cap at ~30fps to save battery
-const reduceMotion = () =>
-  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+const noopSubscribe = () => () => {}
 
+/**
+ * Exercise figure. Animation is the content here (it shows how to do the
+ * exercise), so it is NOT disabled by prefers-reduced-motion.
+ */
 export function Figure({ frames, props = [], playing = true, staticPose, label, className }: Props) {
-  const [animPose, setPose] = useState<Pose>(frames[0].pose)
   const [visible, setVisible] = useState(true)
   const svgRef = useRef<SVGSVGElement>(null)
-  const start = useRef(0)
-
-  const animating = playing && visible && !reduceMotion()
-  const pose = staticPose ?? (animating ? animPose : frames[0].pose)
 
   // Only animate while on screen.
   useEffect(() => {
@@ -34,22 +32,9 @@ export function Figure({ frames, props = [], playing = true, staticPose, label, 
     return () => io.disconnect()
   }, [])
 
-  useEffect(() => {
-    if (staticPose || !animating) return
-    let raf = 0
-    let last = 0
-    const tick = (now: number) => {
-      if (!start.current) start.current = now
-      if (now - last >= FRAME_MS) {
-        last = now
-        setPose(poseAt(frames, now - start.current))
-      }
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frames, animating, staticPose])
+  const animating = playing && visible && !staticPose
+  const t = useSyncExternalStore(animating ? subscribeClock : noopSubscribe, () => (animating ? clockNow() : 0))
+  const pose: Pose = staticPose ?? (animating ? poseAt(frames, t) : frames[0].pose)
 
   const { width, height, floorY } = VIEWBOX
   return (

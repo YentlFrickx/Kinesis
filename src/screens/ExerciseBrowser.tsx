@@ -44,7 +44,7 @@ export function ExerciseBrowser({ onAdd, addedCount }: Props) {
             <li key={e.id} className="ex-card">
               <div className="ex-row">
                 <button className="ex-main" onClick={() => setOpen(isOpen ? null : e.id)} aria-expanded={isOpen}>
-                  <Figure frames={e.animation} props={e.props} playing={isOpen} label={`${e.name} illustration`} className="thumb" />
+                  <Figure frames={e.animation} props={e.props} label={`${e.name} illustration`} className="thumb" />
                   <span className="ex-text">
                     <strong>{e.name}</strong>
                     <span className="meta">{describe(e.mode, e.defaultValue, e.defaultSets, e.perSide)} · {e.category}</span>
