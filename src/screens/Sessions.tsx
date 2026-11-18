@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { EXERCISE_MAP } from '../data/exercises'
+import { GoalRing } from '../components/GoalRing'
 import { formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { VoiceSettings } from './VoiceSettings'
@@ -37,6 +38,7 @@ export function Sessions() {
         <h1>Sessions</h1>
         <button className="btn primary" onClick={() => go(`/session/${createSession().id}`)}>+ New</button>
       </div>
+      <GoalRing />
       {sessions.length === 0 && (
         <p className="empty">No sessions yet. Create one and pick exercises from the library.</p>
       )}

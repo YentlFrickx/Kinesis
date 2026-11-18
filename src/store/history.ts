@@ -44,6 +44,8 @@ const subscribe = (l: () => void) => {
   return () => listeners.delete(l)
 }
 
+export const getHistory = () => entries
+
 /** Completed sessions, newest first. */
 export const useHistory = () => useSyncExternalStore(subscribe, () => entries)
 

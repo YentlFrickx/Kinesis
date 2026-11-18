@@ -6,7 +6,9 @@ import { go } from '../lib/router'
 import { beep, isMuted, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
 import { advance, buildSteps, goTo, initState, next, prev, type RunState, type Step } from '../player/engine'
 import { youllNeed } from '../store/equipment'
-import { recordCompletion } from '../store/history'
+import { MILESTONES, comebackDays } from '../lib/progress'
+import { getHistory, recordCompletion } from '../store/history'
+import { syncMilestones } from '../store/milestones'
 import { getSession } from '../store/sessions'
 
 const sideLabel = (s: 'left' | 'right' | null) => (s ? `${s[0].toUpperCase()}${s.slice(1)} side` : '')
@@ -44,6 +46,7 @@ export function Player({ id }: { id: string }) {
   const lastSec = useRef<number | null>(null)
   const activeMs = useRef(0)
   const recorded = useRef(false)
+  const [reward, setReward] = useState<{ milestones: string[]; comeback: number } | null>(null)
 
   useWakeLock(!state.finished)
 
@@ -69,7 +72,11 @@ export function Player({ id }: { id: string }) {
     if (state.finished) {
       if (!recorded.current && session) {
         recorded.current = true
-        recordCompletion(session.id, session.name, activeMs.current / 1000)
+        const entry = recordCompletion(session.id, session.name, activeMs.current / 1000)
+        setReward({
+          milestones: syncMilestones(),
+          comeback: comebackDays(getHistory()[1]?.completedAt, entry.completedAt),
+        })
       }
       beep(660, 200); setTimeout(() => beep(880, 300), 250)
       speak('Session complete. Well done!')
@@ -113,8 +120,17 @@ export function Player({ id }: { id: string }) {
       <div className="player done">
         <h1>Session complete 🎉</h1>
         <p className="meta">{session.name}</p>
+        {reward && (reward.comeback > 0 || reward.milestones.length > 0) && (
+          <div className="reward" role="status">
+            {reward.comeback > 0 && <p>Welcome back! Great to see you again.</p>}
+            {reward.milestones.map((id) => {
+              const m = MILESTONES.find((x) => x.id === id)
+              return m && <p key={id}>{m.emoji} <strong>{m.title}</strong> unlocked</p>
+            })}
+          </div>
+        )}
         <button className="btn primary wide" onClick={() => go('/')}>Done</button>
-        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setState(goTo(steps, 0)); setPaused(false) }}>Do it again</button>
+        <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0)); setPaused(false) }}>Do it again</button>
       </div>
     )
   }
