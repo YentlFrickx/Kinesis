@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// BASE_PATH is set by the GitHub Pages workflow (e.g. "/runner-workouts/").
+// BASE_PATH is set by the GitHub Pages workflow (e.g. "/<repo-name>/").
 export default defineConfig({
   base: process.env.BASE_PATH ?? '/',
   plugins: [
@@ -11,9 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Runner Workouts',
-        short_name: 'Workouts',
-        description: 'Plan and follow bodyweight and stretching sessions for runners.',
+        name: 'Kinesis',
+        short_name: 'Kinesis',
+        description: 'Plan and follow bodyweight strength, stretching and mobility sessions.',
         theme_color: '#e4572e',
         background_color: '#f6f7f9',
         display: 'standalone',

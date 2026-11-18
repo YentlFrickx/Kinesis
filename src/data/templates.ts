@@ -7,7 +7,7 @@ import type { Session } from './types'
 export const STARTERS: Session[] = [
   {
     id: 'starter-runner-strength',
-    name: 'Runner strength (30 min)',
+    name: 'Strength workout (30 min)',
     defaultSetRestSec: 30,
     defaultTransitionSec: 15,
     items: [

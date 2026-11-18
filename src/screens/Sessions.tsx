@@ -15,7 +15,7 @@ export function Sessions() {
 
   const download = () => {
     const url = URL.createObjectURL(new Blob([exportJson()], { type: 'application/json' }))
-    const a = Object.assign(document.createElement('a'), { href: url, download: 'runner-workouts.json' })
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'kinesis-sessions.json' })
     a.click()
     URL.revokeObjectURL(url)
   }
