@@ -34,7 +34,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      - run: npm run test:coverage
       - run: npm run build
 
       - name: Deploy preview
@@ -60,3 +60,57 @@ jobs:
             const existing = comments.find((c) => c.body?.includes(marker))
             if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body })
             else await github.rest.issues.createComment({ owner, repo, issue_number, body })
+
+      # Run the Playwright suite against the deployed preview. A failure fails the PR check.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for the preview to respond
+        env:
+          URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || steps.deploy.outputs.deployment-url }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null "$URL"; then exit 0; fi
+            echo "waiting for $URL ($i/30)"; sleep 10
+          done
+          echo "Preview never became reachable" >&2; exit 1
+
+      - name: E2E against the preview
+        env:
+          BASE_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url || steps.deploy.outputs.deployment-url }}
+        run: npm run e2e
+
+      - name: Upload Playwright report and traces
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-preview
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  # Forks have no secrets, so no preview is deployed: run the same suite against a local `vite preview`.
+  e2e-local:
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:coverage
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e # builds and serves locally (see playwright.config.ts)
+      - name: Upload Playwright report and traces
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-local
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
