@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import type { Category } from '../data/types'
 
 export interface HistoryEntry {
   id: string
@@ -9,6 +10,8 @@ export interface HistoryEntry {
   completedAt: number
   /** Time actually spent exercising (excluding pauses), in seconds. */
   durationSec: number
+  /** Number of exercises done per category. Absent on entries recorded before this was tracked. */
+  categories?: Partial<Record<Category, number>>
 }
 
 const KEY = 'rw.history.v1'
@@ -44,16 +47,19 @@ const subscribe = (l: () => void) => {
   return () => listeners.delete(l)
 }
 
+export const getHistory = () => entries
+
 /** Completed sessions, newest first. */
 export const useHistory = () => useSyncExternalStore(subscribe, () => entries)
 
-export function recordCompletion(sessionId: string, sessionName: string, durationSec: number): HistoryEntry {
+export function recordCompletion(sessionId: string, sessionName: string, durationSec: number, categories?: HistoryEntry['categories']): HistoryEntry {
   const entry: HistoryEntry = {
     id: crypto.randomUUID(),
     sessionId,
     sessionName,
     completedAt: Date.now(),
     durationSec: Math.max(0, Math.round(durationSec)),
+    ...(categories ? { categories } : {}),
   }
   commit([entry, ...entries].slice(0, MAX_ENTRIES))
   return entry

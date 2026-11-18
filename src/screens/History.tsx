@@ -1,5 +1,10 @@
+import { Balance } from '../components/Balance'
+import { GoalRing } from '../components/GoalRing'
+import { Heatmap } from '../components/Heatmap'
 import { formatDuration } from '../lib/format'
+import { MILESTONES } from '../lib/progress'
 import { clearHistory, deleteEntry, useHistory } from '../store/history'
+import { useUnlocked } from '../store/milestones'
 
 const dayKey = (t: number) => new Date(t).toDateString()
 const dayLabel = (t: number) => {
@@ -13,6 +18,7 @@ const dayLabel = (t: number) => {
 
 export function History() {
   const entries = useHistory()
+  const unlocked = useUnlocked()
   const totalSec = entries.reduce((n, e) => n + e.durationSec, 0)
 
   const groups: { key: string; label: string; items: typeof entries }[] = []
@@ -26,6 +32,20 @@ export function History() {
   return (
     <div>
       <h1>History</h1>
+      <GoalRing editable />
+      <Balance />
+      <h2 className="meta">Last 12 weeks</h2>
+      <Heatmap />
+      <h2 className="meta">Milestones · {MILESTONES.filter((m) => m.id in unlocked).length}/{MILESTONES.length}</h2>
+      <ul className="badges">
+        {MILESTONES.map((m) => (
+          <li key={m.id} className={`badge${m.id in unlocked ? '' : ' locked'}`}>
+            <div className="emoji" aria-hidden="true">{m.emoji}</div>
+            <strong>{m.title}</strong>
+            <div className="meta">{m.description}</div>
+          </li>
+        ))}
+      </ul>
       {entries.length === 0 ? (
         <p className="empty">No completed sessions yet. Finish a session and it will show up here.</p>
       ) : (
