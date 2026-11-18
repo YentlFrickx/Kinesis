@@ -247,3 +247,10 @@ ul, ol { padding: 0; margin: 0; }
 .item-note { margin-top: 4px; padding: 6px 10px; }
 .collapse-all { margin-bottom: 6px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* compact controls that wrap on narrow screens / large text */
+.item-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(116px, 1fr)); flex-wrap: unset; }
+.item-controls .stepper-val { min-width: 30px; }
+.item-actions { align-items: center; flex-wrap: wrap; }
+.item-actions .reorder { margin-left: auto; }
+.item-actions .reorder { order: 3; }

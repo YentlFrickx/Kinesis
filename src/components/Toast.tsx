@@ -7,7 +7,7 @@ export function Toast() {
   const toast = useToast()
   if (!toast) return null
   return (
-    <div className="toast" role="status" aria-live="polite" key={toast.id}>
+    <div className="toast" aria-live="polite" key={toast.id}>
       <span>{toast.message}</span>
       {toast.undo && (
         <button className="link" onClick={() => { toast.undo?.(); dismissToast() }}>{t('common.undo')}</button>

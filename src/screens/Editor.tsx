@@ -175,10 +175,6 @@ export function Editor({ id }: { id: string }) {
                 <button className="icon-btn grip" aria-label={t('editor.dragHandle', { name: ex.name })}
                   onPointerDown={(e) => onGripDown(e, idx)} onPointerMove={onGripMove} onPointerUp={endDrag} onPointerCancel={endDrag}
                   onKeyDown={(e) => onGripKey(e, idx, ex.name)}><Icon name="grip" size={20} /></button>
-                <div className="reorder">
-                  <button className="btn small up" onClick={() => move(idx, -1)} disabled={idx === 0} aria-label={t('editor.moveUp', { name: ex.name })}><Icon name="chev" size={16} /></button>
-                  <button className="btn small down" onClick={() => move(idx, 1)} disabled={idx === session.items.length - 1} aria-label={t('editor.moveDown', { name: ex.name })}><Icon name="chev" size={16} /></button>
-                </div>
               </div>
               {open && <>
               <div className="item-controls">
@@ -204,6 +200,10 @@ export function Editor({ id }: { id: string }) {
                 onChange={(e) => setItem(idx, { note: e.target.value || undefined })} />
               <Tips exercise={ex} />
               <div className="item-actions">
+                <div className="reorder">
+                  <button className="btn small up" onClick={() => move(idx, -1)} disabled={idx === 0} aria-label={t('editor.moveUp', { name: ex.name })}><Icon name="chev" size={16} /></button>
+                  <button className="btn small down" onClick={() => move(idx, 1)} disabled={idx === session.items.length - 1} aria-label={t('editor.moveDown', { name: ex.name })}><Icon name="chev" size={16} /></button>
+                </div>
                 <button className="link tiny" onClick={() => duplicateItem(idx)}>{t('editor.duplicateItem')}</button>
                 <button className="link danger tiny" onClick={() => remove(idx, ex.name)}>{t('common.remove')}</button>
               </div>
