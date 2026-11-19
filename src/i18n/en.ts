@@ -17,7 +17,6 @@ export const en = {
   'common.duplicate': 'Duplicate',
   'common.copy': 'Copy',
   'common.delete': 'Delete',
-  'common.test': 'Test',
   'common.reset': 'reset',
   'common.backToSessions': '← Sessions',
 

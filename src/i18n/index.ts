@@ -76,4 +76,3 @@ export function useLocalize() {
 export const sessionLabel = (id: string, name: string) => starterName(locale, id, name)
 
 /** Intl date formatting in the current language. */
-export const dateLocale = () => LOCALE_INFO[locale].tag

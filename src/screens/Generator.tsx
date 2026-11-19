@@ -32,8 +32,10 @@ export function Generator() {
   const [seed, setSeed] = useState(newSeed)
   const [edited, setEdited] = useState<SessionItem[] | null>(null)
 
-  const opts = { minutes, categories, focus, equipment: owned, intensity, warmCool, seed }
-  const result = useMemo(() => generateSession(opts), [minutes, categories, focus, owned, intensity, warmCool, seed])
+  const result = useMemo(
+    () => generateSession({ minutes, categories, focus, equipment: owned, intensity, warmCool, seed }),
+    [minutes, categories, focus, owned, intensity, warmCool, seed],
+  )
   const items = edited ?? result.items
   const seconds = edited ? estimateItems(edited) : result.seconds
 
