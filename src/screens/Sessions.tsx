@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { Sheet } from '../components/Sheet'
@@ -12,6 +12,7 @@ import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import { youllNeed } from '../store/equipment'
 import { useHistory } from '../store/history'
+import { clearRun, useSavedRun, validateRun } from '../store/run'
 import { createSession, deleteSession, duplicateSession, importJson, restoreSession, sessionIndex, useSessions } from '../store/sessions'
 import { showToast } from '../store/toast'
 import { SettingsSheet } from './Settings'
@@ -35,6 +36,12 @@ export function Sessions() {
   const [msg, setMsg] = useState('')
   const [sheet, setSheet] = useState<Sheeted>(null)
   const [now] = useState(Date.now)
+  const savedRun = useSavedRun()
+  const resumeSession = savedRun ? sessions.find((s) => s.id === savedRun.sessionId) : undefined
+  const resumeSteps = resumeSession ? buildSteps(resumeSession, lookup) : []
+  const resumable = validateRun(savedRun, resumeSession, resumeSteps.length, now)
+  // Drop a saved run that can no longer be resumed (session edited/deleted, or stale).
+  useEffect(() => { if (savedRun && !resumable) clearRun() }, [savedRun, resumable])
 
   const onImport = async (file?: File) => {
     if (!file) return
@@ -69,6 +76,15 @@ export function Sessions() {
       </div>
 
       {msg && <p className="notice" role="status">{msg}</p>}
+
+      {resumable && resumeSession && (
+        <section className="hero resume" aria-label={t('resume.title', { name: sessionLabel(resumeSession.id, resumeSession.name) })}>
+          <div className="eyebrow">{t('resume.step', { n: resumable.index + 1, total: resumeSteps.length })}</div>
+          <h2>{t('resume.title', { name: sessionLabel(resumeSession.id, resumeSession.name) })}</h2>
+          <button className="btn primary" onClick={() => go(`/play/${resumeSession.id}/resume`)}><Icon name="play" size={18} />{t('resume.resume')}</button>
+          <button className="btn wide" onClick={clearRun}>{t('resume.discard')}</button>
+        </section>
+      )}
 
       {suggested && sug && firstEx && (
         <section className="hero" aria-label={t('sessions.suggestedAria')}>
