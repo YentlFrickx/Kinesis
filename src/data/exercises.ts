@@ -1,6 +1,7 @@
 import { pose, type Keyframe, type Pose, type Prop } from '../animation/skeleton'
 import { COACHING } from './coaching'
-import type { Exercise } from './types'
+import { GEAR_OPTIONS } from './gearOptions'
+import type { Equipment, Exercise } from './types'
 
 type P = Partial<Pose>
 
@@ -126,6 +127,89 @@ const pushupUp: P = {
   elbowF: [50, 105], handF: [50, 124], elbowB: [50, 105], handB: [50, 124],
 }
 
+// ---- poses for the Strava-library additions ----
+const inclineUp: P = {
+  head: [42, 52], neck: [56, 62], hip: [103, 92],
+  kneeF: [127, 107], ankleF: [150, 122], toeF: [156, 125],
+  kneeB: [127, 107], ankleB: [150, 122], toeB: [156, 125],
+  elbowF: [53, 81], handF: [50, 100], elbowB: [53, 81], handB: [50, 100],
+}
+const inclineDown: P = {
+  ...inclineUp, head: [46, 74], neck: [60, 82], hip: [105, 102],
+  kneeF: [128, 112], kneeB: [128, 112],
+  elbowF: [80, 94], elbowB: [80, 94],
+}
+const pikeUp: P = {
+  head: [64, 100], neck: [72, 92], hip: [104, 76],
+  kneeF: [120, 100], ankleF: [136, 124], toeF: [144, 125],
+  kneeB: [120, 100], ankleB: [136, 124], toeB: [144, 125],
+  elbowF: [64, 108], handF: [58, 124], elbowB: [64, 108], handB: [58, 124],
+}
+const pikeDown: P = {
+  ...pikeUp, head: [60, 114], neck: [70, 104], hip: [102, 82],
+  kneeF: [119, 103], kneeB: [119, 103],
+  elbowF: [84, 106], elbowB: [84, 106],
+}
+const bicycleA: P = {
+  head: [44, 100], neck: [56, 106], hip: [88, 120],
+  elbowF: [60, 92], handF: [50, 96], elbowB: [76, 94], handB: [54, 98],
+  kneeF: [100, 96], ankleF: [120, 104], toeF: [126, 102],
+  kneeB: [118, 108], ankleB: [146, 104], toeB: [152, 102],
+}
+const bicycleB: P = {
+  ...bicycleA,
+  elbowB: [60, 92], handB: [50, 96], elbowF: [76, 94], handF: [54, 98],
+  kneeB: [100, 96], ankleB: [120, 104], toeB: [126, 102],
+  kneeF: [118, 108], ankleF: [146, 104], toeF: [152, 102],
+}
+const flutterA: P = {
+  head: [34, 110], neck: [48, 115], hip: [85, 120],
+  elbowF: [66, 123], handF: [84, 123], elbowB: [66, 123], handB: [84, 123],
+  kneeF: [115, 114], ankleF: [145, 108], toeF: [151, 106],
+  kneeB: [115, 118], ankleB: [145, 116], toeB: [151, 116],
+}
+const flutterB: P = {
+  ...flutterA,
+  kneeF: [115, 118], ankleF: [145, 116], toeF: [151, 116],
+  kneeB: [115, 112], ankleB: [145, 100], toeB: [151, 98],
+}
+const sideLungeDown: P = {
+  head: [86, 48], neck: [86, 62], hip: [86, 94],
+  kneeF: [112, 102], ankleF: [124, 126], toeF: [134, 126],
+  kneeB: [66, 110], ankleB: [48, 126], toeB: [58, 126],
+  elbowF: [100, 72], handF: [114, 66], elbowB: [100, 72], handB: [114, 66],
+}
+const frogDown: P = {
+  ...supine,
+  kneeF: [108, 104], ankleF: [104, 124], toeF: [112, 125],
+  kneeB: [110, 106], ankleB: [106, 124], toeB: [114, 125],
+}
+const pigeonUp: P = {
+  head: [100, 64], neck: [96, 78], hip: [88, 112],
+  kneeF: [128, 118], ankleF: [108, 124], toeF: [100, 124],
+  kneeB: [58, 121], ankleB: [28, 124], toeB: [20, 124],
+  elbowF: [108, 100], handF: [124, 124], elbowB: [108, 100], handB: [124, 124],
+}
+const pigeonFold: P = {
+  ...pigeonUp, head: [130, 106], neck: [118, 98], hip: [90, 112],
+  elbowF: [140, 114], handF: [160, 124], elbowB: [140, 114], handB: [160, 124],
+}
+const threadDown: P = {
+  ...quadruped, head: [48, 112], neck: [60, 104],
+  elbowF: [46, 122], handF: [28, 124],
+}
+const lyingHamLow: P = {
+  head: [34, 112], neck: [48, 116], hip: [85, 120],
+  kneeB: [115, 122], ankleB: [145, 124], toeB: [150, 122],
+  kneeF: [105, 98], ankleF: [126, 78], toeF: [124, 70],
+  elbowF: [70, 104], handF: [100, 100], elbowB: [70, 104], handB: [100, 100],
+}
+const lyingHamHigh: P = {
+  ...lyingHamLow,
+  kneeF: [96, 92], ankleF: [110, 66], toeF: [102, 60],
+  handF: [92, 92], handB: [92, 92], elbowF: [68, 102], elbowB: [68, 102],
+}
+
 const BASE: Exercise[] = [
   // ---------------- strength ----------------
   {
@@ -167,7 +251,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'bodyweight-squat', name: 'Bodyweight squat', category: 'strength',
+    id: 'bodyweight-squat', name: 'Air squat', category: 'strength',
     bodyAreas: ['quads', 'glutes'],
     mode: 'reps', defaultValue: 12, defaultSets: 3, perSide: false,
     instructions: [
@@ -260,7 +344,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'forearm-plank', name: 'Forearm plank', category: 'strength',
+    id: 'forearm-plank', name: 'Plank', category: 'strength',
     bodyAreas: ['core'],
     mode: 'time', defaultValue: 30, defaultSets: 2, perSide: false,
     instructions: [
@@ -815,7 +899,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'donkey-kick', name: 'Donkey kick', category: 'strength',
+    id: 'donkey-kick', name: 'Donkey kicks', category: 'strength',
     bodyAreas: ['glutes', 'hamstrings'],
     mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: true,
     instructions: [
@@ -885,7 +969,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'tibialis-raise', name: 'Wall tibialis raise', category: 'strength',
+    id: 'tibialis-raise', name: 'Tibialis raise', category: 'strength',
     bodyAreas: ['calves', 'feet'],
     mode: 'reps', defaultValue: 15, defaultSets: 3, perSide: false,
     instructions: [
@@ -1032,7 +1116,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'thoracic-rotation', name: 'Quadruped thoracic rotation', category: 'mobility',
+    id: 'thoracic-rotation', name: 'Thoracic rotation', category: 'mobility',
     bodyAreas: ['upper back', 'shoulders'],
     mode: 'reps', defaultValue: 8, defaultSets: 1, perSide: true,
     instructions: [
@@ -1407,7 +1491,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'fire-hydrant', name: 'Fire hydrant', category: 'strength',
+    id: 'fire-hydrant', name: 'Fire hydrants', category: 'strength',
     bodyAreas: ['glutes', 'hips'],
     mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: true,
     instructions: [
@@ -1447,7 +1531,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'lying-leg-raise', name: 'Lying leg raise', category: 'strength',
+    id: 'lying-leg-raise', name: 'Lying straight leg raise', category: 'strength',
     bodyAreas: ['core', 'hips'],
     mode: 'reps', defaultValue: 10, defaultSets: 2, perSide: false,
     instructions: [
@@ -1503,7 +1587,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'good-morning', name: 'Bodyweight good morning', category: 'strength',
+    id: 'good-morning', name: 'Good morning', category: 'strength',
     bodyAreas: ['hamstrings', 'glutes', 'upper back'],
     mode: 'reps', defaultValue: 12, defaultSets: 2, perSide: false,
     instructions: [
@@ -1525,6 +1609,150 @@ const BASE: Exercise[] = [
           elbowF: [124, 58], handF: [132, 62], elbowB: [124, 58], handB: [132, 62],
         }), ms: 1500,
       },
+    ],
+  },
+  // ---------------- added: Strava-library exercises ----------------
+  {
+    id: 'incline-push-up', name: 'Incline push-up', category: 'strength',
+    bodyAreas: ['chest', 'arms', 'core'],
+    mode: 'reps', defaultValue: 12, defaultSets: 3, perSide: false,
+    instructions: [
+      'Place your hands on a stable bench, step or countertop, slightly wider than your shoulders.',
+      'Walk your feet back until your body forms one straight line from head to heels.',
+      'Lower your chest toward the edge, then press back up without letting your hips sag.',
+    ],
+    props: [{ x: 24, y: 100, w: 40, h: 26 }],
+    animation: [
+      { pose: pose(inclineUp), ms: 1000 },
+      { pose: pose(inclineDown), ms: 1000 },
+    ],
+  },
+  {
+    id: 'pike-push-up', name: 'Pike push-up', category: 'strength',
+    bodyAreas: ['shoulders', 'arms', 'core'],
+    mode: 'reps', defaultValue: 8, defaultSets: 3, perSide: false,
+    instructions: [
+      'Start in a downward-dog position: hands on the floor, hips high, legs nearly straight.',
+      'Bend your elbows and lower the top of your head toward the floor between your hands.',
+      'Press back up to the start, keeping your hips high throughout.',
+    ],
+    animation: [
+      { pose: pose(pikeUp), ms: 1100 },
+      { pose: pose(pikeDown), ms: 1100 },
+    ],
+  },
+  {
+    id: 'bicycle-crunch', name: 'Bicycle crunch', category: 'strength',
+    bodyAreas: ['core'],
+    mode: 'reps', defaultValue: 20, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie on your back with your hands lightly behind your head and your shoulders lifted.',
+      'Bring one knee in while you rotate your opposite elbow toward it, extending the other leg.',
+      'Switch sides in a slow pedalling motion. One rep = one twist to either side.',
+    ],
+    animation: [
+      { pose: pose(bicycleA), ms: 700 },
+      { pose: pose(bicycleB), ms: 700 },
+    ],
+  },
+  {
+    id: 'flutter-kicks', name: 'Flutter kicks', category: 'strength',
+    bodyAreas: ['core', 'hips'],
+    mode: 'time', defaultValue: 30, defaultSets: 2, perSide: false,
+    instructions: [
+      'Lie on your back with your hands under your glutes and your legs straight, just off the floor.',
+      'Press your lower back into the floor and kick your legs up and down in small, quick alternating beats.',
+      'Keep your legs straight and your lower back from arching.',
+    ],
+    animation: [
+      { pose: pose(flutterA), ms: 350 },
+      { pose: pose(flutterB), ms: 350 },
+    ],
+  },
+  {
+    id: 'side-lunge', name: 'Side lunge', category: 'strength',
+    bodyAreas: ['quads', 'glutes', 'hips'],
+    mode: 'reps', defaultValue: 8, defaultSets: 2, perSide: true,
+    instructions: [
+      'Stand tall with your feet together and your hands in front of your chest.',
+      'Take a big step out to the side and sit your hips back, bending that knee while the other leg stays straight.',
+      'Push through the bent leg to return to standing. Keep both feet pointing forward.',
+    ],
+    animation: [
+      { pose: pose({ ...armsForward }), ms: 1200 },
+      { pose: pose(sideLungeDown), ms: 1200 },
+    ],
+  },
+  {
+    id: 'frog-pump', name: 'Frog pump', category: 'strength',
+    bodyAreas: ['glutes', 'hips'],
+    mode: 'reps', defaultValue: 15, defaultSets: 3, perSide: false,
+    instructions: [
+      'Lie on your back with the soles of your feet together and your knees dropped out to the sides.',
+      'Bring your heels close to your glutes and press your hips up by squeezing your glutes.',
+      'Pause at the top, then lower with control. Keep the soles of your feet pressed together.',
+    ],
+    animation: [
+      { pose: pose(frogDown), ms: 1100 },
+      { pose: pose({ ...frogDown, hip: [90, 94], neck: [44, 112], head: [30, 112], kneeF: [112, 96], kneeB: [114, 96] }), ms: 1100 },
+    ],
+  },
+  {
+    id: 'standing-hip-circles', name: 'Standing hip circles', category: 'mobility',
+    bodyAreas: ['hips', 'glutes'],
+    mode: 'reps', defaultValue: 8, defaultSets: 1, perSide: true,
+    instructions: [
+      'Stand on one leg with your hands on your hips or lightly on a wall for balance.',
+      'Lift the other knee to hip height and draw big, slow circles with it.',
+      'Keep your torso still and your standing leg stable. Do all circles one way, then the other.',
+    ],
+    animation: [
+      { pose: pose({ ...handsOnHips, kneeF: [126, 78], ankleF: [114, 102], toeF: [122, 104] }), ms: 900 },
+      { pose: pose({ ...handsOnHips, kneeF: [112, 88], ankleF: [102, 112], toeF: [110, 114] }), ms: 900 },
+      { pose: pose({ ...handsOnHips, kneeF: [94, 82], ankleF: [78, 100], toeF: [70, 102] }), ms: 900 },
+      { pose: pose({ ...handsOnHips, kneeF: [114, 74], ankleF: [112, 98], toeF: [120, 100] }), ms: 900 },
+    ],
+  },
+  {
+    id: 'pigeon-pose', name: 'Pigeon pose', category: 'stretch',
+    bodyAreas: ['glutes', 'hips'],
+    mode: 'time', defaultValue: 45, defaultSets: 1, perSide: true,
+    instructions: [
+      'From all fours, slide one knee forward behind your wrist and angle that shin across your body.',
+      'Extend the other leg straight back with the top of the foot on the floor and square your hips.',
+      'Stay upright, or fold forward over the front leg for a deeper stretch. Breathe slowly.',
+    ],
+    animation: [
+      { pose: pose(pigeonUp), ms: 2000 },
+      { pose: pose(pigeonFold), ms: 2000 },
+    ],
+  },
+  {
+    id: 'thread-the-needle', name: 'Thread the needle stretch', category: 'stretch',
+    bodyAreas: ['upper back', 'shoulders'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Start on all fours with your hands under your shoulders and your knees under your hips.',
+      'Slide one arm along the floor under your chest, palm up, and let that shoulder and ear rest on the floor.',
+      'Keep your hips over your knees and breathe into the upper back. Return and switch sides.',
+    ],
+    animation: [
+      { pose: pose(quadruped), ms: 1800 },
+      { pose: pose(threadDown), ms: 1800 },
+    ],
+  },
+  {
+    id: 'lying-hamstring-stretch', name: 'Lying hamstring stretch', category: 'stretch',
+    bodyAreas: ['hamstrings', 'calves'],
+    mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
+    instructions: [
+      'Lie on your back and lift one leg, holding behind the thigh (or calf) with both hands.',
+      'Gently straighten the raised leg until you feel a stretch in the back of the thigh.',
+      'Keep your head and the other leg relaxed on the floor and your lower back flat.',
+    ],
+    animation: [
+      { pose: pose(lyingHamLow), ms: 2000 },
+      { pose: pose(lyingHamHigh), ms: 2000 },
     ],
   },
   // ---------------- added: mobility ----------------
@@ -1550,7 +1778,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'supine-twist', name: 'Supine spinal twist', category: 'mobility',
+    id: 'supine-twist', name: 'Lying spinal twist', category: 'mobility',
     bodyAreas: ['hips', 'upper back'],
     mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
     instructions: [
@@ -1614,7 +1842,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'triceps-stretch', name: 'Overhead triceps stretch', category: 'stretch',
+    id: 'triceps-stretch', name: 'Overhead tricep stretch', category: 'stretch',
     bodyAreas: ['arms', 'shoulders'],
     mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
     instructions: [
@@ -1632,7 +1860,7 @@ const BASE: Exercise[] = [
     ],
   },
   {
-    id: 'doorway-chest-stretch', name: 'Doorway chest stretch', category: 'stretch',
+    id: 'doorway-chest-stretch', name: 'Wall chest stretch', category: 'stretch',
     bodyAreas: ['chest', 'shoulders'],
     mode: 'time', defaultValue: 30, defaultSets: 1, perSide: true,
     instructions: [
@@ -1660,6 +1888,13 @@ const BASE: Exercise[] = [
 ]
 
 /** The library with the coaching content merged in. */
-export const EXERCISES: Exercise[] = BASE.map((e) => ({ ...e, ...COACHING[e.id] }))
+export const EXERCISES: Exercise[] = BASE.map((e) => ({ ...e, ...COACHING[e.id], ...(GEAR_OPTIONS[e.id] ? { gearOptions: GEAR_OPTIONS[e.id] } : {}) }))
 
 export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
+
+/** The exercise as done with `gear` (adds the gear to its drawing and equipment). Unsupported or missing gear returns it unchanged. */
+export function withGear(e: Exercise, gear?: Equipment): Exercise {
+  const drawn = gear && e.gearOptions?.[gear]
+  if (!gear || !drawn) return e
+  return { ...e, gearUsed: gear, gear: [...(e.gear ?? []), ...drawn], equipment: [...new Set([...(e.equipment ?? []), gear])] }
+}

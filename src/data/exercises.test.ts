@@ -61,3 +61,14 @@ describe('coaching content', () => {
     }
   })
 })
+
+describe('gear options', () => {
+  it('only reference known exercises and valid gear drawings', () => {
+    for (const e of EXERCISES) {
+      for (const [q, drawn] of Object.entries(e.gearOptions ?? {})) {
+        expect(['dumbbell', 'band'], e.id).toContain(q)
+        for (const g of drawn) expect(g.kind === 'band' ? 'band' : 'dumbbell', e.id).toBe(q)
+      }
+    }
+  })
+})

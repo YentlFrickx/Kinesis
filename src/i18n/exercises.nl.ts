@@ -342,4 +342,54 @@ export const NL_EXERCISES: Record<string, ExerciseText> = {
     'Zet een kleine stap naar voren en draai je lichaam zachtjes weg tot je de voorkant van schouder en borst voelt openen.',
     'Houd je schouder omlaag en je nek ontspannen. Ideaal na veel bureau- of fietstijd.',
   ] },
+  'incline-push-up': { name: 'Opdrukken met verhoogde handen', instructions: [
+    'Plaats je handen op een stevige bank, trede of aanrecht, iets breder dan je schouders.',
+    'Loop met je voeten naar achter tot je lichaam één rechte lijn vormt van hoofd tot hielen.',
+    'Zak met je borst naar de rand en duw weer omhoog zonder je heupen te laten doorzakken.',
+  ] },
+  'pike-push-up': { name: 'Pike push-up', instructions: [
+    'Begin in een neerwaartse hond: handen op de grond, heupen hoog, benen bijna gestrekt.',
+    'Buig je ellebogen en zak met de bovenkant van je hoofd naar de vloer tussen je handen.',
+    'Duw terug naar de start en houd je heupen de hele tijd hoog.',
+  ] },
+  'bicycle-crunch': { name: 'Fietscrunch', instructions: [
+    'Lig op je rug met je handen licht achter je hoofd en je schouders opgetild.',
+    'Haal één knie in terwijl je de tegenovergestelde elleboog erheen draait en het andere been strekt.',
+    'Wissel van kant in een rustige trapbeweging. Eén herhaling = één draai naar elke kant.',
+  ] },
+  'flutter-kicks': { name: 'Flutter kicks', instructions: [
+    'Lig op je rug met je handen onder je billen en je benen gestrekt, net boven de grond.',
+    'Druk je onderrug in de vloer en schop je benen met kleine, snelle wisselende bewegingen op en neer.',
+    'Houd je benen gestrekt en laat je onderrug niet hol trekken.',
+  ] },
+  'side-lunge': { name: 'Zijwaartse lunge', instructions: [
+    'Sta rechtop met je voeten tegen elkaar en je handen voor je borst.',
+    'Stap groot opzij en zet je heupen naar achter: dat been buigt, het andere blijft gestrekt.',
+    'Duw door het gebogen been terug naar staan. Houd beide voeten naar voren gericht.',
+  ] },
+  'frog-pump': { name: 'Frog pump', instructions: [
+    'Lig op je rug met je voetzolen tegen elkaar en je knieën naar buiten gezakt.',
+    'Breng je hielen dicht bij je billen en duw je heupen omhoog door je billen aan te knijpen.',
+    'Houd kort vast bovenaan en zak gecontroleerd terug. Houd je voetzolen tegen elkaar.',
+  ] },
+  'standing-hip-circles': { name: 'Heupcirkels staand', instructions: [
+    'Sta op één been met je handen op je heupen of licht tegen een muur voor balans.',
+    'Til de andere knie tot heuphoogte en maak grote, langzame cirkels.',
+    'Houd je romp stil en je standbeen stabiel. Doe alle cirkels één kant op en dan de andere kant.',
+  ] },
+  'pigeon-pose': { name: 'Duifhouding', instructions: [
+    'Schuif vanuit vierpuntsstand één knie naar voren achter je pols en leg dat onderbeen schuin voor je lichaam.',
+    'Strek het andere been recht naar achter met de wreef op de grond en houd je heupen recht.',
+    'Blijf rechtop of buig voorover over het voorste been voor een diepere rek. Adem rustig.',
+  ] },
+  'thread-the-needle': { name: 'Draad door de naald', instructions: [
+    'Begin in vierpuntsstand met je handen onder je schouders en je knieën onder je heupen.',
+    'Schuif één arm met de handpalm omhoog over de vloer onder je borst door en laat schouder en oor op de grond rusten.',
+    'Houd je heupen boven je knieën en adem naar je bovenrug. Kom terug en wissel van kant.',
+  ] },
+  'lying-hamstring-stretch': { name: 'Hamstringrek liggend', instructions: [
+    'Lig op je rug, til één been op en pak het achter je dij (of kuit) vast met beide handen.',
+    'Strek het opgetilde been zachtjes tot je een rek voelt aan de achterkant van je dij.',
+    'Houd je hoofd en het andere been ontspannen op de grond en je onderrug plat.',
+  ] },
 }

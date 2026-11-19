@@ -52,17 +52,18 @@ export function useT() {
 
 const cache = new Map<Locale, Map<string, Exercise>>()
 
-/** The exercise with its name and instructions in `l` (English fallback per exercise). */
+/** The exercise with its name and instructions in `l` (English fallback per exercise); a gear modifier is added to the title ("Calf raise with dumbbells"). */
 export function localizeExercise(e: Exercise, l: Locale = locale): Exercise {
-  const text = EXERCISE_TEXT[l]?.[e.id]
-  if (!text || l === DEFAULT_LOCALE) return e
-  let byId = cache.get(l)
-  if (!byId) cache.set(l, (byId = new Map()))
-  let out = byId.get(e.id)
-  if (!out) {
-    const c = COACHING_TEXT[l]?.[e.id]
-    byId.set(e.id, (out = { ...e, name: text.name, instructions: text.instructions, ...(c && e.cues ? { cues: c.cues, commonMistakes: c.commonMistakes } : {}) }))
-  }
+  const key = `${e.id}|${e.gearUsed ?? ''}`
+  let byKey = cache.get(l)
+  if (!byKey) cache.set(l, (byKey = new Map()))
+  let out = byKey.get(key)
+  if (out) return out
+  const text = l === DEFAULT_LOCALE ? undefined : EXERCISE_TEXT[l]?.[e.id]
+  const c = COACHING_TEXT[l]?.[e.id]
+  out = text ? { ...e, name: text.name, instructions: text.instructions, ...(c && e.cues ? { cues: c.cues, commonMistakes: c.commonMistakes } : {}) } : e
+  if (e.gearUsed) out = { ...out, name: translate(l, 'gear.with', { name: out.name, gear: translate(l, `gear.with.${e.gearUsed}`) }) }
+  byKey.set(key, out)
   return out
 }
 

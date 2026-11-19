@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Figure } from '../animation/Figure'
-import { EXERCISE_MAP } from '../data/exercises'
+import { EXERCISE_MAP, withGear } from '../data/exercises'
 import type { Exercise } from '../data/types'
 import { formatClock } from '../lib/format'
 import { go } from '../lib/router'
@@ -195,7 +195,7 @@ export function Player({ id }: { id: string }) {
         )}
         <button className="btn primary wide" onClick={() => go('/')}>{t('common.done')}</button>
         <button className="btn wide" onClick={async () => {
-          const text = workoutText(sessionLabel(session.id, session.name), session.items, (i) => { const e = EXERCISE_MAP.get(i); return e && lx(e) }, t)
+          const text = workoutText(sessionLabel(session.id, session.name), session.items, (i, g) => { const e = EXERCISE_MAP.get(i); return e && lx(withGear(e, g)) }, t)
           showToast(t((await copyText(text)) ? 'share.copied' : 'share.failed'))
         }}><Icon name="copy" size={18} />{t('share.copy')}</button>
         <button className="btn wide" onClick={() => { recorded.current = false; activeMs.current = 0; setReward(null); setState(goTo(steps, 0, autoReps)); setPaused(false) }}>{t('player.again')}</button>
