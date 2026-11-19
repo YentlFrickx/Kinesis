@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { Sheet } from '../components/Sheet'
@@ -12,6 +12,7 @@ import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import { youllNeed } from '../store/equipment'
 import { useHistory } from '../store/history'
+import { clearRun, startSession, useSavedRun, validateRun } from '../store/run'
 import { createSession, deleteSession, duplicateSession, importJson, restoreSession, sessionIndex, useSessions } from '../store/sessions'
 import { showToast } from '../store/toast'
 import { SettingsSheet } from './Settings'
@@ -35,6 +36,12 @@ export function Sessions() {
   const [msg, setMsg] = useState('')
   const [sheet, setSheet] = useState<Sheeted>(null)
   const [now] = useState(Date.now)
+  const savedRun = useSavedRun()
+  const resumeSession = savedRun ? sessions.find((s) => s.id === savedRun.sessionId) : undefined
+  const resumeSteps = resumeSession ? buildSteps(resumeSession, lookup) : []
+  const resumable = validateRun(savedRun, resumeSession, resumeSteps.length, now)
+  // Drop a saved run that can no longer be resumed (session edited/deleted, or stale).
+  useEffect(() => { if (savedRun && !resumable) clearRun() }, [savedRun, resumable])
 
   const onImport = async (file?: File) => {
     if (!file) return
@@ -70,6 +77,15 @@ export function Sessions() {
 
       {msg && <p className="notice" role="status">{msg}</p>}
 
+      {resumable && resumeSession && (
+        <section className="hero resume" aria-label={t('resume.title', { name: sessionLabel(resumeSession.id, resumeSession.name) })}>
+          <div className="eyebrow">{t('resume.step', { n: resumable.index + 1, total: resumeSteps.length })}</div>
+          <h2>{t('resume.title', { name: sessionLabel(resumeSession.id, resumeSession.name) })}</h2>
+          <button className="btn primary" onClick={() => go(`/play/${resumeSession.id}`)}><Icon name="play" size={18} />{t('resume.resume')}</button>
+          <button className="btn wide" onClick={clearRun}>{t('resume.discard')}</button>
+        </section>
+      )}
+
       {suggested && sug && firstEx && (
         <section className="hero" aria-label={t('sessions.suggestedAria')}>
           <div className="eyebrow">{t('sessions.suggested')}</div>
@@ -78,7 +94,7 @@ export function Sessions() {
           <div className="stage">
             <Figure frames={firstEx.animation} props={firstEx.props} gear={firstEx.gear} label={t('sessions.animation', { name: firstEx.name })} />
           </div>
-          <button className="btn primary" onClick={() => go(`/play/${suggested.id}`)}><Icon name="play" size={18} />{t('sessions.start')}</button>
+          <button className="btn primary" onClick={() => startSession(suggested.id)}><Icon name="play" size={18} />{t('sessions.start')}</button>
         </section>
       )}
 
@@ -117,7 +133,7 @@ export function Sessions() {
                 {youllNeed(s) && <div className="gear-note">{youllNeed(s)}</div>}
               </div>
               <button className="icon-btn" aria-label={t('sessions.moreFor', { name: sessionLabel(s.id, s.name) })} onClick={() => setSheet({ kind: 'menu', id: s.id })}><Icon name="more" /></button>
-              <button className="icon-btn fill" aria-label={t('sessions.startNamed', { name: sessionLabel(s.id, s.name) })} disabled={steps.length === 0} onClick={() => go(`/play/${s.id}`)}><Icon name="play" size={18} /></button>
+              <button className="icon-btn fill" aria-label={t('sessions.startNamed', { name: sessionLabel(s.id, s.name) })} disabled={steps.length === 0} onClick={() => startSession(s.id)}><Icon name="play" size={18} /></button>
             </li>
           )
         })}

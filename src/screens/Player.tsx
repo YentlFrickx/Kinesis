@@ -17,6 +17,7 @@ import { youllNeed } from '../store/equipment'
 import { comebackDays, sessionCategories, type MilestoneId } from '../lib/progress'
 import { getHistory, recordCompletion } from '../store/history'
 import { syncMilestones } from '../store/milestones'
+import { clearRun, getSavedRun, saveRun, sessionSignature, validateRun } from '../store/run'
 import { getSession } from '../store/sessions'
 import { showToast } from '../store/toast'
 import { copyText } from '../lib/clipboard'
@@ -51,6 +52,8 @@ function useWakeLock(active: boolean) {
   }, [active])
 }
 
+const SAVE_EVERY_MS = 3000
+
 export function Player({ id }: { id: string }) {
   const t = useT()
   const lx = useLocalize()
@@ -60,17 +63,46 @@ export function Player({ id }: { id: string }) {
   const session = getSession(id)
   const steps = useMemo(() => (session ? buildSteps(session, (i) => EXERCISE_MAP.get(i)) : []), [session])
   const [autoReps, setAutoRepsState] = useState(getAutoReps)
-  const [state, setState] = useState<RunState>(() => initState(steps, autoReps))
-  const [paused, setPaused] = useState(false)
+  // A valid saved run for this session is restored once, on mount (reload, reopened tab or Resume); it
+  // starts paused so the user can get back in position. Fresh starts clear the saved run first.
+  const [restored] = useState(() => (session ? validateRun(getSavedRun(), session, steps.length) : undefined))
+  const [state, setState] = useState<RunState>(() =>
+    restored ? { index: restored.index, remainingMs: restored.remainingMs ?? Infinity, finished: false } : initState(steps, autoReps))
+  const [paused, setPaused] = useState(!!restored)
   const [muted, setMutedState] = useState(isMuted)
   const [sheet, setSheet] = useState<'quit' | 'settings' | null>(null)
   const lastSec = useRef<number | null>(null)
-  const activeMs = useRef(0)
+  const activeMs = useRef(restored?.activeMs ?? 0)
   const recorded = useRef(false)
   const [reward, setReward] = useState<{ milestones: string[]; comeback: number } | null>(null)
   const nav = (fn: () => void) => { interrupt.current = true; fn() }
 
   useWakeLock(!state.finished)
+
+  // Persist the run so a reload or OS kill can be resumed: on every step change, periodically, and when hidden.
+  const snap = useRef({ state, paused })
+  snap.current = { state, paused }
+  const persist = useCallback(() => {
+    const { state: st, paused: p } = snap.current
+    if (!session || st.finished || steps.length === 0) return
+    saveRun({
+      sessionId: session.id, signature: sessionSignature(session), index: st.index,
+      remainingMs: Number.isFinite(st.remainingMs) ? st.remainingMs : null,
+      activeMs: activeMs.current, paused: p, savedAt: Date.now(),
+    })
+  }, [session, steps])
+  useEffect(() => { persist() }, [persist, state.index, paused])
+  useEffect(() => {
+    const onHide = () => document.visibilityState === 'hidden' && persist()
+    const timer = setInterval(persist, SAVE_EVERY_MS)
+    document.addEventListener('visibilitychange', onHide)
+    window.addEventListener('pagehide', persist)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onHide)
+      window.removeEventListener('pagehide', persist)
+    }
+  }, [persist])
 
   // Timer loop. Timestamp-based: each tick applies the real time elapsed since the last tick, so a
   // throttled/stalled interval (locked screen, background tab) cannot cause drift. On return to the
@@ -100,6 +132,7 @@ export function Player({ id }: { id: string }) {
   useEffect(() => {
     lastSec.current = null
     if (state.finished) {
+      clearRun()
       if (!recorded.current && session) {
         recorded.current = true
         const entry = recordCompletion(
@@ -277,7 +310,7 @@ export function Player({ id }: { id: string }) {
         <Sheet title={t('player.quitTitle')} onClose={() => setSheet(null)}>
           <p className="meta">{t('player.quitBody')}</p>
           <button className="btn primary" onClick={() => setSheet(null)}>{t('player.keepGoing')}</button>
-          <button className="btn" onClick={() => go('/')}>{t('player.end')}</button>
+          <button className="btn" onClick={() => { clearRun(); go('/') }}>{t('player.end')}</button>
         </Sheet>
       )}
       {sheet === 'settings' && (

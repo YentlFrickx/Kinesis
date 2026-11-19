@@ -1,3 +1,4 @@
+import { startSession } from '../store/run'
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
@@ -221,7 +222,7 @@ export function Editor({ id }: { id: string }) {
 
       <div className="bar">
         <span className="meta">{t('dur.approx', { duration: formatDuration(estimateSeconds(steps)) })}</span>
-        <button className="btn primary" disabled={steps.length === 0} onClick={() => go(`/play/${id}`)}><Icon name="play" size={16} />{t('editor.start')}</button>
+        <button className="btn primary" disabled={steps.length === 0} onClick={() => startSession(id)}><Icon name="play" size={16} />{t('editor.start')}</button>
       </div>
     </div>
   )
