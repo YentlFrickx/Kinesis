@@ -5,7 +5,7 @@ import type { HistoryEntry } from '../store/history'
 const DAY_MS = 86_400_000
 
 /** Local midnight of the day containing `t`. */
-export function startOfDay(t: number): number {
+function startOfDay(t: number): number {
   const d = new Date(t)
   d.setHours(0, 0, 0, 0)
   return d.getTime()

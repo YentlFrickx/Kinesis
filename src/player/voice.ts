@@ -17,7 +17,7 @@ const REGION_RANK: Record<Locale, string[]> = {
   nl: ['nl-nl', 'nl-be'],
 }
 
-export const isLanguage = (v: Pick<VoiceInfo, 'lang'>, language: Locale) => base(v.lang) === language
+const isLanguage = (v: Pick<VoiceInfo, 'lang'>, language: Locale) => base(v.lang) === language
 
 /** Voices for one language only, best first: preferred region, then other regions; on-device before network voices. */
 export function voicesFor<T extends VoiceInfo>(voices: readonly T[], language: Locale): T[] {
@@ -78,7 +78,7 @@ export interface SpeechSettings {
 }
 
 export const RATE_RANGE = { min: 0.7, max: 1.4, step: 0.1 } as const
-export const DEFAULT_SPEECH: SpeechSettings = { rate: 1, volume: 1, verbosity: 'reps', voices: {} }
+const DEFAULT_SPEECH: SpeechSettings = { rate: 1, volume: 1, verbosity: 'reps', voices: {} }
 
 const clamp = (n: unknown, min: number, max: number, fallback: number) =>
   typeof n === 'number' && Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback

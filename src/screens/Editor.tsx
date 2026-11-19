@@ -124,7 +124,7 @@ export function Editor({ id }: { id: string }) {
           <h1>{t('editor.addExercises')}</h1>
           <button className="btn primary" onClick={() => setPicking(false)}>{t('common.done')}</button>
         </div>
-        <ExerciseBrowser onAdd={add} addedCount={countOf} />
+        <ExerciseBrowser onAdd={add} addedCount={countOf} inSession={new Set(session.items.map((i) => i.exerciseId))} />
       </div>
     )
   }

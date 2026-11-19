@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { getFavorites, importFavorites } from './favorites'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
 import { MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
@@ -9,7 +10,7 @@ const VERSION = 1
 const newId = () => crypto.randomUUID()
 
 /** Gives every item a stable id (existing ids are kept); returns the same objects when nothing changed. */
-export function withItemIds(list: Session[]): Session[] {
+function withItemIds(list: Session[]): Session[] {
   return list.map((s) => (s.items.every((i) => i.id) ? s : { ...s, items: s.items.map((i) => (i.id ? i : { ...i, id: newId() })) }))
 }
 
@@ -101,7 +102,7 @@ export function duplicateSession(id: string, name?: string): Session | undefined
   return copy
 }
 
-export const exportJson = () => JSON.stringify({ version: VERSION, sessions }, null, 2)
+export const exportJson = () => JSON.stringify({ version: VERSION, sessions, favorites: getFavorites() }, null, 2)
 
 const num = (v: unknown, min: number, max: number, fallback: number) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback
@@ -139,5 +140,6 @@ export function importJson(text: string): number {
     })
   }
   commit([...sessions, ...added])
+  if (data.favorites !== undefined) importFavorites(data.favorites)
   return added.length
 }
