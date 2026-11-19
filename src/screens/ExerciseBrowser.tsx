@@ -139,7 +139,7 @@ export function ExerciseBrowser({ onAdd, addedCount, inSession }: Props) {
           <button className="link" onClick={reset}>{t('browser.clear')}</button>
         </div>
       )}
-      <p className="meta" role="status" aria-live="polite">{t('browser.count', { count: list.length })}</p>
+      <p className="meta" aria-live="polite">{t('browser.count', { count: list.length })}</p>
       {hidden > 0 && (
         <p className="gear-note">
           {showAll ? t('browser.showingAll') : t('browser.hidden', { count: hidden })}{' '}

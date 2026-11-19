@@ -182,7 +182,7 @@ export const nl: Partial<Record<MessageKey, string>> = {
   'browser.title': 'Oefeningen',
   'browser.noFavorites': 'Nog geen favorieten. Tik op de ster bij een oefening om er een toe te voegen.',
   'browser.unfavorite': '{name} uit favorieten verwijderen',
-  'browser.favorite': '{name} aan favorieten toevoegen',
+  'browser.favorite': '{name} als favoriet markeren',
   'browser.count_other': '{count} oefeningen',
   'browser.count_one': '{count} oefening',
   'browser.clear': 'Filters wissen',

@@ -190,7 +190,7 @@ export const en = {
   'browser.title': 'Exercises',
   'browser.noFavorites': 'No favourites yet. Tap the star on an exercise to add one.',
   'browser.unfavorite': 'Remove {name} from favourites',
-  'browser.favorite': 'Add {name} to favourites',
+  'browser.favorite': 'Mark {name} as favourite',
   'browser.count_other': '{count} exercises',
   'browser.count_one': '{count} exercise',
   'browser.clear': 'Clear filters',
