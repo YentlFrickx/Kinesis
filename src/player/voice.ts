@@ -18,7 +18,6 @@ const REGION_RANK: Record<Locale, string[]> = {
 }
 
 export const isLanguage = (v: Pick<VoiceInfo, 'lang'>, language: Locale) => base(v.lang) === language
-export const isEnglish = (v: Pick<VoiceInfo, 'lang'>) => isLanguage(v, 'en')
 
 /** Voices for one language only, best first: preferred region, then other regions; on-device before network voices. */
 export function voicesFor<T extends VoiceInfo>(voices: readonly T[], language: Locale): T[] {
