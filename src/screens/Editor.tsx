@@ -3,8 +3,8 @@ import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { Tips } from '../components/Tips'
 import { sessionLabel, useLocalize, useT } from '../i18n'
-import { EXERCISE_MAP } from '../data/exercises'
-import { MAX_NOTE_LENGTH, type Exercise, type Session, type SessionItem } from '../data/types'
+import { EXERCISE_MAP, withGear } from '../data/exercises'
+import { EQUIPMENT, MAX_NOTE_LENGTH, type Exercise, type Session, type SessionItem } from '../data/types'
 import { describe, formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
@@ -156,7 +156,8 @@ export function Editor({ id }: { id: string }) {
         {session.items.map((item, idx) => {
           const raw = EXERCISE_MAP.get(item.exerciseId)
           if (!raw) return null
-          const ex = lx(raw)
+          const ex = lx(withGear(raw, item.gear))
+          const options = EQUIPMENT.filter((q) => raw.gearOptions?.[q])
           const k = keyOf(item, idx)
           const open = !collapsed.has(k)
           return (
@@ -195,6 +196,14 @@ export function Editor({ id }: { id: string }) {
                   )}
                 </div>}
               </div>
+              {options.length > 0 && (
+                <div className="chips gear-pick" role="group" aria-label={`${ex.name} ${t('gear.label')}`}>
+                  {[undefined, ...options].map((q) => (
+                    <button key={q ?? 'none'} className={`chip${item.gear === q ? ' on' : ''}`} aria-pressed={item.gear === q}
+                      onClick={() => setItem(idx, { gear: q })}>{q ? t(`equipment.${q}`) : t('gear.none')}</button>
+                  ))}
+                </div>
+              )}
               <input className="item-note" value={item.note ?? ''} maxLength={MAX_NOTE_LENGTH} placeholder={t('editor.notePlaceholder')} aria-label={`${ex.name} ${t('editor.note')}`}
                 onChange={(e) => setItem(idx, { note: e.target.value || undefined })} />
               <Tips exercise={ex} />

@@ -1,3 +1,4 @@
+import { withGear } from '../data/exercises'
 import type { Exercise, Session } from '../data/types'
 
 export const SWITCH_SECONDS = 5
@@ -41,8 +42,9 @@ export function buildSteps(session: Session, lookup: (id: string) => Exercise | 
   let prevRestAfter: number | undefined
   let first = true
   session.items.forEach((item, itemIndex) => {
-    const ex = lookup(item.exerciseId)
-    if (!ex) return
+    const base = lookup(item.exerciseId)
+    if (!base) return
+    const ex = withGear(base, item.gear)
     const sets = Math.max(1, item.sets)
     const sides: (Side | null)[] = ex.perSide ? ['left', 'right'] : [null]
 

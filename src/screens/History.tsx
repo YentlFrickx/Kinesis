@@ -1,5 +1,5 @@
 import { Icon } from '../components/Icon'
-import { EXERCISE_MAP } from '../data/exercises'
+import { EXERCISE_MAP, withGear } from '../data/exercises'
 import { copyText } from '../lib/clipboard'
 import { workoutText } from '../lib/workoutText'
 import { getSession } from '../store/sessions'
@@ -34,7 +34,7 @@ export function History() {
   // Entries recorded before items were stored fall back to the session as it is now (if it still exists).
   const items = (e: HistoryEntry) => e.items ?? getSession(e.sessionId)?.items
   const copy = async (e: HistoryEntry) => {
-    const text = workoutText(sessionLabel(e.sessionId, e.sessionName), items(e) ?? [], (i) => { const x = EXERCISE_MAP.get(i); return x && lx(x) }, t)
+    const text = workoutText(sessionLabel(e.sessionId, e.sessionName), items(e) ?? [], (i, g) => { const x = EXERCISE_MAP.get(i); return x && lx(withGear(x, g)) }, t)
     showToast(t((await copyText(text)) ? 'share.copied' : 'share.failed'))
   }
   const totalSec = entries.reduce((n, e) => n + e.durationSec, 0)

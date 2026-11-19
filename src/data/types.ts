@@ -30,6 +30,10 @@ export interface Exercise {
   equipment?: Equipment[]
   /** How the equipment is drawn; every gear kind used must be listed in `equipment`. */
   gear?: Gear[]
+  /** Optional gear the exercise can be done with, and how it is drawn then (`[]` = not drawn). Chosen per session item. */
+  gearOptions?: Partial<Record<Equipment, Gear[]>>
+  /** Set on the derived exercise returned by `withGear`: the gear in use. Appends "with …" to the title. */
+  gearUsed?: Equipment
 }
 
 export interface SessionItem {
@@ -39,6 +43,8 @@ export interface SessionItem {
   value: number
   sets: number
   restAfterSec?: number
+  /** Optional gear modifier (must be one of the exercise's `gearOptions`), e.g. dumbbells on a calf raise. */
+  gear?: Equipment
   /** Free-text user note, e.g. "use the 8 kg dumbbell". */
   note?: string
 }

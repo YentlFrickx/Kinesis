@@ -1,6 +1,7 @@
 import { pose, type Keyframe, type Pose, type Prop } from '../animation/skeleton'
 import { COACHING } from './coaching'
-import type { Exercise } from './types'
+import { GEAR_OPTIONS } from './gearOptions'
+import type { Equipment, Exercise } from './types'
 
 type P = Partial<Pose>
 
@@ -1887,6 +1888,13 @@ const BASE: Exercise[] = [
 ]
 
 /** The library with the coaching content merged in. */
-export const EXERCISES: Exercise[] = BASE.map((e) => ({ ...e, ...COACHING[e.id] }))
+export const EXERCISES: Exercise[] = BASE.map((e) => ({ ...e, ...COACHING[e.id], ...(GEAR_OPTIONS[e.id] ? { gearOptions: GEAR_OPTIONS[e.id] } : {}) }))
 
 export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
+
+/** The exercise as done with `gear` (adds the gear to its drawing and equipment). Unsupported or missing gear returns it unchanged. */
+export function withGear(e: Exercise, gear?: Equipment): Exercise {
+  const drawn = gear && e.gearOptions?.[gear]
+  if (!gear || !drawn) return e
+  return { ...e, gearUsed: gear, gear: [...(e.gear ?? []), ...drawn], equipment: [...new Set([...(e.equipment ?? []), gear])] }
+}

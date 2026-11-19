@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { EXERCISE_MAP } from '../data/exercises'
+import { EXERCISE_MAP, withGear } from '../data/exercises'
+import { localizeExercise } from '../i18n'
 import { translate } from '../i18n/core'
 import { snapshotItems, workoutText } from './workoutText'
 
@@ -19,5 +20,26 @@ describe('workoutText', () => {
   })
   it('snapshots only the fields worth keeping', () => {
     expect(snapshotItems([{ id: 'x', exerciseId: 'a', value: 1, sets: 2, restAfterSec: 5 }])).toEqual([{ exerciseId: 'a', value: 1, sets: 2 }])
+  })
+})
+
+describe('gear modifier', () => {
+  const calf = EXERCISE_MAP.get('straight-leg-calf-raise-box')!
+  it('adds the gear to the title in every language and to the Strava text', () => {
+    expect(localizeExercise(withGear(calf, 'dumbbell'), 'en').name).toBe('Straight-leg calf raise (on box) with dumbbells')
+    expect(localizeExercise(withGear(calf, 'dumbbell'), 'nl').name).toContain('met dumbbells')
+    expect(localizeExercise(calf, 'en').name).toBe(calf.name)
+    const text = workoutText('S', [{ exerciseId: calf.id, value: 12, sets: 3, gear: 'dumbbell' }], (i, g) => localizeExercise(withGear(EXERCISE_MAP.get(i)!, g), 'en'), en)
+    expect(text).toBe('S\nStraight-leg calf raise (on box) with dumbbells: 3 sets x 12 reps')
+  })
+  it('ignores gear an exercise does not support and keeps it in snapshots', () => {
+    const plank = EXERCISE_MAP.get('forearm-plank')!
+    expect(withGear(plank, 'dumbbell')).toBe(plank)
+    expect(snapshotItems([{ exerciseId: calf.id, value: 1, sets: 1, gear: 'band' }])[0].gear).toBe('band')
+  })
+  it('needs the gear equipment and draws it', () => {
+    const g = withGear(calf, 'dumbbell')
+    expect(g.equipment).toContain('dumbbell')
+    expect(g.gear?.length).toBeGreaterThan(0)
   })
 })

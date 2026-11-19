@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { EXERCISE_MAP } from '../data/exercises'
+import { EXERCISE_MAP, withGear } from '../data/exercises'
 import { t } from '../i18n'
 import { EQUIPMENT, type Equipment, type Exercise, type Session } from '../data/types'
 
@@ -38,7 +38,7 @@ export const canDo = (e: Exercise, have: readonly Equipment[]) => (e.equipment ?
 
 /** Equipment a session needs, in a stable order. Unknown exercises are ignored. */
 export const sessionEquipment = (s: Session): Equipment[] =>
-  EQUIPMENT.filter((q) => s.items.some((i) => EXERCISE_MAP.get(i.exerciseId)?.equipment?.includes(q)))
+  EQUIPMENT.filter((q) => s.items.some((i) => { const e = EXERCISE_MAP.get(i.exerciseId); return e && withGear(e, i.gear).equipment?.includes(q) }))
 
 /** "You'll need: Dumbbells, Resistance band", or null when the session is bodyweight only. */
 export const youllNeed = (s: Session): string | null => {

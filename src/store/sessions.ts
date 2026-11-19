@@ -127,6 +127,7 @@ export function importJson(text: string): number {
         value: num(i.value, 1, 3600, 30),
         sets: num(i.sets, 1, 20, 1),
         ...(i.restAfterSec === undefined ? {} : { restAfterSec: num(i.restAfterSec, 0, 600, 0) }),
+        ...(i.gear && EXERCISE_MAP.get(i.exerciseId)?.gearOptions?.[i.gear] ? { gear: i.gear } : {}),
         ...cleanNote(i.note),
       }))
     added.push({
