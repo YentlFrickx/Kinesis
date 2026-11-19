@@ -9,7 +9,7 @@ const VERSION = 1
 const newId = () => crypto.randomUUID()
 
 /** Gives every item a stable id (existing ids are kept); returns the same objects when nothing changed. */
-export function withItemIds(list: Session[]): Session[] {
+function withItemIds(list: Session[]): Session[] {
   return list.map((s) => (s.items.every((i) => i.id) ? s : { ...s, items: s.items.map((i) => (i.id ? i : { ...i, id: newId() })) }))
 }
 

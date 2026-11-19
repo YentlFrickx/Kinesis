@@ -1,4 +1,4 @@
-export const JOINTS = [
+const JOINTS = [
   'head', 'neck', 'hip',
   'kneeF', 'ankleF', 'toeF',
   'kneeB', 'ankleB', 'toeB',
@@ -33,7 +33,7 @@ export type Gear =
 export const VIEWBOX = { width: 200, height: 140, floorY: 126 }
 
 /** Neutral standing pose, facing right, used as a base for building poses. */
-export const STANDING: Pose = {
+const STANDING: Pose = {
   head: [100, 24], neck: [100, 38], hip: [100, 76],
   kneeF: [100, 101], ankleF: [100, 126], toeF: [110, 126],
   kneeB: [100, 101], ankleB: [100, 126], toeB: [110, 126],
@@ -51,7 +51,7 @@ export interface Keyframe {
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
 
-export function mixPose(a: Pose, b: Pose, t: number): Pose {
+function mixPose(a: Pose, b: Pose, t: number): Pose {
   const e = ease(t)
   const out = {} as Record<Joint, Point>
   for (const j of JOINTS) out[j] = [lerp(a[j][0], b[j][0], e), lerp(a[j][1], b[j][1], e)]

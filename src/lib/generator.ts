@@ -46,13 +46,13 @@ export interface GenNote {
 
 export const SET_REST_SEC = 30
 export const TRANSITION_SEC = 10
-export const TOLERANCE = 0.1
+const TOLERANCE = 0.1
 const ORDER: readonly Category[] = ['mobility', 'strength', 'stretch']
 const PUSH: readonly BodyArea[] = ['chest', 'shoulders', 'arms']
 const PULL: readonly BodyArea[] = ['upper back']
 
 /** Small deterministic PRNG (mulberry32) returning values in [0, 1). */
-export function rng(seed: number): () => number {
+function rng(seed: number): () => number {
   let a = seed >>> 0
   return () => {
     a = (a + 0x6d2b79f5) >>> 0
@@ -66,7 +66,7 @@ export function rng(seed: number): () => number {
 const round5 = (n: number) => Math.max(5, Math.round(n / 5) * 5)
 
 /** The session item for an exercise at the given intensity; `factor` scales the work amount. */
-export function toItem(ex: Exercise, intensity: Intensity, factor = 1): SessionItem {
+function toItem(ex: Exercise, intensity: Intensity, factor = 1): SessionItem {
   const p = PRESET[intensity]
   const raw = ex.defaultValue * p.value * factor
   return {

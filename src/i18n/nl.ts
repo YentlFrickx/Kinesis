@@ -17,7 +17,6 @@ export const nl: Partial<Record<MessageKey, string>> = {
   'common.duplicate': 'Dupliceren',
   'common.copy': 'Kopieer',
   'common.delete': 'Verwijderen',
-  'common.test': 'Test',
   'common.reset': 'herstel',
   'common.backToSessions': '← Trainingen',
 

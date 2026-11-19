@@ -133,7 +133,7 @@ export function stopSpeaking() {
 
 let primed = false
 /** iOS only allows speech after a user gesture: speak a silent utterance (and resume audio) on the first one. */
-export function primeSpeech() {
+function primeSpeech() {
   if (primed) return
   primed = true
   audio()
