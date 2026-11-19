@@ -2,7 +2,7 @@
 
 A small offline-capable web app (PWA) for planning and following bodyweight strength, stretching and mobility sessions. Built with injury prevention for runners in mind, useful for anyone.
 
-- **Library:** 55 exercises (strength, stretches, mobility) with a looping stick-figure animation and instructions.
+- **Library:** 78 exercises (strength, stretches, mobility) with a looping stick-figure animation and instructions.
 - **Planner:** build named sessions; per exercise set seconds or reps, sets and rest after it; defaults for rest between sets and exercises. Reorder, duplicate, delete, export/import as JSON.
 - **Player:** guided run with countdown, rep "Done" button, auto left/right with a switch-sides step, rest steps with next-up preview, beeps and voice cues (mute toggle), vibration and screen wake-lock.
   - **Timer:** timestamp-based, so a locked/throttled/backgrounded tab catches up on return (carrying through every step that elapsed, cues for the final step only). Optional **auto reps** toggle (⏱ in the player, off by default) paces rep steps at 3 s/rep with a spoken count; "Skip" acts as the manual override.
