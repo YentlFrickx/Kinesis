@@ -54,7 +54,7 @@ function useWakeLock(active: boolean) {
 
 const SAVE_EVERY_MS = 3000
 
-export function Player({ id, resume = false }: { id: string; resume?: boolean }) {
+export function Player({ id }: { id: string }) {
   const t = useT()
   const lx = useLocalize()
   const locale = useLocale()
@@ -63,8 +63,9 @@ export function Player({ id, resume = false }: { id: string; resume?: boolean })
   const session = getSession(id)
   const steps = useMemo(() => (session ? buildSteps(session, (i) => EXERCISE_MAP.get(i)) : []), [session])
   const [autoReps, setAutoRepsState] = useState(getAutoReps)
-  // A resumed run is restored once, on mount; it starts paused so the user can get back in position.
-  const [restored] = useState(() => (resume && session ? validateRun(getSavedRun(), session, steps.length) : undefined))
+  // A valid saved run for this session is restored once, on mount (reload, reopened tab or Resume); it
+  // starts paused so the user can get back in position. Fresh starts clear the saved run first.
+  const [restored] = useState(() => (session ? validateRun(getSavedRun(), session, steps.length) : undefined))
   const [state, setState] = useState<RunState>(() =>
     restored ? { index: restored.index, remainingMs: restored.remainingMs ?? Infinity, finished: false } : initState(steps, autoReps))
   const [paused, setPaused] = useState(!!restored)

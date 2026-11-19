@@ -12,7 +12,7 @@ import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import { youllNeed } from '../store/equipment'
 import { useHistory } from '../store/history'
-import { clearRun, useSavedRun, validateRun } from '../store/run'
+import { clearRun, startSession, useSavedRun, validateRun } from '../store/run'
 import { createSession, deleteSession, duplicateSession, importJson, restoreSession, sessionIndex, useSessions } from '../store/sessions'
 import { showToast } from '../store/toast'
 import { SettingsSheet } from './Settings'
@@ -81,7 +81,7 @@ export function Sessions() {
         <section className="hero resume" aria-label={t('resume.title', { name: sessionLabel(resumeSession.id, resumeSession.name) })}>
           <div className="eyebrow">{t('resume.step', { n: resumable.index + 1, total: resumeSteps.length })}</div>
           <h2>{t('resume.title', { name: sessionLabel(resumeSession.id, resumeSession.name) })}</h2>
-          <button className="btn primary" onClick={() => go(`/play/${resumeSession.id}/resume`)}><Icon name="play" size={18} />{t('resume.resume')}</button>
+          <button className="btn primary" onClick={() => go(`/play/${resumeSession.id}`)}><Icon name="play" size={18} />{t('resume.resume')}</button>
           <button className="btn wide" onClick={clearRun}>{t('resume.discard')}</button>
         </section>
       )}
@@ -94,7 +94,7 @@ export function Sessions() {
           <div className="stage">
             <Figure frames={firstEx.animation} props={firstEx.props} gear={firstEx.gear} label={t('sessions.animation', { name: firstEx.name })} />
           </div>
-          <button className="btn primary" onClick={() => go(`/play/${suggested.id}`)}><Icon name="play" size={18} />{t('sessions.start')}</button>
+          <button className="btn primary" onClick={() => startSession(suggested.id)}><Icon name="play" size={18} />{t('sessions.start')}</button>
         </section>
       )}
 
@@ -133,7 +133,7 @@ export function Sessions() {
                 {youllNeed(s) && <div className="gear-note">{youllNeed(s)}</div>}
               </div>
               <button className="icon-btn" aria-label={t('sessions.moreFor', { name: sessionLabel(s.id, s.name) })} onClick={() => setSheet({ kind: 'menu', id: s.id })}><Icon name="more" /></button>
-              <button className="icon-btn fill" aria-label={t('sessions.startNamed', { name: sessionLabel(s.id, s.name) })} disabled={steps.length === 0} onClick={() => go(`/play/${s.id}`)}><Icon name="play" size={18} /></button>
+              <button className="icon-btn fill" aria-label={t('sessions.startNamed', { name: sessionLabel(s.id, s.name) })} disabled={steps.length === 0} onClick={() => startSession(s.id)}><Icon name="play" size={18} /></button>
             </li>
           )
         })}

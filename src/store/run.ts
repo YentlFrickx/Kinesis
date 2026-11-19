@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import type { Session } from '../data/types'
+import { go } from '../lib/router'
 
 const KEY = 'rw.run.v1'
 const VERSION = 1
@@ -72,3 +73,9 @@ export const getSavedRun = () => saved
 export const useSavedRun = () => useSyncExternalStore(subscribe, () => saved)
 export const saveRun = (run: SavedRun) => write(run)
 export const clearRun = () => { if (saved) write(undefined) }
+
+/** Starts a session from the beginning, discarding any saved run (opening `#/play/:id` itself resumes a valid one). */
+export function startSession(id: string) {
+  clearRun()
+  go(`/play/${id}`)
+}

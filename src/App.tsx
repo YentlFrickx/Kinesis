@@ -19,9 +19,9 @@ const TABS: { key: string; path: string; label: MessageKey; icon: IconName }[] =
 export default function App() {
   const route = useRoute()
   const t = useT()
-  const [, section, id, mode] = route.split('/')
+  const [, section, id] = route.split('/')
 
-  if (section === 'play' && id) return <main className="full"><Player key={id} id={id} resume={mode === 'resume'} /></main>
+  if (section === 'play' && id) return <main className="full"><Player key={id} id={id} /></main>
 
   let body
   if (section === 'session' && id) body = <Editor key={id} id={id} />
