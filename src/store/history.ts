@@ -21,12 +21,16 @@ const KEY = 'rw.history.v1'
 const VERSION = 1
 const MAX_ENTRIES = 500
 
+/** Drops malformed entries (hand-edited or corrupted storage) so the screens never choke on them. */
+const isEntry = (e: unknown): e is HistoryEntry =>
+  !!e && typeof e === 'object' && typeof (e as HistoryEntry).id === 'string' && Number.isFinite((e as HistoryEntry).completedAt) && Number.isFinite((e as HistoryEntry).durationSec)
+
 function read(): HistoryEntry[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const data = JSON.parse(raw)
-    return data?.version === VERSION && Array.isArray(data.entries) ? data.entries : []
+    return data?.version === VERSION && Array.isArray(data.entries) ? data.entries.filter(isEntry) : []
   } catch {
     return []
   }
