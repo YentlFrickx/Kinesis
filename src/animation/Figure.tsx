@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { clockNow, subscribeClock } from './clock'
+import { usePrefersReducedMotion } from '../lib/reducedMotion'
 import { BONES, VIEWBOX, poseAt, type Anchor, type Gear, type Keyframe, type Pose, type Prop } from './skeleton'
 
 interface Props {
@@ -8,6 +9,8 @@ interface Props {
   gear?: readonly Gear[]
   /** Animate the figure (default). When false, shows the first keyframe. */
   playing?: boolean
+  /** Animate even when the user prefers reduced motion. */
+  forceMotion?: boolean
   /** Render this exact pose instead of animating (used by the contact sheet). */
   staticPose?: Pose
   label: string
@@ -19,10 +22,10 @@ const point = (pose: Pose, a: Anchor): readonly [number, number] => (typeof a ==
 const noopSubscribe = () => () => {}
 
 /**
- * Exercise figure. Animation is the content here (it shows how to do the
- * exercise), so it is NOT disabled by prefers-reduced-motion.
+ * Exercise figure. With prefers-reduced-motion it shows a static pose unless the
+ * caller opts in via `forceMotion` (driven by a manual play toggle).
  */
-export function Figure({ frames, props = [], gear = [], playing = true, staticPose, label, className }: Props) {
+export function Figure({ frames, props = [], gear = [], playing = true, forceMotion = false, staticPose, label, className }: Props) {
   const [visible, setVisible] = useState(true)
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -35,7 +38,8 @@ export function Figure({ frames, props = [], gear = [], playing = true, staticPo
     return () => io.disconnect()
   }, [])
 
-  const animating = playing && visible && !staticPose
+  const reduced = usePrefersReducedMotion()
+  const animating = playing && visible && !staticPose && (!reduced || forceMotion)
   const t = useSyncExternalStore(animating ? subscribeClock : noopSubscribe, () => (animating ? clockNow() : 0))
   const pose: Pose = staticPose ?? (animating ? poseAt(frames, t) : frames[0].pose)
 
