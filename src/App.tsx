@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Icon, type IconName } from './components/Icon'
 import { useT, type MessageKey } from './i18n'
 import { useRoute, go } from './lib/router'
@@ -23,9 +23,12 @@ export default function App() {
   const [, section, id] = route.split('/')
 
   // Hash routing never reloads the page: set the title and move focus to the heading on navigation.
+  const first = useRef(true)
   useEffect(() => {
     const h1 = document.querySelector<HTMLElement>('main h1')
     document.title = h1?.textContent ? `${h1.textContent} · Kinesis` : 'Kinesis'
+    // Skip focus on the initial load/refresh; only move it when the user navigates.
+    if (first.current) { first.current = false; return }
     if (h1) { h1.tabIndex = -1; h1.focus({ preventScroll: true }) }
   }, [route])
 
