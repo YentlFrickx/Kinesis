@@ -10,6 +10,7 @@ import { useVoices } from '../player/useVoices'
 import { speaksCountdown, speaksReps } from '../player/voice'
 import { LOCALE_INFO, sessionLabel, useLocale, useLocalize, useT } from '../i18n'
 import { advance, buildSteps, goTo, initState, next, prev, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
+import { usePrefersReducedMotion } from '../lib/reducedMotion'
 import { Icon } from '../components/Icon'
 import { Tips } from '../components/Tips'
 import { Sheet } from '../components/Sheet'
@@ -57,6 +58,7 @@ const SAVE_EVERY_MS = 3000
 export function Player({ id }: { id: string }) {
   const t = useT()
   const lx = useLocalize()
+  const reducedMotion = usePrefersReducedMotion()
   const locale = useLocale()
   const { status: voiceStatus } = useVoices(locale)
   const interrupt = useRef(false) // set when the user navigates, so the new cue cuts off a stale one
@@ -177,6 +179,32 @@ export function Player({ id }: { id: string }) {
     }
   }, [state.remainingMs, state.finished, paused])
 
+  // Screen-reader announcements (polite live region): step changes, plus 10 s / 3 s milestones.
+  const [announcement, setAnnouncement] = useState('')
+  const [animate, setAnimate] = useState(false)
+  useEffect(() => {
+    if (state.finished) return
+    const name = lx(step.kind === 'work' ? step.exercise : step.next).name
+    const parts: string[] = []
+    if (step.kind === 'work') {
+      parts.push(name)
+      if (step.sets > 1) parts.push(t('player.setOf', { set: step.set, sets: step.sets }))
+      if (step.side) parts.push(sideLabel(step.side, t))
+      if (step.mode === 'reps') parts.push(`${step.value} ${t('player.repsLabel')}`)
+    } else {
+      parts.push(t('player.upNext', { name }))
+      if (step.side) parts.push(sideLabel(step.side, t))
+    }
+    setAnnouncement(parts.join('. '))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.index, state.finished])
+  const secLeft = Number.isFinite(state.remainingMs) ? Math.ceil(state.remainingMs / 1000) : null
+  useEffect(() => {
+    if (state.finished || paused || secLeft === null) return
+    if (secLeft === 10 || secLeft === 3) setAnnouncement(t('player.secondsLeft', { n: secLeft }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [secLeft, state.finished, paused])
+
   // Spoken rep count while auto-advancing rep steps
   const lastRep = useRef(0)
   useEffect(() => { lastRep.current = 0 }, [state.index])
@@ -286,9 +314,15 @@ export function Player({ id }: { id: string }) {
       </div>
 
       <div className={`player-stage${step.kind === 'rest' ? ' rest' : ''}`}>
-        <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} label={t('sessions.animation', { name: exercise.name })} className="player-figure" />
+        <Figure frames={exercise.animation} props={exercise.props} gear={exercise.gear} playing={!paused} forceMotion={animate} label={t('sessions.animation', { name: exercise.name })} className="player-figure" />
       </div>
 
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</div>
+      {reducedMotion && (
+        <button className="btn" aria-pressed={animate} onClick={() => setAnimate((a) => !a)}>
+          <Icon name={animate ? 'pause' : 'play'} size={18} />{t(animate ? 'player.animateStop' : 'player.animate')}
+        </button>
+      )}
       <div className="big" aria-live="off">
         {isRepWork ? <>{step.value}<small>{t('player.repsLabel')}</small></> : formatClock(state.remainingMs / 1000)}
       </div>
