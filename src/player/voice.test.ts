@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { englishVoices, parseSpeechSettings, pickVoice, scheduleCue, speaksCountdown, speaksReps, speechStatus, voicesFor, type VoiceInfo } from './voice'
+import { parseSpeechSettings, pickVoice, scheduleCue, speaksCountdown, speaksReps, speechStatus, voicesFor, type VoiceInfo } from './voice'
 
 const v = (name: string, lang: string, localService = true): VoiceInfo => ({ name, lang, voiceURI: name, localService })
 const voices = [
@@ -10,7 +10,7 @@ const voices = [
 
 describe('voice selection', () => {
   it('keeps only English voices, best first', () => {
-    expect(englishVoices(voices).map((x) => x.name)).toEqual(['GB net', 'US local', 'US net', 'AU'])
+    expect(voicesFor(voices, 'en').map((x) => x.name)).toEqual(['GB net', 'US local', 'US net', 'AU'])
   })
   it('keeps only Dutch voices, nl-NL first, on-device before network', () => {
     expect(voicesFor(voices, 'nl').map((x) => x.name)).toEqual(['Dutch NL', 'Dutch NL net', 'Dutch BE'])

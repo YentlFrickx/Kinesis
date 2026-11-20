@@ -29,8 +29,6 @@ export function voicesFor<T extends VoiceInfo>(voices: readonly T[], language: L
   return voices.filter((v) => isLanguage(v, language)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
 }
 
-export const englishVoices = <T extends VoiceInfo>(voices: readonly T[]) => voicesFor(voices, 'en')
-
 /** The saved voice if it is still available for that language, otherwise the best voice for it, otherwise undefined. */
 export function pickVoice<T extends VoiceInfo>(voices: readonly T[], language: Locale, preferredURI?: string | null): T | undefined {
   const list = voicesFor(voices, language)
