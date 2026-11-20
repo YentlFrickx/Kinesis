@@ -74,5 +74,3 @@ export function useLocalize() {
 
 /** Session name for display: starter sessions follow the language unless the user renamed them. */
 export const sessionLabel = (id: string, name: string) => starterName(locale, id, name)
-
-/** Intl date formatting in the current language. */
