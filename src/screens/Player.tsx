@@ -76,7 +76,7 @@ export function Player({ id }: { id: string }) {
   const lastSec = useRef<number | null>(null)
   const activeMs = useRef(restored?.activeMs ?? 0)
   const recorded = useRef(false)
-  const [reward, setReward] = useState<{ milestones: string[]; comeback: number } | null>(null)
+  const [reward, setReward] = useState<{ milestones: MilestoneId[]; comeback: number } | null>(null)
   const nav = (fn: () => void) => { interrupt.current = true; fn() }
 
   useWakeLock(!state.finished)
@@ -129,6 +129,12 @@ export function Player({ id }: { id: string }) {
   }, [paused, state.finished, steps, autoReps])
 
   const step = steps[state.index]
+  // [first step index, step count] per session item, for the progress segments.
+  const itemRanges = useMemo(() => {
+    const ranges = new Map<number, [number, number]>()
+    steps.forEach((s, n) => { const r = ranges.get(s.itemIndex); if (r) r[1]++; else ranges.set(s.itemIndex, [n, 1]) })
+    return ranges
+  }, [steps])
 
   // Announce each new step
   useEffect(() => {
@@ -224,7 +230,10 @@ export function Player({ id }: { id: string }) {
     setAutoReps(on)
     setAutoRepsState(on)
     // Re-seat the current rep step so it switches between manual and paced immediately.
-    setState((s) => (!s.finished && steps[s.index]?.kind === 'work' && (steps[s.index] as { mode: string }).mode === 'reps' ? goTo(steps, s.index, on) : s))
+    setState((s) => {
+      const cur = steps[s.index]
+      return !s.finished && cur?.kind === 'work' && cur.mode === 'reps' ? goTo(steps, s.index, on) : s
+    })
   }, [autoReps, steps])
 
   const toggleMute = useCallback(() => {
@@ -249,7 +258,7 @@ export function Player({ id }: { id: string }) {
         {reward && (reward.comeback > 0 || reward.milestones.length > 0) && (
           <div className="reward" role="status">
             {reward.comeback > 0 && <p>{t('player.welcomeBack')}</p>}
-            {(reward.milestones as MilestoneId[]).map((id) => (
+            {reward.milestones.map((id) => (
               <p key={id}><Icon name="award" size={18} /><span>{t('player.unlocked', { title: t(`milestone.${id}.title`) })}</span></p>
             ))}
           </div>
@@ -267,6 +276,7 @@ export function Player({ id }: { id: string }) {
   const exercise = lx(step.kind === 'work' ? step.exercise : step.next)
   const isRepWork = step.kind === 'work' && step.mode === 'reps'
   const total = steps.length
+  const need = step.kind === 'rest' && step.reason === 'start' ? youllNeed(session) : null
   const heading =
     step.kind === 'work'
       ? exercise.name
@@ -277,9 +287,8 @@ export function Player({ id }: { id: string }) {
           : step.reason === 'start' ? t('player.heading.start') : t('player.heading.next')
 
   const segments = session.items.map((_, i) => {
-    const idx = steps.map((x, n) => (x.itemIndex === i ? n : -1)).filter((n) => n >= 0)
-    if (idx.length === 0) return 0
-    return Math.min(1, Math.max(0, (state.index - idx[0]) / idx.length))
+    const r = itemRanges.get(i)
+    return r ? Math.min(1, Math.max(0, (state.index - r[0]) / r[1])) : 0
   })
   const eyebrow = step.kind === 'work' ? t('player.eyebrow.work') : step.reason === 'switch' ? t('player.eyebrow.switch') : step.reason === 'start' ? t('player.eyebrow.start') : t('player.eyebrow.rest')
 
@@ -302,7 +311,7 @@ export function Player({ id }: { id: string }) {
       <div className="player-head">
         <div className="eyebrow">{eyebrow}</div>
         <h1 className="player-title">{heading}</h1>
-        {step.kind === 'rest' && step.reason === 'start' && youllNeed(session) && <p className="sub">{youllNeed(session)}</p>}
+        {need && <p className="sub">{need}</p>}
         {step.kind === 'rest' && <p className="sub">{t('player.upNext', { name: '\u0000' }).split('\u0000').flatMap((part, i) => (i === 0 ? [part] : [<strong key="n">{lx(step.next).name}</strong>, part]))}{step.side ? ` · ${sideLabel(step.side, t)}` : ''}</p>}
         {step.kind === 'work' && (
           <p className="sub">

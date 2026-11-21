@@ -17,11 +17,11 @@ import { useUnlocked } from '../store/milestones'
 
 const dayKey = (t: number) => new Date(t).toDateString()
 const dayLabel = (time: number, t: ReturnType<typeof useT>) => {
-  const d = new Date(time)
-  const today = new Date()
-  const yesterday = new Date(today.getTime() - 86_400_000)
-  if (d.toDateString() === today.toDateString()) return t('history.today')
-  if (d.toDateString() === yesterday.toDateString()) return t('history.yesterday')
+  const day = dayKey(time)
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1) // calendar day, not now - 24 h (wrong around DST changes)
+  if (day === dayKey(Date.now())) return t('history.today')
+  if (day === dayKey(yesterday.getTime())) return t('history.yesterday')
   return formatDate(time, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 }
 
@@ -36,6 +36,11 @@ export function History() {
   const copy = async (e: HistoryEntry) => {
     const text = workoutText(sessionLabel(e.sessionId, e.sessionName), items(e) ?? [], (i, g) => { const x = EXERCISE_MAP.get(i); return x && lx(withGear(x, g)) }, t)
     showToast(t((await copyText(text)) ? 'share.copied' : 'share.failed'))
+  }
+  const remove = (e: HistoryEntry) => {
+    const snapshot = getHistory()
+    deleteEntry(e.id)
+    showToast(t('history.removed', { name: sessionLabel(e.sessionId, e.sessionName) }), () => restoreHistory(snapshot))
   }
   const totalSec = entries.reduce((n, e) => n + e.durationSec, 0)
 
@@ -88,7 +93,7 @@ export function History() {
                       {items(e) && (
                         <button className="btn small" onClick={() => copy(e)} aria-label={t('share.copyAria', { name: sessionLabel(e.sessionId, e.sessionName) })}><Icon name="copy" size={16} />{t('common.copy')}</button>
                       )}
-                      <button className="btn small danger" onClick={() => deleteEntry(e.id)} aria-label={t('history.removeAria', { name: sessionLabel(e.sessionId, e.sessionName) })}>{t('common.remove')}</button>
+                      <button className="btn small danger" onClick={() => remove(e)} aria-label={t('history.removeAria', { name: sessionLabel(e.sessionId, e.sessionName) })}>{t('common.remove')}</button>
                       </div>
                     </div>
                   </li>

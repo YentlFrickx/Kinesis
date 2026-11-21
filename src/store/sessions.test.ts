@@ -79,6 +79,7 @@ describe('sessions store', () => {
           { exerciseId: 'push-up', value: 99999, sets: 0, restAfterSec: -4 },
           { exerciseId: 'does-not-exist', value: 5, sets: 1 },
           { exerciseId: 'forearm-plank', value: 'x', sets: 50 },
+          { exerciseId: 'glute-bridge', value: 10, sets: 2, restAfterSec: null },
         ],
       },
     ] }))
@@ -91,6 +92,7 @@ describe('sessions store', () => {
     expect(imported.items.map(({ id: _id, ...rest }: { id?: string }) => rest)).toEqual([
       { exerciseId: 'push-up', value: 3600, sets: 1, restAfterSec: 0 },
       { exerciseId: 'forearm-plank', value: 30, sets: 20 },
+      { exerciseId: 'glute-bridge', value: 10, sets: 2 },
     ])
   })
 
