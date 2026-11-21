@@ -165,6 +165,7 @@ export const en = {
   'sessions.deleted': 'Deleted {name}',
   'sessions.duplicated': 'Duplicated {name}',
   'history.cleared': 'History cleared',
+  'history.removed': 'Removed {name} from history',
   'editor.collapseAll': 'Collapse all',
   'editor.expandAll': 'Expand all',
   'editor.collapse': 'Collapse',

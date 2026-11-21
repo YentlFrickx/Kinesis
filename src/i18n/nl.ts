@@ -158,6 +158,7 @@ export const nl: Partial<Record<MessageKey, string>> = {
   'sessions.deleted': '{name} verwijderd',
   'sessions.duplicated': '{name} gedupliceerd',
   'history.cleared': 'Geschiedenis gewist',
+  'history.removed': '{name} uit geschiedenis verwijderd',
   'editor.collapseAll': 'Alles inklappen',
   'editor.expandAll': 'Alles uitklappen',
   'editor.collapse': 'Inklappen',

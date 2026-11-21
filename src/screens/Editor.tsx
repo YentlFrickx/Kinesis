@@ -60,8 +60,7 @@ export function Editor({ id }: { id: string }) {
       return { ...s, items }
     })
   const remove = (idx: number, name: string) => {
-    const before = session.items
-    const removed = before[idx]
+    const removed = session.items[idx]
     patch((s) => ({ ...s, items: s.items.filter((_, i) => i !== idx) }))
     showToast(t('editor.removed', { name }), () =>
       patch((s) => {

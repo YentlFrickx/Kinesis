@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { EXERCISE_MAP, withGear } from '../data/exercises'
 import { t } from '../i18n'
-import { EQUIPMENT, type Equipment, type Exercise, type Session } from '../data/types'
+import { EQUIPMENT, type Equipment, type Session } from '../data/types'
 
 const KEY = 'rw.equipment.v1'
 
@@ -32,9 +32,6 @@ export function toggleEquipment(e: Equipment) {
   }
   listeners.forEach((l) => l())
 }
-
-/** True when the user has everything the exercise needs (bodyweight exercises always pass). */
-export const canDo = (e: Exercise, have: readonly Equipment[]) => (e.equipment ?? []).every((x) => have.includes(x))
 
 /** Equipment a session needs, in a stable order. Unknown exercises are ignored. */
 export const sessionEquipment = (s: Session): Equipment[] =>
