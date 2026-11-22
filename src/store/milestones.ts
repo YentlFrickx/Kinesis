@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { earnedMilestones } from '../lib/progress'
+import { earnedMilestones, type MilestoneId } from '../lib/progress'
 import { getGoal } from './goal'
 import { getHistory } from './history'
 
@@ -25,7 +25,7 @@ const subscribe = (l: () => void) => {
 export const useUnlocked = () => useSyncExternalStore(subscribe, () => unlocked)
 
 /** Unlocks any milestones the current history satisfies. Returns the ids that are newly unlocked. */
-export function syncMilestones(): string[] {
+export function syncMilestones(): MilestoneId[] {
   const fresh = earnedMilestones(getHistory(), getGoal()).filter((id) => !(id in unlocked))
   if (fresh.length) {
     const now = Date.now()

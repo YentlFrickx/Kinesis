@@ -98,6 +98,17 @@ export function goTo(steps: Step[], index: number, autoReps = false): RunState {
 export const initState = (steps: Step[], autoReps = false): RunState => goTo(steps, 0, autoReps)
 
 /**
+ * State for resuming a saved run at `index` with `remainingMs` left (null = a manual rep step at save time).
+ * Rep steps follow the *current* auto-reps setting, so a run saved in one mode never gets stuck in the other;
+ * timed steps keep their saved remaining time (capped at the step length).
+ */
+export function resumeState(steps: Step[], index: number, remainingMs: number | null, autoReps = false): RunState {
+  const st = goTo(steps, index, autoReps)
+  if (st.finished || !Number.isFinite(st.remainingMs) || remainingMs === null) return st
+  return { ...st, remainingMs: Math.min(remainingMs, st.remainingMs) }
+}
+
+/**
  * Advances the run by `dtMs`, which may span many steps (e.g. after the screen was locked):
  * leftover time carries into the following steps. Stops at manual (rep) steps and at the end.
  */

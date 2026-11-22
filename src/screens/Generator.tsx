@@ -2,17 +2,16 @@ import { useMemo, useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { EXERCISE_MAP } from '../data/exercises'
-import { EQUIPMENT, type BodyArea, type Category, type Equipment, type SessionItem } from '../data/types'
-import { INTENSITIES, estimateItems, generateSession, neglectedCategories, replacementFor, SET_REST_SEC, TRANSITION_SEC, type Intensity } from '../lib/generator'
+import { BODY_AREAS, CATEGORIES, EQUIPMENT, type BodyArea, type Category, type SessionItem } from '../data/types'
+import { INTENSITIES, estimateItems, generateSession, replacementFor, SET_REST_SEC, TRANSITION_SEC, type Intensity } from '../lib/generator'
 import { describe, formatDuration } from '../lib/format'
-import { CATEGORIES, weeklyBalance } from '../lib/progress'
+import { missingCategories, weeklyBalance } from '../lib/progress'
 import { useLocalize, useT } from '../i18n'
 import { go } from '../lib/router'
 import { toggleEquipment, useOwnedEquipment } from '../store/equipment'
 import { useHistory } from '../store/history'
 import { createSession, updateSession } from '../store/sessions'
 
-const AREAS: BodyArea[] = ['glutes', 'hips', 'quads', 'hamstrings', 'calves', 'core', 'chest', 'arms', 'shoulders', 'upper back', 'feet', 'full body']
 const newSeed = () => Math.floor(Math.random() * 2 ** 31)
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 
@@ -22,7 +21,7 @@ export function Generator() {
   const owned = useOwnedEquipment()
   const history = useHistory()
   const [now] = useState(Date.now)
-  const neglected = useMemo(() => neglectedCategories(weeklyBalance(history, now)), [history, now])
+  const neglected = useMemo(() => missingCategories(weeklyBalance(history, now)), [history, now])
 
   const [minutes, setMinutes] = useState(20)
   const [categories, setCategories] = useState<Category[]>(() => (neglected.length ? neglected : ['strength', 'stretch']))
@@ -80,14 +79,14 @@ export function Generator() {
 
         <span className="meta">{t('gen.focus')}</span>
         <div className="chips">
-          {AREAS.map((a) => (
+          {BODY_AREAS.map((a) => (
             <button key={a} className={`chip${focus.includes(a) ? ' on' : ''}`} aria-pressed={focus.includes(a)} onClick={() => change(setFocus)(toggle(focus, a))}>{t(`area.${a}`)}</button>
           ))}
         </div>
 
         <span className="meta">{t('gen.equipment')}</span>
         <div className="chips">
-          {EQUIPMENT.map((q: Equipment) => (
+          {EQUIPMENT.map((q) => (
             <button key={q} className={`chip${owned.includes(q) ? ' on' : ''}`} aria-pressed={owned.includes(q)} onClick={() => { toggleEquipment(q); setEdited(null) }}>{t(`equipment.${q}`)}</button>
           ))}
           <span className="meta">{owned.length === 0 ? t('gen.bodyweightOnly') : ''}</span>

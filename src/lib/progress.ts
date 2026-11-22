@@ -1,5 +1,5 @@
 import { STARTERS } from '../data/templates'
-import type { Category, Session } from '../data/types'
+import { CATEGORIES, type Category, type Session } from '../data/types'
 import type { HistoryEntry } from '../store/history'
 
 const DAY_MS = 86_400_000
@@ -94,8 +94,6 @@ export function comebackDays(previousCompletedAt: number | undefined, now: numbe
   const days = Math.floor((startOfDay(now) - startOfDay(previousCompletedAt)) / DAY_MS)
   return days >= 7 ? days : 0
 }
-
-export const CATEGORIES: readonly Category[] = ['strength', 'stretch', 'mobility']
 
 /** Number of exercises per category in a session (unknown exercises are ignored). */
 export function sessionCategories(session: Session, categoryOf: (exerciseId: string) => Category | undefined) {

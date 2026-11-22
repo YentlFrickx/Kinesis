@@ -1,5 +1,5 @@
-import { canDo } from '../store/equipment'
-import type { BodyArea, Category, Equipment, Exercise } from '../data/types'
+import { canDo } from '../data/exercises'
+import { CATEGORIES, type BodyArea, type Category, type Equipment, type Exercise } from '../data/types'
 
 export type SortKey = 'az' | 'category' | 'area'
 
@@ -59,8 +59,7 @@ export function filterExercises(list: readonly Exercise[], f: ExerciseFilters, c
     return true
   })
   const byName = (a: Exercise, b: Exercise) => a.name.localeCompare(b.name)
-  const cats: Category[] = ['strength', 'stretch', 'mobility']
-  if (f.sort === 'category') out.sort((a, b) => cats.indexOf(a.category) - cats.indexOf(b.category) || byName(a, b))
+  if (f.sort === 'category') out.sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) || byName(a, b))
   else if (f.sort === 'area') out.sort((a, b) => (a.bodyAreas[0] ?? '').localeCompare(b.bodyAreas[0] ?? '') || byName(a, b))
   else out.sort(byName)
   return out

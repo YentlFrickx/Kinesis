@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EXERCISES, EXERCISE_MAP } from './exercises'
+import { BODY_AREAS } from './types'
 
 describe('exercises', () => {
   it('have unique ids', () => {
@@ -17,7 +18,6 @@ describe('exercises', () => {
 })
 
 describe('exercise data integrity', () => {
-  const AREAS = ['glutes', 'hips', 'quads', 'hamstrings', 'calves', 'core', 'chest', 'arms', 'shoulders', 'upper back', 'feet', 'full body']
   const inBox = ([x, y]: readonly [number, number]) => x >= 0 && x <= 200 && y >= 0 && y <= 140
 
   it('keeps every animation point inside the 200x140 box', () => {
@@ -35,7 +35,7 @@ describe('exercise data integrity', () => {
     for (const e of EXERCISES) {
       expect(['strength', 'stretch', 'mobility'], e.id).toContain(e.category)
       expect(e.bodyAreas.length, e.id).toBeGreaterThan(0)
-      for (const a of e.bodyAreas) expect(AREAS, e.id).toContain(a)
+      for (const a of e.bodyAreas) expect(BODY_AREAS, e.id).toContain(a)
       expect(['time', 'reps'], e.id).toContain(e.mode)
       expect(e.defaultValue, e.id).toBeGreaterThan(0)
       expect(e.defaultSets, e.id).toBeGreaterThan(0)

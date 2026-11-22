@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Icon, type IconName } from './components/Icon'
-import { useT, type MessageKey } from './i18n'
+import { useLocale, useT, type MessageKey } from './i18n'
 import { useRoute, go } from './lib/router'
 import { Generator } from './screens/Generator'
 import { ExerciseBrowser } from './screens/ExerciseBrowser'
@@ -20,15 +20,19 @@ const TABS: { key: string; path: string; label: MessageKey; icon: IconName }[] =
 export default function App() {
   const route = useRoute()
   const t = useT()
+  const locale = useLocale()
   const [, section, id] = route.split('/')
 
-  // Hash routing never reloads the page: set the title and move focus to the heading on navigation.
-  const first = useRef(true)
+  // Hash routing never reloads the page: keep the title in sync with the heading (also after a language switch)…
   useEffect(() => {
     const h1 = document.querySelector<HTMLElement>('main h1')
     document.title = h1?.textContent ? `${h1.textContent} · Kinesis` : 'Kinesis'
-    // Skip focus on the initial load/refresh; only move it when the user navigates.
+  }, [route, locale])
+  // …and move focus to the heading when the user navigates (not on the initial load/refresh).
+  const first = useRef(true)
+  useEffect(() => {
     if (first.current) { first.current = false; return }
+    const h1 = document.querySelector<HTMLElement>('main h1')
     if (h1) { h1.tabIndex = -1; h1.focus({ preventScroll: true }) }
   }, [route])
 

@@ -1,7 +1,9 @@
 import type { Gear, Keyframe, Prop } from '../animation/skeleton'
 
-export type Category = 'strength' | 'stretch' | 'mobility'
-export type BodyArea = 'glutes' | 'hips' | 'quads' | 'hamstrings' | 'calves' | 'core' | 'chest' | 'arms' | 'shoulders' | 'upper back' | 'feet' | 'full body'
+export const CATEGORIES = ['strength', 'stretch', 'mobility'] as const
+export type Category = (typeof CATEGORIES)[number]
+export const BODY_AREAS = ['glutes', 'hips', 'quads', 'hamstrings', 'calves', 'core', 'chest', 'arms', 'shoulders', 'upper back', 'feet', 'full body'] as const
+export type BodyArea = (typeof BODY_AREAS)[number]
 
 export type Equipment = 'dumbbell' | 'band'
 export const EQUIPMENT: readonly Equipment[] = ['dumbbell', 'band']

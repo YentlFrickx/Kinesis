@@ -9,7 +9,7 @@ import { getSpeechSettings } from '../player/speechSettings'
 import { useVoices } from '../player/useVoices'
 import { speaksCountdown, speaksReps } from '../player/voice'
 import { LOCALE_INFO, sessionLabel, useLocale, useLocalize, useT } from '../i18n'
-import { advance, buildSteps, goTo, initState, next, prev, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
+import { advance, buildSteps, goTo, initState, next, prev, resumeState, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
 import { usePrefersReducedMotion } from '../lib/reducedMotion'
 import { Icon } from '../components/Icon'
 import { Tips } from '../components/Tips'
@@ -65,18 +65,24 @@ export function Player({ id }: { id: string }) {
   const session = getSession(id)
   const steps = useMemo(() => (session ? buildSteps(session, (i) => EXERCISE_MAP.get(i)) : []), [session])
   const [autoReps, setAutoRepsState] = useState(getAutoReps)
+  // First step index and step count per session item, for the progress segments (the render runs ~10×/s).
+  const itemRanges = useMemo(() => {
+    const ranges: ({ first: number; count: number } | undefined)[] = (session?.items ?? []).map(() => undefined)
+    steps.forEach((s, n) => { const r = ranges[s.itemIndex]; if (r) r.count++; else ranges[s.itemIndex] = { first: n, count: 1 } })
+    return ranges
+  }, [session, steps])
   // A valid saved run for this session is restored once, on mount (reload, reopened tab or Resume); it
   // starts paused so the user can get back in position. Fresh starts clear the saved run first.
   const [restored] = useState(() => (session ? validateRun(getSavedRun(), session, steps.length) : undefined))
   const [state, setState] = useState<RunState>(() =>
-    restored ? { index: restored.index, remainingMs: restored.remainingMs ?? Infinity, finished: false } : initState(steps, autoReps))
+    restored ? resumeState(steps, restored.index, restored.remainingMs, autoReps) : initState(steps, autoReps))
   const [paused, setPaused] = useState(!!restored)
   const [muted, setMutedState] = useState(isMuted)
   const [sheet, setSheet] = useState<'quit' | 'settings' | null>(null)
   const lastSec = useRef<number | null>(null)
   const activeMs = useRef(restored?.activeMs ?? 0)
   const recorded = useRef(false)
-  const [reward, setReward] = useState<{ milestones: string[]; comeback: number } | null>(null)
+  const [reward, setReward] = useState<{ milestones: MilestoneId[]; comeback: number } | null>(null)
   const nav = (fn: () => void) => { interrupt.current = true; fn() }
 
   useWakeLock(!state.finished)
@@ -133,6 +139,8 @@ export function Player({ id }: { id: string }) {
   // Announce each new step
   useEffect(() => {
     lastSec.current = null
+    // An empty/unknown session has no steps (initState reports it as finished): nothing to record or announce.
+    if (steps.length === 0) return
     if (state.finished) {
       clearRun()
       if (!recorded.current && session) {
@@ -224,7 +232,7 @@ export function Player({ id }: { id: string }) {
     setAutoReps(on)
     setAutoRepsState(on)
     // Re-seat the current rep step so it switches between manual and paced immediately.
-    setState((s) => (!s.finished && steps[s.index]?.kind === 'work' && (steps[s.index] as { mode: string }).mode === 'reps' ? goTo(steps, s.index, on) : s))
+    setState((s) => { const st = steps[s.index]; return !s.finished && st?.kind === 'work' && st.mode === 'reps' ? goTo(steps, s.index, on) : s })
   }, [autoReps, steps])
 
   const toggleMute = useCallback(() => {
@@ -249,7 +257,7 @@ export function Player({ id }: { id: string }) {
         {reward && (reward.comeback > 0 || reward.milestones.length > 0) && (
           <div className="reward" role="status">
             {reward.comeback > 0 && <p>{t('player.welcomeBack')}</p>}
-            {(reward.milestones as MilestoneId[]).map((id) => (
+            {reward.milestones.map((id) => (
               <p key={id}><Icon name="award" size={18} /><span>{t('player.unlocked', { title: t(`milestone.${id}.title`) })}</span></p>
             ))}
           </div>
@@ -265,6 +273,7 @@ export function Player({ id }: { id: string }) {
   }
 
   const exercise = lx(step.kind === 'work' ? step.exercise : step.next)
+  const need = youllNeed(session)
   const isRepWork = step.kind === 'work' && step.mode === 'reps'
   const total = steps.length
   const heading =
@@ -276,11 +285,7 @@ export function Player({ id }: { id: string }) {
           ? t('player.heading.set')
           : step.reason === 'start' ? t('player.heading.start') : t('player.heading.next')
 
-  const segments = session.items.map((_, i) => {
-    const idx = steps.map((x, n) => (x.itemIndex === i ? n : -1)).filter((n) => n >= 0)
-    if (idx.length === 0) return 0
-    return Math.min(1, Math.max(0, (state.index - idx[0]) / idx.length))
-  })
+  const segments = itemRanges.map((r) => (r ? Math.min(1, Math.max(0, (state.index - r.first) / r.count)) : 0))
   const eyebrow = step.kind === 'work' ? t('player.eyebrow.work') : step.reason === 'switch' ? t('player.eyebrow.switch') : step.reason === 'start' ? t('player.eyebrow.start') : t('player.eyebrow.rest')
 
   return (
@@ -302,7 +307,7 @@ export function Player({ id }: { id: string }) {
       <div className="player-head">
         <div className="eyebrow">{eyebrow}</div>
         <h1 className="player-title">{heading}</h1>
-        {step.kind === 'rest' && step.reason === 'start' && youllNeed(session) && <p className="sub">{youllNeed(session)}</p>}
+        {step.kind === 'rest' && step.reason === 'start' && need && <p className="sub">{need}</p>}
         {step.kind === 'rest' && <p className="sub">{t('player.upNext', { name: '\u0000' }).split('\u0000').flatMap((part, i) => (i === 0 ? [part] : [<strong key="n">{lx(step.next).name}</strong>, part]))}{step.side ? ` · ${sideLabel(step.side, t)}` : ''}</p>}
         {step.kind === 'work' && (
           <p className="sub">

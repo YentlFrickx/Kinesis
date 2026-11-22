@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Exercise, Session } from '../data/types'
-import { advance, buildSteps, estimateSeconds, goTo, initState, next, SECONDS_PER_REP, stepMs, SWITCH_SECONDS } from './engine'
+import { advance, buildSteps, estimateSeconds, goTo, initState, next, resumeState, SECONDS_PER_REP, stepMs, SWITCH_SECONDS } from './engine'
 
 const ex = (id: string, o: Partial<Exercise> = {}): Exercise => ({
   id, name: id, category: 'strength', bodyAreas: [], mode: 'time', defaultValue: 30,
@@ -130,5 +130,20 @@ describe('rest after the last item', () => {
     const look = (i: string) => lib.get(i)
     expect(buildSteps(mk(60), look)).toEqual(buildSteps(mk(undefined), look))
     expect(buildSteps(mk(60), look).at(-1)?.kind).toBe('work')
+  })
+})
+
+describe('resumeState', () => {
+  const steps = buildSteps(session([{ exerciseId: 'plank', value: 30, sets: 1 }, { exerciseId: 'bridge', value: 5, sets: 1 }]), lookup)
+  const rep = steps.findIndex((s) => s.kind === 'work' && s.mode === 'reps')
+  it('keeps the saved remaining time of a timed step, capped at its length', () => {
+    expect(resumeState(steps, 1, 12_000)).toEqual({ index: 1, remainingMs: 12_000, finished: false })
+    expect(resumeState(steps, 1, 999_000).remainingMs).toBe(30_000)
+  })
+  it('a rep step saved as manual is paced when auto-reps is now on (not stuck at Infinity)', () => {
+    expect(resumeState(steps, rep, null, true).remainingMs).toBe(5 * SECONDS_PER_REP * 1000)
+  })
+  it('a rep step saved while paced waits for Done when auto-reps is now off', () => {
+    expect(resumeState(steps, rep, 4_000, false).remainingMs).toBe(Infinity)
   })
 })
