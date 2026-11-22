@@ -1,4 +1,4 @@
-import type { Locale } from '../i18n/core'
+import { LOCALES, type Locale } from '../i18n/core'
 
 /** Minimal shape of SpeechSynthesisVoice that we rely on (keeps this module testable). */
 export interface VoiceInfo {
@@ -86,7 +86,7 @@ export function parseSpeechSettings(raw: unknown): SpeechSettings {
   const o = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const voices: SpeechSettings['voices'] = {}
   if (o.voices && typeof o.voices === 'object') {
-    for (const [k, v] of Object.entries(o.voices)) if ((k === 'en' || k === 'nl') && typeof v === 'string') voices[k] = v
+    for (const [k, v] of Object.entries(o.voices)) if (LOCALES.includes(k as Locale) && typeof v === 'string') voices[k as Locale] = v
   }
   return {
     rate: clamp(o.rate, RATE_RANGE.min, RATE_RANGE.max, DEFAULT_SPEECH.rate),

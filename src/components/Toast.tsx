@@ -5,12 +5,16 @@ import { dismissToast, useToast } from '../store/toast'
 export function Toast() {
   const t = useT()
   const toast = useToast()
-  if (!toast) return null
+  // The live region stays mounted: screen readers ignore regions that appear together with their content.
   return (
-    <div className="toast" aria-live="polite" key={toast.id}>
-      <span>{toast.message}</span>
-      {toast.undo && (
-        <button className="link" onClick={() => { toast.undo?.(); dismissToast() }}>{t('common.undo')}</button>
+    <div aria-live="polite">
+      {toast && (
+        <div className="toast" key={toast.id}>
+          <span>{toast.message}</span>
+          {toast.undo && (
+            <button className="link" onClick={() => { toast.undo?.(); dismissToast() }}>{t('common.undo')}</button>
+          )}
+        </div>
       )}
     </div>
   )

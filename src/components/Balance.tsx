@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useT } from '../i18n'
-import { CATEGORIES, missingCategories, weeklyBalance } from '../lib/progress'
+import { CATEGORIES } from '../data/types'
+import { missingCategories, weeklyBalance } from '../lib/progress'
 import { useHistory } from '../store/history'
 
 export function Balance() {

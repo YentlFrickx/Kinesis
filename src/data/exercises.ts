@@ -1892,6 +1892,9 @@ export const EXERCISES: Exercise[] = BASE.map((e) => ({ ...e, ...COACHING[e.id],
 
 export const EXERCISE_MAP = new Map(EXERCISES.map((e) => [e.id, e]))
 
+/** True when the user has everything the exercise needs (bodyweight exercises always pass). */
+export const canDo = (e: Exercise, have: readonly Equipment[]) => (e.equipment ?? []).every((x) => have.includes(x))
+
 /** The exercise as done with `gear` (adds the gear to its drawing and equipment). Unsupported or missing gear returns it unchanged. */
 export function withGear(e: Exercise, gear?: Equipment): Exercise {
   const drawn = gear && e.gearOptions?.[gear]

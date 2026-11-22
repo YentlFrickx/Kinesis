@@ -1,8 +1,7 @@
-import { EXERCISES } from '../data/exercises'
+import { EXERCISES, canDo } from '../data/exercises'
 import type { BodyArea, Category, Equipment, Exercise, Session, SessionItem } from '../data/types'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import type { MessageKey } from '../i18n/en'
-import { CATEGORIES } from './progress'
 
 export type Intensity = 'light' | 'moderate' | 'hard'
 export const INTENSITIES: readonly Intensity[] = ['light', 'moderate', 'hard']
@@ -29,8 +28,6 @@ export interface GenOptions {
 
 export interface GenResult {
   items: SessionItem[]
-  defaultSetRestSec: number
-  defaultTransitionSec: number
   seconds: number
   targetSeconds: number
   /** True when `seconds` is within ±10% of the target. */
@@ -86,14 +83,8 @@ export function estimateItems(items: SessionItem[], pool: readonly Exercise[] = 
   return estimateSeconds(buildSteps(asSession(items), (id) => map.get(id)))
 }
 
-const canDo = (e: Exercise, have: readonly Equipment[]) => (e.equipment ?? []).every((x) => have.includes(x))
-
 const focusScore = (e: Exercise, focus: readonly BodyArea[]) =>
   e.bodyAreas.reduce((s, a) => s + (focus.includes(a) ? 1 : a === 'full body' && focus.length ? 0.3 : 0), 0)
-
-/** Categories with nothing done this week, for pre-selecting the generator form. */
-export const neglectedCategories = (balance: Record<Category, number>): Category[] =>
-  CATEGORIES.every((c) => balance[c] === 0) ? [] : CATEGORIES.filter((c) => balance[c] === 0)
 
 export function generateSession(opts: GenOptions): GenResult {
   const all = opts.pool ?? EXERCISES
@@ -170,7 +161,7 @@ export function generateSession(opts: GenOptions): GenResult {
   const exercises = cats.flatMap(taken)
   if (exercises.length === 0) {
     notes.push({ key: 'gen.note.noMatch' })
-    return { items: [], defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC, seconds: 0, targetSeconds: target, withinTolerance: false, notes }
+    return { items: [], seconds: 0, targetSeconds: target, withinTolerance: false, notes }
   }
 
   // Fine-tune the amount of work per exercise so the total lands on the target.
@@ -189,7 +180,7 @@ export function generateSession(opts: GenOptions): GenResult {
   if (!withinTolerance) {
     notes.push({ key: seconds < target ? 'gen.note.tooShort' : 'gen.note.tooLong', params: { minutes: Math.round(seconds / 60) } })
   }
-  return { items, defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC, seconds, targetSeconds: target, withinTolerance, notes }
+  return { items, seconds, targetSeconds: target, withinTolerance, notes }
 }
 
 /** Another exercise of the same category (respecting equipment) to swap in for `items[index]`, or undefined if none is left. */

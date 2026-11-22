@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { EXERCISE_MAP, EXERCISES } from '../data/exercises'
 import type { Equipment } from '../data/types'
-import { estimateItems, generateSession, neglectedCategories, replacementFor, type GenOptions } from './generator'
+import { estimateItems, generateSession, replacementFor, type GenOptions } from './generator'
 
 const base: GenOptions = {
   minutes: 20, categories: ['strength', 'stretch'], focus: [], equipment: [], intensity: 'moderate', warmCool: false, seed: 1,
@@ -89,12 +89,5 @@ describe('replacementFor', () => {
     expect(r.items.some((i) => i.exerciseId === rep.exerciseId)).toBe(false)
     expect(ex(rep.exerciseId).category).toBe(ex(r.items[0].exerciseId).category)
     expect(ex(rep.exerciseId).equipment ?? []).toEqual([])
-  })
-})
-
-describe('neglectedCategories', () => {
-  it('lists categories with no activity, nothing when there is no history', () => {
-    expect(neglectedCategories({ strength: 0, stretch: 0, mobility: 0 })).toEqual([])
-    expect(neglectedCategories({ strength: 3, stretch: 0, mobility: 1 })).toEqual(['stretch'])
   })
 })

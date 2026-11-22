@@ -9,19 +9,23 @@ interface Props {
 /** Bottom sheet dialog: replaces window.confirm and holds secondary actions. Escape or the scrim closes it. */
 export function Sheet({ title, onClose, children }: Props) {
   const ref = useRef<HTMLDivElement>(null)
+  // Callers pass inline closures; keep the latest in a ref so the effect below runs only on open/close.
+  // (Re-running it on every parent render — the player re-renders ~10×/s — kept snapping focus back to the first button.)
+  const close = useRef(onClose)
+  useEffect(() => { close.current = onClose })
 
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null
     ref.current?.querySelector<HTMLElement>('button, select, input')?.focus()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onClose() }
+      if (e.key === 'Escape') { e.stopPropagation(); close.current() }
     }
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
       prev?.focus?.()
     }
-  }, [onClose])
+  }, [])
 
   return (
     <>

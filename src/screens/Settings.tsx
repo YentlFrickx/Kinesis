@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Icon } from '../components/Icon'
 import { Sheet } from '../components/Sheet'
 import { LOCALES, LOCALE_INFO, setLocale, useLocale, useT } from '../i18n'
@@ -16,13 +15,13 @@ export function SettingsSheet({ onClose, onMessage, fileRef }: {
   const theme = useTheme()
   const t = useT()
   const locale = useLocale()
-  const [, force] = useState(0)
 
   const download = () => {
     const url = URL.createObjectURL(new Blob([exportJson()], { type: 'application/json' }))
     const a = Object.assign(document.createElement('a'), { href: url, download: 'kinesis-sessions.json' })
     a.click()
-    URL.revokeObjectURL(url)
+    // Revoking synchronously can cancel the download in some browsers (Firefox, Safari).
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (
@@ -47,7 +46,7 @@ export function SettingsSheet({ onClose, onMessage, fileRef }: {
       <button className="opt" onClick={download} disabled={sessions.length === 0}><Icon name="download" size={20} />{t('settings.export')}</button>
       <button className="opt" onClick={() => { onClose(); fileRef.current?.click() }}><Icon name="upload" size={20} />{t('settings.import')}</button>
       {missingStarters(sessions).length > 0 && (
-        <button className="opt" onClick={() => { onMessage(t('msg.restored', { count: restoreStarters() })); force((n) => n + 1) }}>
+        <button className="opt" onClick={() => { onMessage(t('msg.restored', { count: restoreStarters() })) }}>
           <Icon name="refresh" size={20} />{t('settings.restore')}
         </button>
       )}

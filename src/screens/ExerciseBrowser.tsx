@@ -1,18 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Figure } from '../animation/Figure'
-import { EXERCISES } from '../data/exercises'
-import { EQUIPMENT, type BodyArea, type Category, type Exercise } from '../data/types'
+import { EXERCISES, canDo } from '../data/exercises'
+import { BODY_AREAS, CATEGORIES, EQUIPMENT, type Exercise } from '../data/types'
 import { useLocalize, useT } from '../i18n'
 import { Icon } from '../components/Icon'
 import { Tips } from '../components/Tips'
 import { describe } from '../lib/format'
 import { DEFAULT_FILTERS, activeFilterCount, filterExercises, recentExerciseIds, type ExerciseFilters, type SortKey } from '../lib/exerciseFilter'
-import { canDo, toggleEquipment, useOwnedEquipment } from '../store/equipment'
+import { toggleEquipment, useOwnedEquipment } from '../store/equipment'
 import { toggleFavorite, useFavorites } from '../store/favorites'
 import { useHistory } from '../store/history'
 
-const CATEGORIES: Category[] = ['strength', 'stretch', 'mobility']
-const AREAS: BodyArea[] = ['glutes', 'hips', 'quads', 'hamstrings', 'calves', 'core', 'chest', 'arms', 'shoulders', 'upper back', 'feet', 'full body']
 const SORTS: SortKey[] = ['az', 'category', 'area']
 
 /** Filters outlive the component so they persist while the editor's picker is closed and reopened. */
@@ -100,7 +98,7 @@ export function ExerciseBrowser({ onAdd, addedCount, inSession }: Props) {
       <details className="more-filters">
         <summary>{t('browser.filters')}</summary>
         <div className="chips" role="group" aria-label={t('browser.areaAria')}>
-          {AREAS.map((a) => (
+          {BODY_AREAS.map((a) => (
             <button key={a} className={`chip ${f.areas.includes(a) ? 'on' : ''}`} aria-pressed={f.areas.includes(a)}
               onClick={() => setFilters({ areas: toggle(f.areas, a) })}>{t(`area.${a}`)}</button>
           ))}
