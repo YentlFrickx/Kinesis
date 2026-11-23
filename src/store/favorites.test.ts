@@ -13,8 +13,7 @@ describe('favorites', () => {
     f.toggleFavorite(b)
     f.toggleFavorite(b)
     expect(f.getFavorites()).toEqual([a])
-    const again = installStorage(Object.fromEntries(data))
-    void again
+    installStorage(Object.fromEntries(data))
     expect((await import('./favorites')).getFavorites()).toEqual([a])
   })
   it('is included in the backup and restored from it', async () => {

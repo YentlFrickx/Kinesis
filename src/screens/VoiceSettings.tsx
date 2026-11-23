@@ -1,9 +1,12 @@
+import type { KeyboardEvent } from 'react'
 import { Icon } from '../components/Icon'
 import { LOCALE_INFO, useLocale, useT } from '../i18n'
 import { speak, speechSupported } from '../player/cues'
 import { setVoiceFor, updateSpeechSettings, useSpeechSettings } from '../player/speechSettings'
 import { useVoices } from '../player/useVoices'
 import { RATE_RANGE, VERBOSITIES, type Verbosity } from '../player/voice'
+
+const SLIDER_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'])
 
 /** Spoken-cue settings: voice per language, rate, volume and how much is said. */
 export function VoiceSettings() {
@@ -18,6 +21,8 @@ export function VoiceSettings() {
   const saved = settings.voices[locale] ?? ''
   const selected = voices.some((v) => v.voiceURI === saved) ? saved : ''
   const test = () => speak(t('voice.testPhrase'), { force: true, interrupt: true })
+  // Preview after a keyboard change only: keyup also fires on the slider when it is reached with Tab.
+  const testOnKey = (e: KeyboardEvent) => { if (SLIDER_KEYS.has(e.key)) test() }
 
   return (
     <div className="opt" style={{ display: 'block' }}>
@@ -38,13 +43,13 @@ export function VoiceSettings() {
       <div className="voice-field">
         <label htmlFor="voice-rate">{t('voice.rate')}</label>
         <input id="voice-rate" type="range" min={RATE_RANGE.min} max={RATE_RANGE.max} step={RATE_RANGE.step} value={settings.rate}
-          onChange={(e) => updateSpeechSettings({ rate: Number(e.target.value) })} onPointerUp={test} onKeyUp={test} />
+          onChange={(e) => updateSpeechSettings({ rate: Number(e.target.value) })} onPointerUp={test} onKeyUp={testOnKey} />
         <span className="meta">{settings.rate.toFixed(1)}×</span>
       </div>
       <div className="voice-field">
         <label htmlFor="voice-volume">{t('voice.volume')}</label>
         <input id="voice-volume" type="range" min={0} max={1} step={0.1} value={settings.volume}
-          onChange={(e) => updateSpeechSettings({ volume: Number(e.target.value) })} onPointerUp={test} onKeyUp={test} />
+          onChange={(e) => updateSpeechSettings({ volume: Number(e.target.value) })} onPointerUp={test} onKeyUp={testOnKey} />
         <span className="meta">{Math.round(settings.volume * 100)}%</span>
       </div>
       <div className="voice-field">

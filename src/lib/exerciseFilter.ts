@@ -65,7 +65,7 @@ export function filterExercises(list: readonly Exercise[], f: ExerciseFilters, c
   return out
 }
 
-/** True when any filter other than sort / the equipment default differs from the defaults. */
+/** Number of active filters (sort and the "only my equipment" default are not counted). */
 export const activeFilterCount = (f: ExerciseFilters) =>
   (f.query.trim() ? 1 : 0) + f.categories.length + f.areas.length + f.equipment.length +
   (f.perSide !== 'any' ? 1 : 0) + (f.mode !== 'any' ? 1 : 0) +

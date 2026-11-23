@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 const QUERY = '(prefers-reduced-motion: reduce)'
 const mq = () => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(QUERY) : null)
 
-export const prefersReducedMotion = () => mq()?.matches ?? false
+const prefersReducedMotion = () => mq()?.matches ?? false
 
 export function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(

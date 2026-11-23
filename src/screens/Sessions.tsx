@@ -3,7 +3,7 @@ import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { Sheet } from '../components/Sheet'
 import { GoalRing } from '../components/GoalRing'
-import { EXERCISE_MAP } from '../data/exercises'
+import { EXERCISE_MAP, withGear } from '../data/exercises'
 import type { Session } from '../data/types'
 import { formatDate, formatDuration, weekdayLetters } from '../lib/format'
 import { sessionLabel, useLocalize, useT } from '../i18n'
@@ -19,10 +19,17 @@ import { SettingsSheet } from './Settings'
 
 const lookup = (id: string) => EXERCISE_MAP.get(id)
 
+/** Steps, summary line, equipment note and the first exercise (with its chosen gear, for the thumbnail). */
 function summary(s: Session, t: ReturnType<typeof useT>) {
   const steps = buildSteps(s, lookup)
   const count = s.items.filter((i) => EXERCISE_MAP.has(i.exerciseId)).length
-  return { steps, text: t('sessions.summary', { count, duration: formatDuration(estimateSeconds(steps)) }) }
+  const item = s.items.find((i) => EXERCISE_MAP.has(i.exerciseId))
+  return {
+    steps,
+    text: t('sessions.summary', { count, duration: formatDuration(estimateSeconds(steps)) }),
+    need: youllNeed(s),
+    first: item && withGear(EXERCISE_MAP.get(item.exerciseId)!, item.gear),
+  }
 }
 
 type Sheeted = { kind: 'settings' } | { kind: 'menu'; id: string } | { kind: 'delete'; id: string } | null
@@ -55,11 +62,11 @@ export function Sessions() {
 
   // Suggest the session that has gone longest without being completed (never done counts as longest).
   const lastDone = (id: string) => history.find((h) => h.sessionId === id)?.completedAt ?? 0
-  const playable = sessions.filter((s) => buildSteps(s, lookup).length > 0)
+  const summaries = new Map(sessions.map((s) => [s.id, summary(s, t)]))
+  const playable = sessions.filter((s) => summaries.get(s.id)!.steps.length > 0)
   const suggested = [...playable].sort((a, b) => lastDone(a.id) - lastDone(b.id))[0]
-  const sug = suggested && summary(suggested, t)
-  const firstRaw = suggested && EXERCISE_MAP.get(suggested.items.find((i) => EXERCISE_MAP.has(i.exerciseId))!.exerciseId)
-  const firstEx = firstRaw && lx(firstRaw)
+  const sug = suggested && summaries.get(suggested.id)
+  const firstEx = sug?.first && lx(sug.first)
   const days = weekDays(history, now)
   const letters = weekdayLetters()
   const target = sheet && 'id' in sheet ? sessions.find((s) => s.id === sheet.id) : undefined
@@ -90,7 +97,7 @@ export function Sessions() {
         <section className="hero" aria-label={t('sessions.suggestedAria')}>
           <div className="eyebrow">{t('sessions.suggested')}</div>
           <h2>{sessionLabel(suggested.id, suggested.name)}</h2>
-          <span className="meta">{sug.text}{youllNeed(suggested) ? ` · ${youllNeed(suggested)}` : ''}</span>
+          <span className="meta">{sug.text}{sug.need ? ` · ${sug.need}` : ''}</span>
           <div className="stage">
             <Figure frames={firstEx.animation} props={firstEx.props} gear={firstEx.gear} label={t('sessions.animation', { name: firstEx.name })} />
           </div>
@@ -119,9 +126,8 @@ export function Sessions() {
       )}
       <ul className="session-list">
         {sessions.map((s) => {
-          const { steps, text } = summary(s, t)
-          const raw = EXERCISE_MAP.get(s.items.find((i) => EXERCISE_MAP.has(i.exerciseId))?.exerciseId ?? '')
-          const ex = raw && lx(raw)
+          const { steps, text, need, first } = summaries.get(s.id)!
+          const ex = first && lx(first)
           return (
             <li key={s.id} className="row">
               <div className="th">
@@ -130,7 +136,7 @@ export function Sessions() {
               <div className="tx">
                 <strong>{sessionLabel(s.id, s.name)}</strong>
                 <div className="meta">{text}</div>
-                {youllNeed(s) && <div className="gear-note">{youllNeed(s)}</div>}
+                {need && <div className="gear-note">{need}</div>}
               </div>
               <button className="icon-btn" aria-label={t('sessions.moreFor', { name: sessionLabel(s.id, s.name) })} onClick={() => setSheet({ kind: 'menu', id: s.id })}><Icon name="more" /></button>
               <button className="icon-btn fill" aria-label={t('sessions.startNamed', { name: sessionLabel(s.id, s.name) })} disabled={steps.length === 0} onClick={() => startSession(s.id)}><Icon name="play" size={18} /></button>

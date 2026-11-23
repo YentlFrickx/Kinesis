@@ -42,11 +42,18 @@ function useWakeLock(active: boolean) {
   useEffect(() => {
     if (!active || !('wakeLock' in navigator)) return
     let lock: WakeLockSentinel | null = null
-    const acquire = () => navigator.wakeLock.request('screen').then((l) => { lock = l }).catch(() => {})
-    void acquire()
-    const onVis = () => document.visibilityState === 'visible' && void acquire()
+    let done = false
+    // The browser drops the lock when the page is hidden, so it is re-requested on return. A request that
+    // resolves after cleanup (session finished or player closed meanwhile) is released straight away.
+    const acquire = () => {
+      if (lock && !lock.released) return
+      navigator.wakeLock.request('screen').then((l) => { if (done) void l.release(); else lock = l }).catch(() => {})
+    }
+    acquire()
+    const onVis = () => { if (document.visibilityState === 'visible') acquire() }
     document.addEventListener('visibilitychange', onVis)
     return () => {
+      done = true
       document.removeEventListener('visibilitychange', onVis)
       void lock?.release()
     }

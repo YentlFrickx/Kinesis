@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// BASE_PATH is set by the GitHub Pages workflow (e.g. "/<repo-name>/").
+// BASE_PATH serves the app from a sub-path (e.g. "/<repo-name>/"). Production is at the domain root, so CI leaves it unset.
 export default defineConfig({
   base: process.env.BASE_PATH ?? '/',
   plugins: [

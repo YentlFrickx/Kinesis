@@ -1,7 +1,7 @@
 import { pose, type Keyframe, type Pose, type Prop } from '../animation/skeleton'
 import { COACHING } from './coaching'
 import { GEAR_OPTIONS } from './gearOptions'
-import type { Equipment, Exercise } from './types'
+import { EQUIPMENT, type Equipment, type Exercise } from './types'
 
 type P = Partial<Pose>
 
@@ -1897,7 +1897,8 @@ export const canDo = (e: Exercise, have: readonly Equipment[]) => (e.equipment ?
 
 /** The exercise as done with `gear` (adds the gear to its drawing and equipment). Unsupported or missing gear returns it unchanged. */
 export function withGear(e: Exercise, gear?: Equipment): Exercise {
-  const drawn = gear && e.gearOptions?.[gear]
+  // Only real equipment kinds: a corrupt value like "toString" would otherwise hit an Object.prototype member.
+  const drawn = gear && EQUIPMENT.includes(gear) ? e.gearOptions?.[gear] : undefined
   if (!gear || !drawn) return e
   return { ...e, gearUsed: gear, gear: [...(e.gear ?? []), ...drawn], equipment: [...new Set([...(e.equipment ?? []), gear])] }
 }

@@ -115,6 +115,7 @@ export function Editor({ id }: { id: string }) {
   const toggleAll = () => setCollapsed(allCollapsed ? new Set() : new Set(session.items.map(keyOf)))
 
   const steps = buildSteps(session, (i) => EXERCISE_MAP.get(i))
+  const need = youllNeed(session)
   const countOf = (exId: string) => session.items.filter((i) => i.exerciseId === exId).length
 
   if (picking) {
@@ -134,7 +135,7 @@ export function Editor({ id }: { id: string }) {
       <button className="link" onClick={() => go('/')}>{t('common.backToSessions')}</button>
       <input className="name-input" value={sessionLabel(session.id, session.name)} maxLength={80} aria-label={t('editor.sessionName')}
         onChange={(e) => patch((s) => ({ ...s, name: e.target.value }))} />
-      {youllNeed(session) && <p className="gear-note">{youllNeed(session)}</p>}
+      {need && <p className="gear-note">{need}</p>}
 
       <div className="card rest-settings">
         <div>
