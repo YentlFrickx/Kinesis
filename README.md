@@ -5,7 +5,7 @@ A small offline-capable web app (PWA) for planning and following bodyweight stre
 - **Library:** 78 exercises (strength, stretches, mobility) with a looping stick-figure animation and instructions.
 - **Planner:** build named sessions; per exercise set seconds or reps, sets and rest after it; defaults for rest between sets and exercises. Reorder, duplicate, delete, export/import as JSON.
 - **Player:** guided run with countdown, rep "Done" button, auto left/right with a switch-sides step, rest steps with next-up preview, beeps and voice cues (mute toggle), vibration and screen wake-lock.
-  - **Timer:** timestamp-based, so a locked/throttled/backgrounded tab catches up on return (carrying through every step that elapsed, cues for the final step only). Optional **auto reps** toggle (⏱ in the player, off by default) paces rep steps at 3 s/rep with a spoken count; "Skip" acts as the manual override.
+  - **Timer:** timestamp-based, so a locked/throttled/backgrounded tab catches up on return (carrying through every step that elapsed, cues for the final step only). Optional **auto reps** toggle (in the player's sound settings sheet, off by default) paces rep steps at 3 s/rep with a spoken count; "Skip" acts as the manual override.
   - **Platform limits:** browsers suspend timers, speech and vibration when the screen is off, and iOS Safari additionally suspends audio for web pages in the background. Cues cannot reliably play with the screen locked; the session state is exact when you return, but beeps/voice for steps that passed while locked are not replayed.
 - **Starter sessions:** a 30-minute strength workout aimed at runners and a short feet & calves stretch are added on first launch (restorable from the Sessions screen).
 - Data stays in your browser (localStorage). No backend, works offline once loaded.
@@ -15,7 +15,7 @@ A small offline-capable web app (PWA) for planning and following bodyweight stre
 ```bash
 npm install
 npm run dev        # app on http://localhost:5173, animation review sheet at /contact.html
-npm test           # player engine tests
+npm test           # unit tests (stores, player engine, progress, data)
 npm run build
 ```
 
@@ -28,7 +28,7 @@ Add an entry to `src/data/exercises.ts`. The animation is a list of keyframe pos
 - `npm test` runs the Vitest unit tests (stores, player engine, progress, data integrity); `npm run test:coverage` adds a coverage report (also run in CI).
 - `npm run e2e` runs the Playwright suite (smoke flow, service-worker/offline check, axe accessibility scan) on desktop and mobile Chromium projects. By default it builds the app and serves it with `vite preview`; first run `npx playwright install chromium`. Set `BASE_URL` to test a deployment instead, e.g. `BASE_URL=https://pr-12.kinesis.pages.dev npm run e2e`.
 - In CI, `preview.yml` waits for the Cloudflare Pages preview and runs the suite against it with `BASE_URL`; a failure fails the PR check, and the HTML report and traces are uploaded as the `playwright-report-preview` artifact. PRs from forks (no secrets, no preview) run the same suite against a local `vite preview` instead. `deploy.yml` smoke-tests production after deploying when the repository variable `PRODUCTION_URL` is set.
-- The axe scan skips rules that currently fail (`KNOWN_ISSUES` in `e2e/a11y.spec.ts`); remove them as the accessibility issues are fixed.
+- The axe scan (`e2e/a11y.spec.ts`) fails on any serious or critical WCAG A/AA violation; no rules are exempted.
 
 ## Deploy
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EXERCISES, EXERCISE_MAP } from './exercises'
+import { EXERCISES, EXERCISE_MAP, withGear } from './exercises'
 import { BODY_AREAS } from './types'
 
 describe('exercises', () => {
@@ -69,6 +69,15 @@ describe('gear options', () => {
         expect(['dumbbell', 'band'], e.id).toContain(q)
         for (const g of drawn) expect(g.kind === 'band' ? 'band' : 'dumbbell', e.id).toBe(q)
       }
+    }
+  })
+
+  it('withGear ignores unsupported and non-equipment values', () => {
+    const bridge = EXERCISE_MAP.get('glute-bridge')!
+    expect(withGear(bridge, 'dumbbell').gearUsed).toBe('dumbbell')
+    expect(withGear(EXERCISE_MAP.get('push-up')!, 'dumbbell')).toBe(EXERCISE_MAP.get('push-up'))
+    for (const junk of ['toString', '__proto__', 'constructor']) {
+      expect(withGear(bridge, junk as 'band')).toBe(bridge)
     }
   })
 })

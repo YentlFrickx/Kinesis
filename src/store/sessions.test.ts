@@ -121,4 +121,22 @@ describe('item ids', () => {
     s.restoreSession(a, at)
     expect(s.sessionIndex(a.id)).toBe(at)
   })
+
+  it('drops gear that is not real equipment on import', async () => {
+    const { s } = await load({ 'rw.seeded.v1': '1' })
+    s.importJson(JSON.stringify({ sessions: [{ name: 'x', items: [
+      { exerciseId: 'glute-bridge', value: 5, sets: 1, gear: 'toString' },
+      { exerciseId: 'glute-bridge', value: 5, sets: 1, gear: 'band' },
+    ] }] }))
+    const items = JSON.parse(s.exportJson()).sessions[0].items
+    expect('gear' in items[0]).toBe(false)
+    expect(items[1].gear).toBe('band')
+  })
+
+  it('keeps valid stored sessions when one is malformed', async () => {
+    const good = { id: 'g', name: 'G', defaultSetRestSec: 30, defaultTransitionSec: 10, items: [{ id: 'i', exerciseId: 'push-up', value: 5, sets: 1 }] }
+    const stored = { version: 1, sessions: [good, null, { id: 'b', name: 'B' }, { id: 'c', name: 'C', items: [null] }] }
+    const { s } = await load({ 'rw.seeded.v1': '1', 'rw.sessions.v1': JSON.stringify(stored) })
+    expect(JSON.parse(s.exportJson()).sessions).toEqual([good])
+  })
 })

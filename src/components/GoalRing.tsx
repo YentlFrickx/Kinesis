@@ -9,7 +9,7 @@ import { Icon } from './Icon'
 const R = 26
 const C = 2 * Math.PI * R
 
-export function GoalRing({ editable = false, size = 64 }: { editable?: boolean; size?: number }) {
+export function GoalRing({ editable = false }: { editable?: boolean }) {
   const t = useT()
   const [now] = useState(Date.now)
   const goal = useGoal()
@@ -17,7 +17,7 @@ export function GoalRing({ editable = false, size = 64 }: { editable?: boolean; 
   const reached = done >= goal
   const body = (
     <>
-      <svg viewBox="0 0 64 64" width={size} height={size} role="img" aria-label={t('goal.aria', { done, goal })}>
+      <svg viewBox="0 0 64 64" width="64" height="64" role="img" aria-label={t('goal.aria', { done, goal })}>
         <circle cx="32" cy="32" r={R} fill="none" stroke="var(--ring-bg)" strokeWidth="7" />
         <circle
           cx="32" cy="32" r={R} fill="none" stroke="var(--ring-fg)" strokeWidth="7" strokeLinecap="round"

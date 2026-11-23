@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { getFavorites, importFavorites } from './favorites'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
-import { MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
+import { EQUIPMENT, MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
 
 const KEY = 'rw.sessions.v1'
 const VERSION = 1
@@ -14,12 +14,17 @@ function withItemIds(list: Session[]): Session[] {
   return list.map((s) => (s.items.every((i) => i.id) ? s : { ...s, items: s.items.map((i) => (i.id ? i : { ...i, id: newId() })) }))
 }
 
+/** Drops malformed sessions (hand-edited or corrupted storage) so one bad entry cannot wipe the whole list. */
+const isSession = (s: unknown): s is Session =>
+  !!s && typeof s === 'object' && typeof (s as Session).id === 'string' && typeof (s as Session).name === 'string' &&
+  Array.isArray((s as Session).items) && (s as Session).items.every((i) => !!i && typeof i === 'object')
+
 function read(): Session[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const data = JSON.parse(raw)
-    return data?.version === VERSION && Array.isArray(data.sessions) ? withItemIds(data.sessions) : []
+    return data?.version === VERSION && Array.isArray(data.sessions) ? withItemIds(data.sessions.filter(isSession)) : []
   } catch {
     return []
   }
@@ -128,7 +133,7 @@ export function importJson(text: string): number {
         value: num(i.value, 1, 3600, 30),
         sets: num(i.sets, 1, 20, 1),
         ...(i.restAfterSec === undefined ? {} : { restAfterSec: num(i.restAfterSec, 0, 600, 0) }),
-        ...(i.gear && EXERCISE_MAP.get(i.exerciseId)?.gearOptions?.[i.gear] ? { gear: i.gear } : {}),
+        ...(EQUIPMENT.includes(i.gear!) && EXERCISE_MAP.get(i.exerciseId)?.gearOptions?.[i.gear!] ? { gear: i.gear } : {}),
         ...cleanNote(i.note),
       }))
     added.push({
