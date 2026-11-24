@@ -32,7 +32,7 @@ Add an entry to `src/data/exercises.ts`. The animation is a list of keyframe pos
 
 ## Deploy
 
-Production and PR previews both run on one [Cloudflare Pages](https://pages.cloudflare.com/) project, deployed by GitHub Actions: pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, deploy to the production branch); each pull request from a branch in this repo gets its own preview via `.github/workflows/preview.yml` (`https://pr-<number>.<project>.pages.dev`, posted as a PR comment). Previews have a separate origin from production, so they never touch real localStorage data. PRs from forks are skipped because they cannot access the secrets, and old previews are not deleted automatically (remove them in the Cloudflare dashboard).
+Production and PR previews both run on one [Cloudflare Pages](https://pages.cloudflare.com/) project, deployed by GitHub Actions: pushing to `main` runs `.github/workflows/deploy.yml` (lint, test, build, deploy to the production branch); each pull request from a branch in this repo gets its own preview via `.github/workflows/preview.yml` (`https://pr-<number>.<project>.pages.dev`, posted as a PR comment). Previews have a separate origin from production, so they never touch real localStorage data. PRs from forks are skipped because they cannot access the secrets. When a PR is closed, `.github/workflows/preview-cleanup.yml` deletes its preview deployments and GitHub deployment environment.
 
 One-time setup:
 

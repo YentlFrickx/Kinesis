@@ -52,6 +52,12 @@ describe('filterExercises', () => {
     const idx = run({ sort: 'category' }).map((e) => order.indexOf(e.category))
     expect(idx).toEqual([...idx].sort((x, y) => x - y))
   })
+  it('sorts by the displayed (localised) body-area label', () => {
+    // Reverse the alphabet: a label-based sort must then put "upper back" before "calves".
+    const label = (a: string) => [...a].map((ch) => String.fromCharCode(219 - ch.charCodeAt(0))).join('')
+    const firsts = run({ sort: 'area' }, { areaLabel: label }).map((e) => label(e.bodyAreas[0]))
+    expect(firsts).toEqual([...firsts].sort((a, b) => a.localeCompare(b)))
+  })
 })
 
 describe('helpers', () => {

@@ -8,6 +8,7 @@ import type { Session } from '../data/types'
 import { formatDate, formatDuration, weekdayLetters } from '../lib/format'
 import { sessionLabel, useLocalize, useT } from '../i18n'
 import { weekDays } from '../lib/progress'
+import { useToday } from '../lib/today'
 import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
 import { youllNeed } from '../store/equipment'
@@ -42,11 +43,11 @@ export function Sessions() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState('')
   const [sheet, setSheet] = useState<Sheeted>(null)
-  const [now] = useState(Date.now)
+  const now = useToday()
   const savedRun = useSavedRun()
   const resumeSession = savedRun ? sessions.find((s) => s.id === savedRun.sessionId) : undefined
   const resumeSteps = resumeSession ? buildSteps(resumeSession, lookup) : []
-  const resumable = validateRun(savedRun, resumeSession, resumeSteps.length, now)
+  const resumable = validateRun(savedRun, resumeSession, resumeSteps.length)
   // Drop a saved run that can no longer be resumed (session edited/deleted, or stale).
   useEffect(() => { if (savedRun && !resumable) clearRun() }, [savedRun, resumable])
 

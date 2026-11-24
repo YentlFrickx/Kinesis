@@ -52,6 +52,16 @@ export interface SessionItem {
 }
 
 export const MAX_NOTE_LENGTH = 200
+export const MAX_NAME_LENGTH = 80
+
+/** Allowed ranges for session values, shared by the editor's steppers and the JSON import. */
+export const LIMITS = {
+  time: { min: 1, max: 600 },
+  reps: { min: 1, max: 100 },
+  sets: { min: 1, max: 10 },
+  /** Rest between sets / exercises, in seconds. */
+  rest: { min: 0, max: 300 },
+} as const
 
 export interface Session {
   id: string

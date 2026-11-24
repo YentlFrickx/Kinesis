@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { useT } from '../i18n'
 import { go } from '../lib/router'
 import { sessionsThisWeek } from '../lib/progress'
+import { useToday } from '../lib/today'
 import { MAX_GOAL, setGoal, useGoal } from '../store/goal'
 import { useHistory } from '../store/history'
 import { Icon } from './Icon'
@@ -11,7 +11,7 @@ const C = 2 * Math.PI * R
 
 export function GoalRing({ editable = false }: { editable?: boolean }) {
   const t = useT()
-  const [now] = useState(Date.now)
+  const now = useToday()
   const goal = useGoal()
   const done = sessionsThisWeek(useHistory(), now)
   const reached = done >= goal

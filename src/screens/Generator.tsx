@@ -2,15 +2,17 @@ import { useMemo, useState } from 'react'
 import { Figure } from '../animation/Figure'
 import { Icon } from '../components/Icon'
 import { EXERCISE_MAP } from '../data/exercises'
-import { BODY_AREAS, CATEGORIES, EQUIPMENT, type BodyArea, type Category, type SessionItem } from '../data/types'
+import { BODY_AREAS, CATEGORIES, EQUIPMENT, MAX_NAME_LENGTH, type BodyArea, type Category, type SessionItem } from '../data/types'
 import { INTENSITIES, estimateItems, generateSession, replacementFor, SET_REST_SEC, TRANSITION_SEC, type Intensity } from '../lib/generator'
 import { describe, formatDuration } from '../lib/format'
 import { missingCategories, weeklyBalance } from '../lib/progress'
+import { useToday } from '../lib/today'
 import { useLocalize, useT } from '../i18n'
 import { go } from '../lib/router'
 import { toggleEquipment, useOwnedEquipment } from '../store/equipment'
 import { useHistory } from '../store/history'
 import { createSession, updateSession } from '../store/sessions'
+import { showToast } from '../store/toast'
 
 const newSeed = () => Math.floor(Math.random() * 2 ** 31)
 const toggle = <T,>(list: T[], v: T) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
@@ -20,7 +22,7 @@ export function Generator() {
   const lx = useLocalize()
   const owned = useOwnedEquipment()
   const history = useHistory()
-  const [now] = useState(Date.now)
+  const now = useToday()
   const neglected = useMemo(() => missingCategories(weeklyBalance(history, now)), [history, now])
 
   const [minutes, setMinutes] = useState(20)
@@ -44,11 +46,15 @@ export function Generator() {
   const swap = (idx: number) => {
     const rep = replacementFor(items, idx, { equipment: owned, focus, intensity, seed: newSeed() })
     if (rep) setEdited(items.map((it, i) => (i === idx ? rep : it)))
+    else {
+      const category = EXERCISE_MAP.get(items[idx].exerciseId)?.category
+      if (category) showToast(t('gen.noSwap', { category: t(`category.${category}`).toLowerCase() }))
+    }
   }
 
   const save = () => {
     const names = (focus.length ? focus.map((a) => t(`area.${a}`)) : categories.map((c) => t(`category.${c}`).toLowerCase())).join(' + ')
-    const s = createSession(t('gen.sessionName', { minutes, names }).slice(0, 80))
+    const s = createSession(t('gen.sessionName', { minutes, names }).slice(0, MAX_NAME_LENGTH))
     updateSession(s.id, (x) => ({ ...x, items: items.map((i) => ({ ...i })), defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC }))
     go(`/session/${s.id}`)
   }
@@ -105,7 +111,7 @@ export function Generator() {
       </div>
 
       <h2 className="meta">{t('gen.preview', { duration: formatDuration(seconds) })}</h2>
-      {result.notes.map((n) => <p key={n.key} className="meta" role="status">{t(n.key, n.params && 'category' in n.params ? { category: t(`category.${n.params.category as Category}`).toLowerCase() } : n.params)}</p>)}
+      {result.notes.map((n, i) => <p key={`${n.key}-${i}`} className="meta" role="status">{t(n.key, n.params && 'category' in n.params ? { category: t(`category.${n.params.category as Category}`).toLowerCase() } : n.params)}</p>)}
       {items.length === 0 && <p className="empty">{t('gen.nothing')}</p>}
       <ol className="items">
         {items.map((item, idx) => {

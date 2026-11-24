@@ -12,7 +12,8 @@ function loop(t: number) {
     now = t
     subs.forEach((f) => f())
   }
-  raf = requestAnimationFrame(loop)
+  // A subscriber may have left during the callbacks above; never keep a loop running for nobody.
+  raf = subs.size > 0 ? requestAnimationFrame(loop) : 0
 }
 
 export function subscribeClock(cb: () => void): () => void {

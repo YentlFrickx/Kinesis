@@ -1,12 +1,12 @@
-import { useState } from 'react'
 import { useT } from '../i18n'
 import { CATEGORIES } from '../data/types'
 import { missingCategories, weeklyBalance } from '../lib/progress'
+import { useToday } from '../lib/today'
 import { useHistory } from '../store/history'
 
 export function Balance() {
   const t = useT()
-  const [now] = useState(Date.now)
+  const now = useToday()
   const balance = weeklyBalance(useHistory(), now)
   const max = Math.max(1, ...CATEGORIES.map((c) => balance[c]))
   const missing = missingCategories(balance)

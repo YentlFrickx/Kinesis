@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { getFavorites, importFavorites } from './favorites'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
-import { EQUIPMENT, MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
+import { EQUIPMENT, LIMITS, MAX_NAME_LENGTH, MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
 
 const KEY = 'rw.sessions.v1'
 const VERSION = 1
@@ -109,7 +109,7 @@ export function duplicateSession(id: string, name?: string): Session | undefined
 
 export const exportJson = () => JSON.stringify({ version: VERSION, sessions, favorites: getFavorites() }, null, 2)
 
-const num = (v: unknown, min: number, max: number, fallback: number) =>
+const num = (v: unknown, { min, max }: { min: number; max: number }, fallback: number) =>
   typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback
 
 /** A trimmed, length-clamped note as an optional field (empty or non-string notes are dropped). */
@@ -127,21 +127,25 @@ export function importJson(text: string): number {
     if (!raw || typeof raw.name !== 'string' || !Array.isArray(raw.items)) continue
     const items: SessionItem[] = raw.items
       .filter((i: SessionItem) => EXERCISE_MAP.has(i?.exerciseId))
-      .map((i: SessionItem) => ({
-        id: newId(),
-        exerciseId: i.exerciseId,
-        value: num(i.value, 1, 3600, 30),
-        sets: num(i.sets, 1, 20, 1),
-        ...(i.restAfterSec === undefined ? {} : { restAfterSec: num(i.restAfterSec, 0, 600, 0) }),
-        ...(EQUIPMENT.includes(i.gear!) && EXERCISE_MAP.get(i.exerciseId)?.gearOptions?.[i.gear!] ? { gear: i.gear } : {}),
-        ...cleanNote(i.note),
-      }))
+      .map((i: SessionItem) => {
+        const ex = EXERCISE_MAP.get(i.exerciseId)!
+        return {
+          id: newId(),
+          exerciseId: i.exerciseId,
+          value: num(i.value, LIMITS[ex.mode], ex.defaultValue),
+          sets: num(i.sets, LIMITS.sets, 1),
+          // null/undefined = no override (follow the session's transition rest).
+          ...(i.restAfterSec == null ? {} : { restAfterSec: num(i.restAfterSec, LIMITS.rest, 0) }),
+          ...(EQUIPMENT.includes(i.gear!) && ex.gearOptions?.[i.gear!] ? { gear: i.gear } : {}),
+          ...cleanNote(i.note),
+        }
+      })
     added.push({
       id: newId(),
-      name: raw.name.slice(0, 80),
+      name: raw.name.trim().slice(0, MAX_NAME_LENGTH),
       items,
-      defaultSetRestSec: num(raw.defaultSetRestSec, 0, 600, 30),
-      defaultTransitionSec: num(raw.defaultTransitionSec, 0, 600, 10),
+      defaultSetRestSec: num(raw.defaultSetRestSec, LIMITS.rest, 30),
+      defaultTransitionSec: num(raw.defaultTransitionSec, LIMITS.rest, 10),
     })
   }
   commit([...sessions, ...added])

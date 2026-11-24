@@ -43,7 +43,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 16px; min-height: 48px; font-weight: 600; }
 .btn.small { padding: 6px 12px; min-height: 40px; font-size: .9rem; border-radius: var(--r-sm); }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.btn.soft { background: var(--soft); border-color: var(--soft); }
 .btn.danger, .link.danger { color: var(--danger); }
 .btn.wide { width: 100%; margin-top: 10px; }
 .btn:disabled { opacity: .4; cursor: default; }
