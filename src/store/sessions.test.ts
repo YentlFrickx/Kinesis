@@ -78,19 +78,22 @@ describe('sessions store', () => {
         items: [
           { exerciseId: 'push-up', value: 99999, sets: 0, restAfterSec: -4 },
           { exerciseId: 'does-not-exist', value: 5, sets: 1 },
-          { exerciseId: 'forearm-plank', value: 'x', sets: 50 },
+          { exerciseId: 'forearm-plank', value: 'x', sets: 50, restAfterSec: null },
+          { exerciseId: 'forearm-plank', value: 9999, sets: 2 },
         ],
       },
     ] }))
     expect(n).toBe(1)
     const imported = JSON.parse(s.exportJson()).sessions[0]
     expect(imported.name).toHaveLength(80)
-    expect(imported.defaultSetRestSec).toBe(600)
+    expect(imported.defaultSetRestSec).toBe(300)
     expect(imported.defaultTransitionSec).toBe(10)
     expect(imported.items.every((i: { id?: string }) => typeof i.id === 'string' && i.id)).toBe(true)
     expect(imported.items.map(({ id: _id, ...rest }: { id?: string }) => rest)).toEqual([
-      { exerciseId: 'push-up', value: 3600, sets: 1, restAfterSec: 0 },
-      { exerciseId: 'forearm-plank', value: 30, sets: 20 },
+      // Clamped to the editor's ranges (reps max 100, time max 600, sets max 10); a missing value uses the exercise default.
+      { exerciseId: 'push-up', value: 100, sets: 1, restAfterSec: 0 },
+      { exerciseId: 'forearm-plank', value: 30, sets: 10 },
+      { exerciseId: 'forearm-plank', value: 600, sets: 2 },
     ])
   })
 

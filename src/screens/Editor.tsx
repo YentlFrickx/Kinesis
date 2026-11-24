@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { Tips } from '../components/Tips'
 import { sessionLabel, useLocalize, useT } from '../i18n'
 import { EXERCISE_MAP, withGear } from '../data/exercises'
-import { EQUIPMENT, MAX_NOTE_LENGTH, type Exercise, type Session, type SessionItem } from '../data/types'
+import { EQUIPMENT, LIMITS, MAX_NAME_LENGTH, MAX_NOTE_LENGTH, type Exercise, type Session, type SessionItem } from '../data/types'
 import { describe, formatDuration } from '../lib/format'
 import { go } from '../lib/router'
 import { buildSteps, estimateSeconds } from '../player/engine'
@@ -60,8 +60,7 @@ export function Editor({ id }: { id: string }) {
       return { ...s, items }
     })
   const remove = (idx: number, name: string) => {
-    const before = session.items
-    const removed = before[idx]
+    const removed = session.items[idx]
     patch((s) => ({ ...s, items: s.items.filter((_, i) => i !== idx) }))
     showToast(t('editor.removed', { name }), () =>
       patch((s) => {
@@ -133,19 +132,21 @@ export function Editor({ id }: { id: string }) {
   return (
     <div className="editor">
       <button className="link" onClick={() => go('/')}>{t('common.backToSessions')}</button>
-      <input className="name-input" value={sessionLabel(session.id, session.name)} maxLength={80} aria-label={t('editor.sessionName')}
-        onChange={(e) => patch((s) => ({ ...s, name: e.target.value }))} />
+      <input className="name-input" value={sessionLabel(session.id, session.name)} maxLength={MAX_NAME_LENGTH} aria-label={t('editor.sessionName')}
+        onChange={(e) => patch((s) => ({ ...s, name: e.target.value }))}
+        // A blank name would leave an unlabeled row (and "Start " buttons) in the sessions list.
+        onBlur={() => { if (!session.name.trim()) patch((s) => ({ ...s, name: t('sessions.newName') })) }} />
       {need && <p className="gear-note">{need}</p>}
 
       <div className="card rest-settings">
         <div>
           <span className="meta">{t('editor.restSets')}</span>
-          <Stepper label={t('editor.restSetsAria')} value={session.defaultSetRestSec} min={0} max={300} step={5} suffix="s"
+          <Stepper label={t('editor.restSetsAria')} value={session.defaultSetRestSec} min={LIMITS.rest.min} max={LIMITS.rest.max} step={5} suffix="s"
             onChange={(v) => patch((s) => ({ ...s, defaultSetRestSec: v }))} />
         </div>
         <div>
           <span className="meta">{t('editor.restExercises')}</span>
-          <Stepper label={t('editor.restExercisesAria')} value={session.defaultTransitionSec} min={0} max={300} step={5} suffix="s"
+          <Stepper label={t('editor.restExercisesAria')} value={session.defaultTransitionSec} min={LIMITS.rest.min} max={LIMITS.rest.max} step={5} suffix="s"
             onChange={(v) => patch((s) => ({ ...s, defaultTransitionSec: v }))} />
         </div>
       </div>
@@ -182,16 +183,16 @@ export function Editor({ id }: { id: string }) {
               <div className="item-controls">
                 <div>
                   <span className="meta">{ex.mode === 'time' ? t('editor.seconds') : t('editor.reps')}</span>
-                  <Stepper label={`${ex.name} ${ex.mode === 'time' ? t('editor.secondsAria') : t('editor.repsAria')}`} value={item.value} min={1} max={ex.mode === 'time' ? 600 : 100}
+                  <Stepper label={`${ex.name} ${ex.mode === 'time' ? t('editor.secondsAria') : t('editor.repsAria')}`} value={item.value} min={LIMITS[ex.mode].min} max={LIMITS[ex.mode].max}
                     step={ex.mode === 'time' ? 5 : 1} onChange={(v) => setItem(idx, { value: v })} />
                 </div>
                 <div>
                   <span className="meta">{t('editor.sets')}</span>
-                  <Stepper label={`${ex.name} ${t('editor.setsAria')}`} value={item.sets} min={1} max={10} step={1} onChange={(v) => setItem(idx, { sets: v })} />
+                  <Stepper label={`${ex.name} ${t('editor.setsAria')}`} value={item.sets} min={LIMITS.sets.min} max={LIMITS.sets.max} step={1} onChange={(v) => setItem(idx, { sets: v })} />
                 </div>
                 {idx < session.items.length - 1 && <div>
                   <span className="meta">{t('editor.restAfter')}</span>
-                  <Stepper label={`${ex.name} ${t('editor.restAfterAria')}`} value={item.restAfterSec ?? session.defaultTransitionSec} min={0} max={300} step={5} suffix="s"
+                  <Stepper label={`${ex.name} ${t('editor.restAfterAria')}`} value={item.restAfterSec ?? session.defaultTransitionSec} min={LIMITS.rest.min} max={LIMITS.rest.max} step={5} suffix="s"
                     onChange={(v) => setItem(idx, { restAfterSec: v })} />
                   {item.restAfterSec !== undefined && (
                     <button className="link tiny" onClick={() => setItem(idx, { restAfterSec: undefined })}>{t('common.reset')}</button>

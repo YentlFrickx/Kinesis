@@ -235,6 +235,7 @@ export const en = {
   'gen.preview': 'Preview · ~{duration}',
   'gen.nothing': 'Nothing to show. Try other categories or equipment.',
   'gen.swap': 'Swap',
+  'gen.noSwap': 'No other {category} exercise left to swap in.',
   'gen.regenerate': 'Regenerate',
   'gen.save': 'Save session',
   'gen.sessionName': '{minutes} min {names}',

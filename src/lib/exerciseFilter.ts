@@ -60,7 +60,11 @@ export function filterExercises(list: readonly Exercise[], f: ExerciseFilters, c
   })
   const byName = (a: Exercise, b: Exercise) => a.name.localeCompare(b.name)
   if (f.sort === 'category') out.sort((a, b) => CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) || byName(a, b))
-  else if (f.sort === 'area') out.sort((a, b) => (a.bodyAreas[0] ?? '').localeCompare(b.bodyAreas[0] ?? '') || byName(a, b))
+  else if (f.sort === 'area') {
+    // By the label the user sees (so "Kuiten" sorts under K in Dutch, not under "calves").
+    const area = (e: Exercise) => (e.bodyAreas[0] ? ctx.areaLabel(e.bodyAreas[0]) : '')
+    out.sort((a, b) => area(a).localeCompare(area(b)) || byName(a, b))
+  }
   else out.sort(byName)
   return out
 }

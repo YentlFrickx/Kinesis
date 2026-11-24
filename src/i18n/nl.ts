@@ -226,6 +226,7 @@ export const nl: Partial<Record<MessageKey, string>> = {
   'gen.preview': 'Voorbeeld · ~{duration}',
   'gen.nothing': 'Niets te tonen. Probeer andere categorieën of ander materiaal.',
   'gen.swap': 'Wisselen',
+  'gen.noSwap': 'Geen andere oefening voor {category} meer om mee te wisselen.',
   'gen.regenerate': 'Opnieuw genereren',
   'gen.save': 'Training opslaan',
   'gen.sessionName': '{minutes} min {names}',
