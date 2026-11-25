@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { getFavorites, importFavorites } from './favorites'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
+import { t } from '../i18n'
 import { EQUIPMENT, LIMITS, MAX_NAME_LENGTH, MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
 
 const KEY = 'rw.sessions.v1'
@@ -19,12 +20,53 @@ const isSession = (s: unknown): s is Session =>
   !!s && typeof s === 'object' && typeof (s as Session).id === 'string' && typeof (s as Session).name === 'string' &&
   Array.isArray((s as Session).items) && (s as Session).items.every((i) => !!i && typeof i === 'object')
 
+const num = (v: unknown, { min, max }: { min: number; max: number }, fallback: number) =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback
+
+/** A trimmed, length-clamped note as an optional field (empty or non-string notes are dropped). */
+const cleanNote = (v: unknown): { note?: string } => {
+  const note = typeof v === 'string' ? v.trim().slice(0, MAX_NOTE_LENGTH) : ''
+  return note ? { note } : {}
+}
+
+/**
+ * A session item clamped to the editor's ranges, or undefined when its exercise is not in the library.
+ * Used for imports and for stored sessions alike, so an item whose exercise no longer exists (or a corrupt
+ * value) cannot leave an invisible, unremovable row in the editor or a progress segment that never fills.
+ */
+function cleanItem(i: Partial<SessionItem> | null | undefined, id: string): SessionItem | undefined {
+  const ex = i && typeof i.exerciseId === 'string' ? EXERCISE_MAP.get(i.exerciseId) : undefined
+  if (!i || !ex) return undefined
+  return {
+    id,
+    exerciseId: ex.id,
+    value: num(i.value, LIMITS[ex.mode], ex.defaultValue),
+    sets: num(i.sets, LIMITS.sets, 1),
+    // null/undefined = no override (follow the session's transition rest).
+    ...(i.restAfterSec == null ? {} : { restAfterSec: num(i.restAfterSec, LIMITS.rest, 0) }),
+    ...(i.gear && EQUIPMENT.includes(i.gear) && ex.gearOptions?.[i.gear] ? { gear: i.gear } : {}),
+    ...cleanNote(i.note),
+  }
+}
+
+const cleanItems = (items: unknown[], keepIds: boolean): SessionItem[] =>
+  items.flatMap((i) => {
+    const id = keepIds && typeof (i as SessionItem)?.id === 'string' && (i as SessionItem).id ? (i as SessionItem).id! : newId()
+    return cleanItem(i as SessionItem, id) ?? []
+  })
+
 function read(): Session[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const data = JSON.parse(raw)
-    return data?.version === VERSION && Array.isArray(data.sessions) ? withItemIds(data.sessions.filter(isSession)) : []
+    if (data?.version !== VERSION || !Array.isArray(data.sessions)) return []
+    return (data.sessions as unknown[]).filter(isSession).map((s) => ({
+      ...s,
+      items: cleanItems(s.items, true),
+      defaultSetRestSec: num(s.defaultSetRestSec, LIMITS.rest, 30),
+      defaultTransitionSec: num(s.defaultTransitionSec, LIMITS.rest, 10),
+    }))
   } catch {
     return []
   }
@@ -75,7 +117,7 @@ const subscribe = (l: () => void) => {
 
 export const useSessions = () => useSyncExternalStore(subscribe, () => sessions)
 export const getSession = (id: string) => sessions.find((s) => s.id === id)
-export function createSession(name = 'New session'): Session {
+export function createSession(name = t('sessions.newName')): Session {
   const s: Session = { id: newId(), name, items: [], defaultSetRestSec: 30, defaultTransitionSec: 10 }
   commit([...sessions, s])
   return s
@@ -102,21 +144,12 @@ export const sessionIndex = (id: string) => sessions.findIndex((s) => s.id === i
 export function duplicateSession(id: string, name?: string): Session | undefined {
   const src = getSession(id)
   if (!src) return
-  const copy: Session = { ...src, id: newId(), name: name ?? `${src.name} (copy)`, items: src.items.map((i) => ({ ...i, id: newId() })) }
+  const copy: Session = { ...src, id: newId(), name: name ?? `${src.name} ${t('sessions.copySuffix')}`, items: src.items.map((i) => ({ ...i, id: newId() })) }
   commit([...sessions, copy])
   return copy
 }
 
 export const exportJson = () => JSON.stringify({ version: VERSION, sessions, favorites: getFavorites() }, null, 2)
-
-const num = (v: unknown, { min, max }: { min: number; max: number }, fallback: number) =>
-  typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback
-
-/** A trimmed, length-clamped note as an optional field (empty or non-string notes are dropped). */
-const cleanNote = (v: unknown): { note?: string } => {
-  const note = typeof v === 'string' ? v.trim().slice(0, MAX_NOTE_LENGTH) : ''
-  return note ? { note } : {}
-}
 
 /** Imports sessions from JSON text. Returns the number added, or throws on invalid input. */
 export function importJson(text: string): number {
@@ -125,25 +158,11 @@ export function importJson(text: string): number {
   const added: Session[] = []
   for (const raw of data.sessions) {
     if (!raw || typeof raw.name !== 'string' || !Array.isArray(raw.items)) continue
-    const items: SessionItem[] = raw.items
-      .filter((i: SessionItem) => EXERCISE_MAP.has(i?.exerciseId))
-      .map((i: SessionItem) => {
-        const ex = EXERCISE_MAP.get(i.exerciseId)!
-        return {
-          id: newId(),
-          exerciseId: i.exerciseId,
-          value: num(i.value, LIMITS[ex.mode], ex.defaultValue),
-          sets: num(i.sets, LIMITS.sets, 1),
-          // null/undefined = no override (follow the session's transition rest).
-          ...(i.restAfterSec == null ? {} : { restAfterSec: num(i.restAfterSec, LIMITS.rest, 0) }),
-          ...(EQUIPMENT.includes(i.gear!) && ex.gearOptions?.[i.gear!] ? { gear: i.gear } : {}),
-          ...cleanNote(i.note),
-        }
-      })
     added.push({
       id: newId(),
-      name: raw.name.trim().slice(0, MAX_NAME_LENGTH),
-      items,
+      // A blank name would leave an unlabeled row (and "Start " buttons) in the sessions list, as in the editor.
+      name: raw.name.trim().slice(0, MAX_NAME_LENGTH) || t('sessions.newName'),
+      items: cleanItems(raw.items, false),
       defaultSetRestSec: num(raw.defaultSetRestSec, LIMITS.rest, 30),
       defaultTransitionSec: num(raw.defaultTransitionSec, LIMITS.rest, 10),
     })

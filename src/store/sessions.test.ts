@@ -142,4 +142,26 @@ describe('item ids', () => {
     const { s } = await load({ 'rw.seeded.v1': '1', 'rw.sessions.v1': JSON.stringify(stored) })
     expect(JSON.parse(s.exportJson()).sessions).toEqual([good])
   })
+
+  it('drops stored items whose exercise is gone and clamps corrupt values', async () => {
+    const stored = { version: 1, sessions: [{ id: 's', name: 'S', defaultSetRestSec: 'x', defaultTransitionSec: 9999, items: [
+      { id: 'a', exerciseId: 'removed-exercise', value: 5, sets: 1 },
+      { id: 'b', exerciseId: 'push-up', value: 5, sets: 'x', gear: 'toString' },
+      { exerciseId: 'push-up', value: -3, sets: 2, restAfterSec: 15, note: 'keep me' },
+    ] }] }
+    const { s } = await load({ 'rw.seeded.v1': '1', 'rw.sessions.v1': JSON.stringify(stored) })
+    const session = s.getSession('s')!
+    expect(session.defaultSetRestSec).toBe(30)
+    expect(session.defaultTransitionSec).toBe(300)
+    expect(session.items[0]).toEqual({ id: 'b', exerciseId: 'push-up', value: 5, sets: 1 })
+    expect(session.items[1]).toMatchObject({ exerciseId: 'push-up', value: 1, sets: 2, restAfterSec: 15, note: 'keep me' })
+    expect(session.items[1].id).toBeTruthy()
+    expect(session.items).toHaveLength(2)
+  })
+
+  it('names an imported session with a blank name', async () => {
+    const { s } = await load({ 'rw.seeded.v1': '1' })
+    s.importJson(JSON.stringify({ sessions: [{ name: '   ', items: [] }] }))
+    expect(JSON.parse(s.exportJson()).sessions[0].name).toBe('New session')
+  })
 })

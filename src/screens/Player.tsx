@@ -345,7 +345,9 @@ export function Player({ id }: { id: string }) {
       <div className="controls">
         <button className="icon-btn" aria-label={t('player.prev')} onClick={() => nav(() => setState(prev(steps, state, autoReps)))} disabled={state.index === 0}><Icon name="prev" /></button>
         {isRepWork && !autoReps ? (
-          <button className="big-btn" onClick={() => nav(() => setState(next(steps, state, autoReps)))}><Icon name="check" />{t('common.done')}</button>
+          // Tapping Done means the user is working: also leave a pause (a restored run starts paused, and a pause
+          // set earlier is invisible on a manual rep step), so the next timed step counts down instead of sitting frozen.
+          <button className="big-btn" onClick={() => nav(() => { setState(next(steps, state, autoReps)); setPaused(false) })}><Icon name="check" />{t('common.done')}</button>
         ) : (
           <button className="big-btn" onClick={() => setPaused((p) => !p)}>{paused ? <><Icon name="play" size={20} />{t('player.resume')}</> : <><Icon name="pause" size={20} />{t('player.pause')}</>}</button>
         )}

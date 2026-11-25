@@ -11,14 +11,16 @@ import { Heatmap } from '../components/Heatmap'
 import { formatDate, formatDuration, formatTime } from '../lib/format'
 import { sessionLabel, useLocalize, useT } from '../i18n'
 import { MILESTONES } from '../lib/progress'
+import { useToday } from '../lib/today'
 import { clearHistory, deleteEntry, getHistory, restoreHistory, useHistory, type HistoryEntry } from '../store/history'
 import { showToast } from '../store/toast'
 import { useUnlocked } from '../store/milestones'
 
 const dayKey = (t: number) => new Date(t).toDateString()
-const dayLabel = (time: number, t: ReturnType<typeof useT>) => {
+/** "Today" / "Yesterday" relative to `now` (from useToday, so the labels roll over in an app left open past midnight). */
+const dayLabel = (time: number, now: number, t: ReturnType<typeof useT>) => {
   const d = new Date(time)
-  const today = new Date()
+  const today = new Date(now)
   const yesterday = new Date(today)
   yesterday.setDate(today.getDate() - 1) // calendar day, not "24 h ago" (wrong around DST changes)
   if (d.toDateString() === today.toDateString()) return t('history.today')
@@ -32,6 +34,7 @@ export function History() {
   const [confirmClear, setConfirmClear] = useState(false)
   const entries = useHistory()
   const unlocked = useUnlocked()
+  const now = useToday()
   // Entries recorded before items were stored fall back to the session as it is now (if it still exists).
   const items = (e: HistoryEntry) => e.items ?? getSession(e.sessionId)?.items
   const copy = async (e: HistoryEntry) => {
@@ -51,7 +54,7 @@ export function History() {
     const key = dayKey(e.completedAt)
     const last = groups[groups.length - 1]
     if (last?.key === key) last.items.push(e)
-    else groups.push({ key, label: dayLabel(e.completedAt, t), items: [e] })
+    else groups.push({ key, label: dayLabel(e.completedAt, now, t), items: [e] })
   }
 
   return (
