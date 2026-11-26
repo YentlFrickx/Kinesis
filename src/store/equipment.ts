@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { EXERCISE_MAP, withGear } from '../data/exercises'
-import { t } from '../i18n'
+import { t as translate, type TranslationKey } from '../i18n'
 import { EQUIPMENT, type Equipment, type Session } from '../data/types'
 
 const KEY = 'rw.equipment.v1'
@@ -38,7 +38,7 @@ export const sessionEquipment = (s: Session): Equipment[] =>
   EQUIPMENT.filter((q) => s.items.some((i) => { const e = EXERCISE_MAP.get(i.exerciseId); return e && withGear(e, i.gear).equipment?.includes(q) }))
 
 /** "You'll need: Dumbbells, Resistance band", or null when the session is bodyweight only. */
-export const youllNeed = (s: Session): string | null => {
+export const youllNeed = (s: Session, t: (key: TranslationKey, params?: Record<string, string>) => string = translate): string | null => {
   const need = sessionEquipment(s)
   return need.length ? t('equipment.youllNeed', { list: need.map((q) => t(`equipment.${q}`)).join(', ') }) : null
 }

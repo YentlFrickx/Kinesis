@@ -13,7 +13,7 @@ const session: Session = {
   items: [{ id: 'a', exerciseId: 'plank', value: 30, sets: 2 }],
 }
 const NOW = 1_000_000_000_000
-const base = (sig: string) => ({ sessionId: 's1', signature: sig, index: 3, remainingMs: 12000, activeMs: 5000, paused: false, savedAt: NOW - 1000 })
+const base = (sig: string) => ({ sessionId: 's1', signature: sig, index: 3, remainingMs: 12000, activeMs: 5000, savedAt: NOW - 1000 })
 
 describe('run store', () => {
   it('saves, reloads and clears', async () => {

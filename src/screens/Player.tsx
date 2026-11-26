@@ -94,16 +94,17 @@ export function Player({ id }: { id: string }) {
 
   useWakeLock(!state.finished)
 
-  // Persist the run so a reload or OS kill can be resumed: on every step change, periodically, and when hidden.
-  const snap = useRef({ state, paused })
-  snap.current = { state, paused }
+  // Persist the run so a reload or OS kill can be resumed: on every step change, on pause/resume (so the
+  // remaining time is exact), periodically, and when hidden. A restored run always starts paused.
+  const snap = useRef(state)
+  snap.current = state
   const persist = useCallback(() => {
-    const { state: st, paused: p } = snap.current
+    const st = snap.current
     if (!session || st.finished || steps.length === 0) return
     saveRun({
       sessionId: session.id, signature: sessionSignature(session), index: st.index,
       remainingMs: Number.isFinite(st.remainingMs) ? st.remainingMs : null,
-      activeMs: activeMs.current, paused: p, savedAt: Date.now(),
+      activeMs: activeMs.current, savedAt: Date.now(),
     })
   }, [session, steps])
   useEffect(() => { persist() }, [persist, state.index, paused])
@@ -242,9 +243,13 @@ export function Player({ id }: { id: string }) {
     setState((s) => { const st = steps[s.index]; return !s.finished && st?.kind === 'work' && st.mode === 'reps' ? goTo(steps, s.index, on) : s })
   }, [autoReps, steps])
 
+  // The store write stays out of the state updater (updaters must be pure; StrictMode calls them twice).
   const toggleMute = useCallback(() => {
-    setMutedState((m) => { setMuted(!m); return !m })
-  }, [])
+    setMuted(!muted)
+    setMutedState(!muted)
+  }, [muted])
+  // The session cannot change while the player is open, so this is computed once rather than on every tick.
+  const need = useMemo(() => (session ? youllNeed(session, t) : null), [session, t])
 
   if (!session || steps.length === 0) {
     return (
@@ -280,7 +285,6 @@ export function Player({ id }: { id: string }) {
   }
 
   const exercise = lx(step.kind === 'work' ? step.exercise : step.next)
-  const need = youllNeed(session)
   const isRepWork = step.kind === 'work' && step.mode === 'reps'
   const total = steps.length
   const heading =

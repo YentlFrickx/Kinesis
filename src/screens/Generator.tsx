@@ -11,7 +11,7 @@ import { useLocalize, useT } from '../i18n'
 import { go } from '../lib/router'
 import { toggleEquipment, useOwnedEquipment } from '../store/equipment'
 import { useHistory } from '../store/history'
-import { createSession, updateSession } from '../store/sessions'
+import { createSession } from '../store/sessions'
 import { showToast } from '../store/toast'
 
 const newSeed = () => Math.floor(Math.random() * 2 ** 31)
@@ -54,8 +54,9 @@ export function Generator() {
 
   const save = () => {
     const names = (focus.length ? focus.map((a) => t(`area.${a}`)) : categories.map((c) => t(`category.${c}`).toLowerCase())).join(' + ')
-    const s = createSession(t('gen.sessionName', { minutes, names }).slice(0, MAX_NAME_LENGTH))
-    updateSession(s.id, (x) => ({ ...x, items: items.map((i) => ({ ...i })), defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC }))
+    const s = createSession(t('gen.sessionName', { minutes, names }).slice(0, MAX_NAME_LENGTH), {
+      items: items.map((i) => ({ ...i })), defaultSetRestSec: SET_REST_SEC, defaultTransitionSec: TRANSITION_SEC,
+    })
     go(`/session/${s.id}`)
   }
 

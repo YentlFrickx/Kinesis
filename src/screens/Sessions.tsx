@@ -120,7 +120,7 @@ export function Sessions() {
 
       <div className="sec">
         <h2>{t('sessions.yours')}</h2>
-        <button className="chip-btn" onClick={() => go(`/session/${createSession(t('sessions.newName')).id}`)}><Icon name="plus" size={16} />{t('common.new')}</button>
+        <button className="chip-btn" onClick={() => go(`/session/${createSession().id}`)}><Icon name="plus" size={16} />{t('common.new')}</button>
       </div>
       {sessions.length === 0 && (
         <p className="empty">{t('sessions.empty')}</p>

@@ -1,8 +1,10 @@
 import { getLocale, t } from '../i18n'
 
 export function formatDuration(totalSec: number): string {
-  const m = Math.floor(totalSec / 60)
-  const s = Math.round(totalSec % 60)
+  // Round first: rounding only the seconds part turned 119.6 into "1 min 60s".
+  const total = Math.round(totalSec)
+  const m = Math.floor(total / 60)
+  const s = total % 60
   return m === 0 ? t('unit.seconds', { n: s }) : s === 0 ? t('unit.minutes', { n: m }) : t('unit.minutesSeconds', { m, s })
 }
 
