@@ -35,6 +35,14 @@ export function detectLocale(languages: readonly string[]): Locale {
   return DEFAULT_LOCALE
 }
 
+// Building PluralRules is comparatively slow and translate() runs on every render (the player re-renders ~10×/s).
+const pluralRules = new Map<Locale, Intl.PluralRules>()
+const pluralOf = (locale: Locale, n: number) => {
+  let rules = pluralRules.get(locale)
+  if (!rules) pluralRules.set(locale, (rules = new Intl.PluralRules(LOCALE_INFO[locale].tag)))
+  return rules.select(n)
+}
+
 const fill = (s: string, params?: Params) =>
   params ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in params ? String(params[k]) : m)) : s
 
@@ -47,7 +55,7 @@ export function translate(locale: Locale, key: MessageKey | string, params?: Par
     (catalogs[locale] as Record<string, string | undefined>)[k] ?? (catalogs[DEFAULT_LOCALE] as Record<string, string | undefined>)[k]
   let found: string | undefined
   if (typeof params?.count === 'number') {
-    const rule = new Intl.PluralRules(LOCALE_INFO[locale].tag).select(params.count)
+    const rule = pluralOf(locale, params.count)
     found = lookup(`${key}_${rule}`) ?? lookup(`${key}_other`)
   }
   return fill(found ?? lookup(key) ?? key, params)

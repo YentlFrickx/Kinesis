@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import type { Category } from '../data/types'
+import { CATEGORIES, type Category } from '../data/types'
 import type { WorkoutItem } from '../lib/workoutText'
 
 export interface HistoryEntry {
@@ -21,16 +21,36 @@ const KEY = 'rw.history.v1'
 const VERSION = 1
 const MAX_ENTRIES = 500
 
-/** Drops malformed entries (hand-edited or corrupted storage) so the screens never choke on them. */
-const isEntry = (e: unknown): e is HistoryEntry =>
-  !!e && typeof e === 'object' && typeof (e as HistoryEntry).id === 'string' && Number.isFinite((e as HistoryEntry).completedAt) && Number.isFinite((e as HistoryEntry).durationSec)
+const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
+
+const isItem = (i: unknown): i is WorkoutItem =>
+  isObject(i) && typeof i.exerciseId === 'string' && Number.isFinite(i.value) && Number.isFinite(i.sets)
+
+/**
+ * A stored entry with its optional fields sanitised, or undefined when it is malformed (hand-edited or corrupted
+ * storage). The screens rely on these shapes: a non-array `items` used to break the Exercises tab ("recent" filter)
+ * and the Copy button, and a string category count turned the weekly balance into string concatenation.
+ */
+function cleanEntry(e: unknown): HistoryEntry | undefined {
+  if (!isObject(e) || typeof e.id !== 'string' || typeof e.sessionId !== 'string' || typeof e.sessionName !== 'string') return undefined
+  if (!Number.isFinite(e.completedAt) || !Number.isFinite(e.durationSec)) return undefined
+  const { categories, items, ...rest } = e as unknown as HistoryEntry
+  const counts = isObject(categories)
+    ? Object.fromEntries(CATEGORIES.flatMap((c) => (Number.isFinite(categories[c]) ? [[c, categories[c]]] : [])))
+    : undefined
+  return {
+    ...rest,
+    ...(counts ? { categories: counts } : {}),
+    ...(Array.isArray(items) ? { items: items.filter(isItem) } : {}),
+  }
+}
 
 function read(): HistoryEntry[] {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const data = JSON.parse(raw)
-    return data?.version === VERSION && Array.isArray(data.entries) ? data.entries.filter(isEntry) : []
+    return data?.version === VERSION && Array.isArray(data.entries) ? data.entries.flatMap((e: unknown) => cleanEntry(e) ?? []) : []
   } catch {
     return []
   }

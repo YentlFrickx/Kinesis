@@ -38,6 +38,26 @@ describe('history store', () => {
     expect(h.getHistory()).toEqual([])
   })
 
+  it('drops malformed entries and sanitises optional fields', async () => {
+    const ok = { id: 'a', sessionId: 's', sessionName: 'A', completedAt: 1, durationSec: 60 }
+    const stored = {
+      version: 1,
+      entries: [
+        ok,
+        { ...ok, id: 'b', sessionName: 42 },
+        { ...ok, id: 'c', items: 'oops', categories: { strength: '3', stretch: 2, bogus: 1 } },
+        { ...ok, id: 'd', items: [{ exerciseId: 'plank', value: 30, sets: 2 }, null, { exerciseId: 'plank' }] },
+        null,
+      ],
+    }
+    const list = (await load({ 'rw.history.v1': JSON.stringify(stored) })).h.getHistory()
+    expect(list.map((e) => e.id)).toEqual(['a', 'c', 'd'])
+    expect(list[0]).toEqual(ok)
+    expect(list[1]).not.toHaveProperty('items')
+    expect(list[1].categories).toEqual({ stretch: 2 })
+    expect(list[2].items).toEqual([{ exerciseId: 'plank', value: 30, sets: 2 }])
+  })
+
   it('ignores corrupt storage', async () => {
     expect((await load({ 'rw.history.v1': 'zzz' })).h.getHistory()).toEqual([])
   })

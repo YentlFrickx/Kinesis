@@ -117,8 +117,9 @@ const subscribe = (l: () => void) => {
 
 export const useSessions = () => useSyncExternalStore(subscribe, () => sessions)
 export const getSession = (id: string) => sessions.find((s) => s.id === id)
-export function createSession(name = t('sessions.newName')): Session {
-  const s: Session = { id: newId(), name, items: [], defaultSetRestSec: 30, defaultTransitionSec: 10 }
+/** Adds a new session (empty unless `init` gives its items/rests) and returns it. */
+export function createSession(name = t('sessions.newName'), init: Partial<Omit<Session, 'id' | 'name'>> = {}): Session {
+  const s: Session = { id: newId(), name, items: [], defaultSetRestSec: 30, defaultTransitionSec: 10, ...init }
   commit([...sessions, s])
   return s
 }

@@ -15,7 +15,6 @@ export interface SavedRun {
   /** Remaining time of the current step; Infinity (manual rep step) is stored as null. */
   remainingMs: number | null
   activeMs: number
-  paused: boolean
   savedAt: number
 }
 
@@ -34,7 +33,7 @@ export function validateRun(run: unknown, session: Session | undefined, stepCoun
   if (r.sessionId !== session.id || r.signature !== sessionSignature(session)) return undefined
   if (!fin(r.index) || !Number.isInteger(r.index) || r.index < 0 || r.index >= stepCount) return undefined
   if (r.remainingMs !== null && (!fin(r.remainingMs) || r.remainingMs < 0)) return undefined
-  if (!fin(r.activeMs) || r.activeMs < 0 || typeof r.paused !== 'boolean') return undefined
+  if (!fin(r.activeMs) || r.activeMs < 0) return undefined
   if (!fin(r.savedAt) || r.savedAt > now + 60_000 || now - r.savedAt > MAX_AGE_MS) return undefined
   return r
 }
