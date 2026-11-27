@@ -63,6 +63,10 @@ export const LIMITS = {
   rest: { min: 0, max: 300 },
 } as const
 
+/** Rests for a new session, and the fallback for a stored or imported one without valid values. */
+export const DEFAULT_SET_REST_SEC = 30
+export const DEFAULT_TRANSITION_SEC = 10
+
 export interface Session {
   id: string
   name: string

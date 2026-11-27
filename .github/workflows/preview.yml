@@ -1,9 +1,9 @@
 name: PR preview (Cloudflare Pages)
 
 # Builds every pull request and deploys it to its own Cloudflare Pages preview URL
-# (https://pr-<number>.<project>.pages.dev). Production stays on GitHub Pages (deploy.yml).
+# (https://pr-<number>.<project>.pages.dev). Production is deployed to the same project by deploy.yml.
 #
-# One-time setup, see README ("PR previews"): CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
+# One-time setup, see README ("Deploy"): CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
 # repository secrets, optionally a CLOUDFLARE_PAGES_PROJECT repository variable.
 
 on:
