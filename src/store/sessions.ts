@@ -3,7 +3,7 @@ import { getFavorites, importFavorites } from './favorites'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
 import { t } from '../i18n'
-import { EQUIPMENT, LIMITS, MAX_NAME_LENGTH, MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
+import { DEFAULT_SET_REST_SEC, DEFAULT_TRANSITION_SEC, EQUIPMENT, LIMITS, MAX_NAME_LENGTH, MAX_NOTE_LENGTH, type Session, type SessionItem } from '../data/types'
 
 const KEY = 'rw.sessions.v1'
 const VERSION = 1
@@ -28,6 +28,15 @@ const cleanNote = (v: unknown): { note?: string } => {
   const note = typeof v === 'string' ? v.trim().slice(0, MAX_NOTE_LENGTH) : ''
   return note ? { note } : {}
 }
+
+// A blank name would leave an unlabeled row (and "Start " buttons) in the sessions list, as in the editor.
+const orNewName = (name: string) => (name.trim() ? name : t('sessions.newName'))
+
+/** The session-level rests, clamped (missing or corrupt values fall back to the defaults). */
+const cleanRests = (s: Partial<Session>) => ({
+  defaultSetRestSec: num(s.defaultSetRestSec, LIMITS.rest, DEFAULT_SET_REST_SEC),
+  defaultTransitionSec: num(s.defaultTransitionSec, LIMITS.rest, DEFAULT_TRANSITION_SEC),
+})
 
 /**
  * A session item clamped to the editor's ranges, or undefined when its exercise is not in the library.
@@ -61,11 +70,13 @@ function read(): Session[] {
     if (!raw) return []
     const data = JSON.parse(raw)
     if (data?.version !== VERSION || !Array.isArray(data.sessions)) return []
+    // The editor stores every keystroke, so a reload (or the OS killing the app) while the name field was
+    // empty used to keep a blank session name for good.
     return (data.sessions as unknown[]).filter(isSession).map((s) => ({
       ...s,
+      name: orNewName(s.name),
       items: cleanItems(s.items, true),
-      defaultSetRestSec: num(s.defaultSetRestSec, LIMITS.rest, 30),
-      defaultTransitionSec: num(s.defaultTransitionSec, LIMITS.rest, 10),
+      ...cleanRests(s),
     }))
   } catch {
     return []
@@ -87,7 +98,8 @@ function commit(next: Session[]) {
   listeners.forEach((l) => l())
 }
 
-const cloneStarter = (s: Session): Session => ({ ...s, items: s.items.map((i) => ({ ...i })) })
+// Items get their ids here so the seeded copy is stored with them (otherwise every load assigned new ones).
+const cloneStarter = (s: Session): Session => ({ ...s, items: s.items.map((i) => ({ ...i, id: newId() })) })
 
 /** Starter sessions that are not currently in the list (e.g. deleted by the user). */
 export const missingStarters = (list: Session[] = sessions) => STARTERS.filter((s) => !list.some((x) => x.id === s.id))
@@ -119,7 +131,7 @@ export const useSessions = () => useSyncExternalStore(subscribe, () => sessions)
 export const getSession = (id: string) => sessions.find((s) => s.id === id)
 /** Adds a new session (empty unless `init` gives its items/rests) and returns it. */
 export function createSession(name = t('sessions.newName'), init: Partial<Omit<Session, 'id' | 'name'>> = {}): Session {
-  const s: Session = { id: newId(), name, items: [], defaultSetRestSec: 30, defaultTransitionSec: 10, ...init }
+  const s: Session = { id: newId(), name, items: [], defaultSetRestSec: DEFAULT_SET_REST_SEC, defaultTransitionSec: DEFAULT_TRANSITION_SEC, ...init }
   commit([...sessions, s])
   return s
 }
@@ -161,11 +173,9 @@ export function importJson(text: string): number {
     if (!raw || typeof raw.name !== 'string' || !Array.isArray(raw.items)) continue
     added.push({
       id: newId(),
-      // A blank name would leave an unlabeled row (and "Start " buttons) in the sessions list, as in the editor.
-      name: raw.name.trim().slice(0, MAX_NAME_LENGTH) || t('sessions.newName'),
+      name: orNewName(raw.name.trim().slice(0, MAX_NAME_LENGTH)),
       items: cleanItems(raw.items, false),
-      defaultSetRestSec: num(raw.defaultSetRestSec, LIMITS.rest, 30),
-      defaultTransitionSec: num(raw.defaultTransitionSec, LIMITS.rest, 10),
+      ...cleanRests(raw),
     })
   }
   commit([...sessions, ...added])

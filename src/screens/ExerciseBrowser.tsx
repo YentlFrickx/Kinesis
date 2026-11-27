@@ -39,9 +39,11 @@ export function ExerciseBrowser({ onAdd, addedCount, inSession }: Props) {
   const favorites = useFavorites()
   const history = useHistory()
   const showAll = !filters.onlyMyEquipment
-  const f = filters
-  const favSet = useMemo(() => new Set(favorites), [favorites])
   const picker = inSession !== undefined || onAdd !== undefined
+  // The filters are shared with the editor's picker; "not yet in this session" only means something there, so the
+  // Library tab ignores it (it showed up as an active filter chip there, with no visible toggle to explain it).
+  const f = useMemo(() => (picker || !filters.notInSession ? filters : { ...filters, notInSession: false }), [picker, filters])
+  const favSet = useMemo(() => new Set(favorites), [favorites])
 
   const list = useMemo(
     () => filterExercises(EXERCISES.map(lx), f, {

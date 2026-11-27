@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { CATEGORIES, type Category } from '../data/types'
+import { CATEGORIES, EQUIPMENT, type Category, type Equipment } from '../data/types'
 import type { WorkoutItem } from '../lib/workoutText'
 
 export interface HistoryEntry {
@@ -23,8 +23,16 @@ const MAX_ENTRIES = 500
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
 
-const isItem = (i: unknown): i is WorkoutItem =>
-  isObject(i) && typeof i.exerciseId === 'string' && Number.isFinite(i.value) && Number.isFinite(i.sets)
+/** A stored workout item with its optional note/gear kept only when well-formed (a non-string note was printed as-is by Copy). */
+function cleanItem(i: unknown): WorkoutItem | undefined {
+  if (!isObject(i) || typeof i.exerciseId !== 'string' || !Number.isFinite(i.value) || !Number.isFinite(i.sets)) return undefined
+  const { exerciseId, value, sets, note, gear } = i as unknown as WorkoutItem
+  return {
+    exerciseId, value, sets,
+    ...(EQUIPMENT.includes(gear as Equipment) ? { gear } : {}),
+    ...(typeof note === 'string' && note ? { note } : {}),
+  }
+}
 
 /**
  * A stored entry with its optional fields sanitised, or undefined when it is malformed (hand-edited or corrupted
@@ -41,7 +49,7 @@ function cleanEntry(e: unknown): HistoryEntry | undefined {
   return {
     ...rest,
     ...(counts ? { categories: counts } : {}),
-    ...(Array.isArray(items) ? { items: items.filter(isItem) } : {}),
+    ...(Array.isArray(items) ? { items: items.flatMap((i) => cleanItem(i) ?? []) } : {}),
   }
 }
 

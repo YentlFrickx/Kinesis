@@ -15,6 +15,10 @@ describe('sessions store', () => {
     expect(JSON.parse(data.get('rw.sessions.v1')!).sessions).toHaveLength(STARTERS.length)
     expect(data.get('rw.seeded.v1')).toBe('1')
     expect(s.missingStarters()).toEqual([])
+    // Seeded items are stored with their ids, so they stay the same across loads.
+    const stored = JSON.parse(data.get('rw.sessions.v1')!).sessions
+    expect(stored.every((x: { items: { id?: string }[] }) => x.items.every((i) => i.id))).toBe(true)
+    expect((await load(Object.fromEntries(data))).s.getSession(STARTERS[0].id)!.items[0].id).toBe(stored[0].items[0].id)
   })
 
   it('does not reseed after a starter was deleted, but can restore it', async () => {
@@ -163,5 +167,11 @@ describe('item ids', () => {
     const { s } = await load({ 'rw.seeded.v1': '1' })
     s.importJson(JSON.stringify({ sessions: [{ name: '   ', items: [] }] }))
     expect(JSON.parse(s.exportJson()).sessions[0].name).toBe('New session')
+  })
+
+  it('names a stored session left with a blank name', async () => {
+    const stored = { version: 1, sessions: [{ id: 's', name: ' ', defaultSetRestSec: 30, defaultTransitionSec: 10, items: [] }] }
+    const { s } = await load({ 'rw.seeded.v1': '1', 'rw.sessions.v1': JSON.stringify(stored) })
+    expect(s.getSession('s')!.name).toBe('New session')
   })
 })

@@ -239,7 +239,9 @@ export function Player({ id }: { id: string }) {
     const on = !autoReps
     setAutoReps(on)
     setAutoRepsState(on)
-    // Re-seat the current rep step so it switches between manual and paced immediately.
+    // Re-seat the current rep step so it switches between manual and paced immediately. The re-seated step
+    // counts from rep 1 again, so the spoken count restarts too (it would otherwise stay silent up to the old count).
+    lastRep.current = 0
     setState((s) => { const st = steps[s.index]; return !s.finished && st?.kind === 'work' && st.mode === 'reps' ? goTo(steps, s.index, on) : s })
   }, [autoReps, steps])
 

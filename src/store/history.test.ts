@@ -47,15 +47,17 @@ describe('history store', () => {
         { ...ok, id: 'b', sessionName: 42 },
         { ...ok, id: 'c', items: 'oops', categories: { strength: '3', stretch: 2, bogus: 1 } },
         { ...ok, id: 'd', items: [{ exerciseId: 'plank', value: 30, sets: 2 }, null, { exerciseId: 'plank' }] },
+        { ...ok, id: 'e', items: [{ exerciseId: 'squat', value: 8, sets: 1, note: 42, gear: 'kettlebell' }, { exerciseId: 'squat', value: 8, sets: 1, note: '8 kg', gear: 'dumbbell' }] },
         null,
       ],
     }
     const list = (await load({ 'rw.history.v1': JSON.stringify(stored) })).h.getHistory()
-    expect(list.map((e) => e.id)).toEqual(['a', 'c', 'd'])
+    expect(list.map((e) => e.id)).toEqual(['a', 'c', 'd', 'e'])
     expect(list[0]).toEqual(ok)
     expect(list[1]).not.toHaveProperty('items')
     expect(list[1].categories).toEqual({ stretch: 2 })
     expect(list[2].items).toEqual([{ exerciseId: 'plank', value: 30, sets: 2 }])
+    expect(list[3].items).toEqual([{ exerciseId: 'squat', value: 8, sets: 1 }, { exerciseId: 'squat', value: 8, sets: 1, note: '8 kg', gear: 'dumbbell' }])
   })
 
   it('ignores corrupt storage', async () => {
