@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatClock, formatDuration } from './format'
+import { formatClock, formatDuration, isoDate } from './format'
 
 describe('formatDuration', () => {
   it('formats seconds, minutes and both', () => {
@@ -20,5 +20,12 @@ describe('formatClock', () => {
     expect(formatClock(0)).toBe('0:00')
     expect(formatClock(59.2)).toBe('1:00')
     expect(formatClock(125)).toBe('2:05')
+  })
+})
+
+describe('isoDate', () => {
+  it('formats the local calendar date with zero padding', () => {
+    expect(isoDate(new Date(2026, 0, 5, 23, 59).getTime())).toBe('2026-01-05')
+    expect(isoDate(new Date(2026, 10, 28, 0, 0).getTime())).toBe('2026-11-28')
   })
 })

@@ -25,3 +25,9 @@ export const weekdayLetters = () => {
   const f = new Intl.DateTimeFormat(getLocale(), { weekday: 'narrow' })
   return Array.from({ length: 7 }, (_, i) => f.format(new Date(2024, 0, 1 + i))) // 2024-01-01 is a Monday
 }
+
+/** Local calendar date as YYYY-MM-DD (e.g. for file names; not localised). */
+export const isoDate = (time: number) => {
+  const d = new Date(time)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}

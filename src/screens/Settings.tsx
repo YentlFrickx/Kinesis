@@ -1,4 +1,5 @@
 import { Icon } from '../components/Icon'
+import { isoDate } from '../lib/format'
 import { Sheet } from '../components/Sheet'
 import { LOCALES, LOCALE_INFO, setLocale, useLocale, useT } from '../i18n'
 import { exportJson, missingStarters, restoreStarters, useSessions } from '../store/sessions'
@@ -18,7 +19,7 @@ export function SettingsSheet({ onClose, onMessage, fileRef }: {
 
   const download = () => {
     const url = URL.createObjectURL(new Blob([exportJson()], { type: 'application/json' }))
-    const a = Object.assign(document.createElement('a'), { href: url, download: 'kinesis-sessions.json' })
+    const a = Object.assign(document.createElement('a'), { href: url, download: `kinesis-backup-${isoDate(Date.now())}.json` })
     a.click()
     // Revoking synchronously can cancel the download in some browsers (Firefox, Safari).
     setTimeout(() => URL.revokeObjectURL(url), 1000)

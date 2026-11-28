@@ -46,7 +46,7 @@ describe('history store', () => {
         ok,
         { ...ok, id: 'b', sessionName: 42 },
         { ...ok, id: 'c', items: 'oops', categories: { strength: '3', stretch: 2, bogus: 1 } },
-        { ...ok, id: 'd', items: [{ exerciseId: 'plank', value: 30, sets: 2 }, null, { exerciseId: 'plank' }] },
+        { ...ok, id: 'd', items: [{ exerciseId: 'plank', value: 30, sets: 2 }, null, { exerciseId: 'plank' }, { exerciseId: 'plank', value: 5, sets: 1, note: { x: 1 }, gear: 'toString' }, { exerciseId: 'plank', value: 5, sets: 1, note: ' 8 kg ', gear: 'band' }] },
         null,
       ],
     }
@@ -55,7 +55,12 @@ describe('history store', () => {
     expect(list[0]).toEqual(ok)
     expect(list[1]).not.toHaveProperty('items')
     expect(list[1].categories).toEqual({ stretch: 2 })
-    expect(list[2].items).toEqual([{ exerciseId: 'plank', value: 30, sets: 2 }])
+    // A non-string note or unknown gear is dropped rather than shown as "[object Object]".
+    expect(list[2].items).toEqual([
+      { exerciseId: 'plank', value: 30, sets: 2 },
+      { exerciseId: 'plank', value: 5, sets: 1 },
+      { exerciseId: 'plank', value: 5, sets: 1, note: '8 kg', gear: 'band' },
+    ])
   })
 
   it('ignores corrupt storage', async () => {
