@@ -114,6 +114,8 @@ export const en = {
   'msg.restored_other': 'Restored {count} starter sessions.',
   'msg.imported_one': 'Imported {count} session.',
   'msg.imported_other': 'Imported {count} sessions.',
+  'msg.importedHistory_one': 'Added {count} completed session to your history.',
+  'msg.importedHistory_other': 'Added {count} completed sessions to your history.',
   'msg.importFailed': 'Import failed: {error}',
 
   // voice settings

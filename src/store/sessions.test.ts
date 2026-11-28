@@ -47,7 +47,7 @@ describe('sessions store', () => {
     const { s } = await load({ 'rw.seeded.v1': '1' })
     const a = s.createSession('Mine')
     s.updateSession(a.id, (x) => ({ ...x, items: [{ exerciseId: 'push-up', value: 5, sets: 2 }] }))
-    expect(s.importJson(s.exportJson())).toBe(1)
+    expect(s.importJson(s.exportJson())).toEqual({ sessions: 1, history: 0 })
     const all = s.exportJson()
     expect(new Set(ids(JSON.parse(all).sessions)).size).toBe(2)
   })
@@ -83,7 +83,7 @@ describe('sessions store', () => {
         ],
       },
     ] }))
-    expect(n).toBe(1)
+    expect(n.sessions).toBe(1)
     const imported = JSON.parse(s.exportJson()).sessions[0]
     expect(imported.name).toHaveLength(80)
     expect(imported.defaultSetRestSec).toBe(300)
@@ -95,6 +95,28 @@ describe('sessions store', () => {
       { exerciseId: 'forearm-plank', value: 30, sets: 10 },
       { exerciseId: 'forearm-plank', value: 600, sets: 2 },
     ])
+  })
+
+  it('includes history in the backup and merges it on import without duplicates', async () => {
+    const { s } = await load({ 'rw.seeded.v1': '1' })
+    const h = await import('./history')
+    h.recordCompletion('a', 'A', 60, { strength: 1 }, [{ exerciseId: 'push-up', value: 5, sets: 2 }])
+    const backup = s.exportJson()
+    expect(JSON.parse(backup).history).toHaveLength(1)
+    expect(s.importJson(backup).history).toBe(0) // same entry id: not added twice
+
+    // A fresh device: the entry comes back in date order with what is already there, and milestones follow.
+    const data = installStorage({ 'rw.seeded.v1': '1' })
+    const s2 = await import('./sessions')
+    const h2 = await import('./history')
+    expect(JSON.parse(data.get('rw.milestones.v1') ?? '{}')).toEqual({})
+    expect(s2.importJson(backup)).toEqual({ sessions: 0, history: 1 })
+    expect(JSON.parse(data.get('rw.milestones.v1')!)).toHaveProperty('first-session')
+    h2.recordCompletion('b', 'B', 30)
+    expect(h2.getHistory().map((e) => e.sessionName)).toEqual(['B', 'A'])
+    expect(h2.getHistory()[1]).toMatchObject({ categories: { strength: 1 }, items: [{ exerciseId: 'push-up', value: 5, sets: 2 }] })
+    expect(s2.importJson(JSON.stringify({ sessions: [], history: [null, { id: 'x' }, 'nope'] })).history).toBe(0)
+    expect(s2.importJson(JSON.stringify({ sessions: [], history: 'nope' })).history).toBe(0)
   })
 
   it('survives corrupt or wrong-version storage', async () => {

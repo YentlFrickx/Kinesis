@@ -7,7 +7,7 @@ import { go } from '../lib/router'
 import { beep, canSpeak, getAutoReps, isMuted, setAutoReps, setMuted, speak, stopSpeaking, vibrate } from '../player/cues'
 import { getSpeechSettings } from '../player/speechSettings'
 import { useVoices } from '../player/useVoices'
-import { speaksCountdown, speaksReps } from '../player/voice'
+import { speaksCountdownOn, speaksReps } from '../player/voice'
 import { LOCALE_INFO, sessionLabel, useLocale, useLocalize, useT } from '../i18n'
 import { advance, buildSteps, goTo, initState, next, prev, resumeState, SECONDS_PER_REP, type RunState, type Step } from '../player/engine'
 import { usePrefersReducedMotion } from '../lib/reducedMotion'
@@ -162,10 +162,11 @@ export function Player({ id }: { id: string }) {
           comeback: comebackDays(getHistory()[1]?.completedAt, entry.completedAt),
         })
       }
-      beep(660, 200); setTimeout(() => beep(880, 300), 250)
+      beep(660, 200)
+      const chime = setTimeout(() => beep(880, 300), 250)
       speak(t('player.completeSpoken'), { interrupt: true })
       vibrate([200, 100, 200, 100, 400])
-      return
+      return () => clearTimeout(chime) // no stray beep after leaving the player straight away
     }
     if (!step) return
     beep(step.kind === 'work' ? 1040 : 520, 200)
@@ -188,12 +189,13 @@ export function Player({ id }: { id: string }) {
       lastSec.current = sec
       if (sec >= 1 && sec <= 3) {
         // A spoken number replaces the beep when it can be heard; otherwise fall back to the beep.
-        const spoken = speaksCountdown(getSpeechSettings().verbosity) && canSpeak() && speak(String(sec), { priority: 'count' })
+        const pacedReps = autoReps && step?.kind === 'work' && step.mode === 'reps'
+        const spoken = speaksCountdownOn(getSpeechSettings().verbosity, pacedReps) && canSpeak() && speak(String(sec), { priority: 'count' })
         if (!spoken) beep(760, 90)
         vibrate(40)
       }
     }
-  }, [state.remainingMs, state.finished, paused])
+  }, [state.remainingMs, state.finished, paused, autoReps, step])
 
   // Screen-reader announcements (polite live region): step changes, plus 10 s / 3 s milestones.
   const [announcement, setAnnouncement] = useState('')

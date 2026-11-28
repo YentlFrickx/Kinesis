@@ -54,7 +54,8 @@ export function Sessions() {
   const onImport = async (file?: File) => {
     if (!file) return
     try {
-      setMsg(t('msg.imported', { count: importJson(await file.text()) }))
+      const added = importJson(await file.text())
+      setMsg([t('msg.imported', { count: added.sessions }), ...(added.history ? [t('msg.importedHistory', { count: added.history })] : [])].join(' '))
     } catch (err) {
       setMsg(t('msg.importFailed', { error: (err as Error).message }))
     }

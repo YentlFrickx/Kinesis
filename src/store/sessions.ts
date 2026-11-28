@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { getFavorites, importFavorites } from './favorites'
+import { getHistory, importHistory } from './history'
+import { syncMilestones } from './milestones'
 import { EXERCISE_MAP } from '../data/exercises'
 import { STARTERS } from '../data/templates'
 import { t } from '../i18n'
@@ -150,10 +152,11 @@ export function duplicateSession(id: string, name?: string): Session | undefined
   return copy
 }
 
-export const exportJson = () => JSON.stringify({ version: VERSION, sessions, favorites: getFavorites() }, null, 2)
+/** Backup file: sessions plus favourites and history, so moving to another device or domain keeps everything. */
+export const exportJson = () => JSON.stringify({ version: VERSION, sessions, favorites: getFavorites(), history: getHistory() }, null, 2)
 
-/** Imports sessions from JSON text. Returns the number added, or throws on invalid input. */
-export function importJson(text: string): number {
+/** Imports a backup from JSON text. Returns how many sessions and history entries were added, or throws on invalid input. */
+export function importJson(text: string): { sessions: number; history: number } {
   const data = JSON.parse(text)
   if (!data || !Array.isArray(data.sessions)) throw new Error('Not a workout export file')
   const added: Session[] = []
@@ -170,5 +173,8 @@ export function importJson(text: string): number {
   }
   commit([...sessions, ...added])
   if (data.favorites !== undefined) importFavorites(data.favorites)
-  return added.length
+  const history = importHistory(data.history)
+  // Imported history can satisfy milestones (e.g. "10 sessions"); unlock them now rather than after the next workout.
+  if (history) syncMilestones()
+  return { sessions: added.length, history }
 }

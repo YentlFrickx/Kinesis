@@ -109,6 +109,8 @@ export const nl: Partial<Record<MessageKey, string>> = {
   'msg.restored_other': '{count} starttrainingen hersteld.',
   'msg.imported_one': '{count} training geïmporteerd.',
   'msg.imported_other': '{count} trainingen geïmporteerd.',
+  'msg.importedHistory_one': '{count} voltooide training aan je geschiedenis toegevoegd.',
+  'msg.importedHistory_other': '{count} voltooide trainingen aan je geschiedenis toegevoegd.',
   'msg.importFailed': 'Importeren mislukt: {error}',
 
   'voice.title': 'Stemcues',

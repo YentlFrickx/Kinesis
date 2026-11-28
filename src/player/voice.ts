@@ -99,3 +99,8 @@ export function parseSpeechSettings(raw: unknown): SpeechSettings {
 /** Whether a kind of cue is spoken at the given verbosity (levels are cumulative). */
 export const speaksCountdown = (v: Verbosity) => v !== 'names'
 export const speaksReps = (v: Verbosity) => v === 'reps'
+/**
+ * Whether the final 3-2-1 is spoken. Not over a paced rep step whose reps are already counted aloud: the two
+ * sequences interleave ("…7, 8, 3, 2, 1") and the countdown pushes out the last rep numbers. That step beeps instead.
+ */
+export const speaksCountdownOn = (v: Verbosity, countedRepStep: boolean) => speaksCountdown(v) && !(countedRepStep && speaksReps(v))

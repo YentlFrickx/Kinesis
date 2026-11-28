@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseSpeechSettings, pickVoice, scheduleCue, speaksCountdown, speaksReps, speechStatus, voicesFor, type VoiceInfo } from './voice'
+import { parseSpeechSettings, pickVoice, scheduleCue, speaksCountdown, speaksCountdownOn, speaksReps, speechStatus, voicesFor, type VoiceInfo } from './voice'
 
 const v = (name: string, lang: string, localService = true): VoiceInfo => ({ name, lang, voiceURI: name, localService })
 const voices = [
@@ -71,5 +71,9 @@ describe('speech settings', () => {
   it('verbosity levels are cumulative', () => {
     expect([speaksCountdown('names'), speaksCountdown('countdown'), speaksCountdown('reps')]).toEqual([false, true, true])
     expect([speaksReps('names'), speaksReps('countdown'), speaksReps('reps')]).toEqual([false, false, true])
+  })
+  it('does not speak the countdown over a paced rep step whose reps are counted aloud', () => {
+    expect([speaksCountdownOn('names', false), speaksCountdownOn('countdown', false), speaksCountdownOn('reps', false)]).toEqual([false, true, true])
+    expect([speaksCountdownOn('names', true), speaksCountdownOn('countdown', true), speaksCountdownOn('reps', true)]).toEqual([false, true, false])
   })
 })
